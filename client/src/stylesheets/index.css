@@ -72,7 +72,7 @@ head, body{
   background-color: lightgray;
 }
 
-#create-post{
+#create-post, #logout-button, #user-profile-button{
   height: 35px;
   width: 10vw;
   background-color:lightgray;

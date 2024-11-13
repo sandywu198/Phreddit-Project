@@ -79,7 +79,7 @@ export const CreateCommunityButton = () => {
 };
 
 // Navbar Component
-export function NavBar() {
+export function NavBar({userStatus}) {
   const [refreshCount, setRefreshCount] = useState(0);
   const [curNavBar, updateNavBar] = useState(
     <div className="navbar">
@@ -87,7 +87,7 @@ export function NavBar() {
       <hr id="delimeter" />
       <div className="community">
         <h3 id="community-head">Communities</h3>
-        <CreateCommunityButton />
+        {(userStatus === "login") ? <CreateCommunityButton/> : <button id="community-button"> Create Community </button>}
         <GetCommunities refreshCount={refreshCount}/>
       </div>
     </div>
@@ -102,7 +102,7 @@ export function NavBar() {
           <hr id="delimeter" />
           <div className="community">
             <h3 id="community-head">Communities</h3>
-            <CreateCommunityButton />
+            {(userStatus === "login") ? <CreateCommunityButton/> : <button id="community-button"> Create Community </button>}
             <GetCommunities refreshCount={refreshCount}/>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function NavBar() {
     };
     NavBarEmitter.on('updateNavBar', changeNavBar);
     return () => NavBarEmitter.off('updateNavBar', changeNavBar);
-  }, [refreshCount]);
+  }, [refreshCount, userStatus]);
   return (<section>{curNavBar}</section>);
 }
 
