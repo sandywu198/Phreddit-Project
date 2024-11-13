@@ -38,7 +38,7 @@ export function HomePage({userStatus}){
       {TopBanner(userStatus)}
       <hr id = "delimeter"></hr>
       <div className="text-under-header">
-        <NavBar /> {/*  fetchData={fetchData} */}
+        <NavBar userStatus={userStatus}/> {/*  fetchData={fetchData} */}
         <PostHeader />
       </div>
     </>
