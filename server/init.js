@@ -31,7 +31,8 @@ if (!userArgs[0].startsWith('mongodb')) {
     return
 }
 
-let adminArgs = process.argv.slice(3, 7);
+let adminArgs = process.argv.slice(3, 8);
+console.log("\n adminArgs: ", adminArgs, "\n");
 
 let mongoDB = userArgs[0];
 mongoose.connect(mongoDB);
