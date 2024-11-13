@@ -343,3 +343,13 @@ form#new-community-form, form#new-post-page-stuff, form#new-comment-page-stuff{
   display: flex;
   gap: 1vw;
 }
+.guest-banner-element{
+  background-color: lightgray;
+  height: 35px;
+  width: 10vw;
+  background-color:lightgray;
+  border: none;
+  border-radius: 20px;
+  font-size: 1.2vw;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
