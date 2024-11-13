@@ -22,6 +22,7 @@ const CommunityModel = require('./models/communities');
 const PostModel = require('./models/posts');
 const CommentModel = require('./models/comments');
 const LinkFlairModel = require('./models/linkflairs');
+const UserModel = require('./models/users');
 
 let userArgs = process.argv.slice(2);
 
@@ -30,10 +31,24 @@ if (!userArgs[0].startsWith('mongodb')) {
     return
 }
 
+let adminArgs = process.argv.slice(3, 8);
+console.log("\n adminArgs: ", adminArgs, "\n");
+
 let mongoDB = userArgs[0];
 mongoose.connect(mongoDB);
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+function createUser(userObj){
+    let newUserDoc = new UserModel({
+        firstName: userObj.firstName,
+        lastName:  userObj.lastName,
+        displayName:  userObj.displayName,
+        email: userObj.email,
+        password:  userObj.password,
+    })
+    return newUserDoc.save();
+}
 
 function createLinkFlair(linkFlairObj) {
     let newLinkFlairDoc = new LinkFlairModel({
@@ -77,6 +92,14 @@ function createCommunity(communityObj) {
 }
 
 async function initializeDB() {
+    const user1 = {
+        firstName: adminArgs[0],
+        lastName: adminArgs[1],
+        displayName:  adminArgs[2],
+        email: adminArgs[3],
+        password: adminArgs[4],
+    }
+    let userRef1 = await createUser(user1);
     // link flair objects
     const linkFlair1 = { // link flair 1
         linkFlairID: 'lf1',

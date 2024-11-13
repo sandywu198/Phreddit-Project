@@ -1,8 +1,24 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const validator = require('validator');
 const User = require('../models/users');  // Import the User model
 const router = express.Router();
+
+// get all users
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find();
+    res.send(users);
+  } 
+  catch (error) {
+    res.status(500).send({message: 'Error retrieving users', error });
+  }
+});
+
+// get a specific user
+router.get('/:id', getUser, (req, res) => {
+  res.send(res.user);
+});
 
 router.post('/register', async (req, res) => {
   const { firstName, lastName, email, displayName, password, passwordConfirm } = req.body;
@@ -64,4 +80,20 @@ router.post('/login', async (req, res) => {
     }
 });
   
+// Middleware to get a comment by id
+async function getUser(req, res, next) {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    if (user == null) {
+      return res.status(404).send({ message: 'User not found'});
+    }
+    res.user = user;
+    next();
+  } 
+  catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+}
+
+
 module.exports = router;

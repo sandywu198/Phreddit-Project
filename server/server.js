@@ -17,7 +17,9 @@ const communityRoutes = require('./routes/communities');
 const postRoutes = require('./routes/posts');
 const commentRoutes = require('./routes/comments');
 const linkflairRoutes = require('./routes/linkflairs');
+const usersRouter = require('./routes/users'); 
 
+app.use('/users', usersRouter);
 app.use('/communities', communityRoutes);
 app.use('/posts', postRoutes);
 app.use('/comments', commentRoutes);
