@@ -21,21 +21,26 @@ router.get('/:id', getUser, (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-  const { firstName, lastName, email, displayName, password, passwordConfirm } = req.body;
+  const { firstName, lastName, email, displayName, password, confirmPassword } = req.body;
+  console.log(firstName, " ", lastName, " ", email, " ", displayName, " ", password, " ", confirmPassword);
   // Check if email is in a valid format
   if (!validator.isEmail(email)) {
     return res.status(400).json({ message: 'Please provide a valid email address' });
   }
   // Check if the password is valid
   const lowerPassword = password.toLowerCase();
-  if (!lowerPassword.includes(firstName.toLowerCase()) &&
-    !lowerPassword.includes(lastName.toLowerCase()) &&
-    !lowerPassword.includes(email.toLowerCase()) &&
-    !lowerPassword.includes(displayName.toLowerCase())) {
-    return res.status(400).json({ message: 'Password cannot contain your name, email, or display name' });
+
+  if (lowerPassword.includes(firstName.toLowerCase())) {
+    return res.status(400).json({ message: 'Password cannot contain your name!' });
+  } else if(lowerPassword.includes(lastName.toLowerCase())){
+    return res.status(400).json({ message: 'Password cannot contain your name!' });
+  } else if(lowerPassword.includes(email.toLowerCase())){
+    return res.status(400).json({ message: 'Password cannot contain your email!' });
+  } else if(lowerPassword.includes(displayName.toLowerCase())){
+    return res.status(400).json({ message: 'Password cannot contain your display name!' });
   }
   // Make sure passwords are the same
-  if (password !== passwordConfirm) {
+  if (password !== confirmPassword) {
     return res.status(400).json({ message: 'Passwords do not match' });
   }
   try {
@@ -69,7 +74,7 @@ router.post('/login', async (req, res) => {
         if (!user) {
         return res.status(404).json({ message: 'User not found' });
         }
-        const isMatch = await user.isCorrectPassword(password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
         return res.status(400).json({ message: 'Invalid credentials' });
         }

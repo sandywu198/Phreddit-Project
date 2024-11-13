@@ -44,7 +44,7 @@ export const CreatePostButton = () =>{
         onClick={() => {communityClickedEmitter.emit("communityClicked", -2, "", null, false);}}
         style={{backgroundColor:((clickColor === hoverColor) ? hoverColor: "orangered")}}>Create Post </button>
     );
-    };  
+};  
 
 export const CommunityListDropdown = ({ onInputChange }) => {
   const [communities, setCommunities] = useState([]);
