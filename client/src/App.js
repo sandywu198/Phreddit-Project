@@ -5,8 +5,10 @@ import {MetaData, TopBanner, PostHeader} from './components/phreddit.js'
 // import {PostPageView, PageNameSortingButtons} from './components/page views.js'
 // import Model from '../src/models/model.js';
 import React from "react";
+import {WelcomePage} from './components/welcomePage.js'
 // import axios from 'axios';
-import {NavBar} from "./components/navBar.js";
+
+
 
 function App() {
   // const [model] = useState(new Model());
@@ -40,12 +42,7 @@ function App() {
     // <ModelStateContext.Provider value={{model}}>
       <div className="body">
         <MetaData />
-        {TopBanner()}
-        <hr id = "delimeter"></hr>
-        <div className="text-under-header">
-          <NavBar /> {/*  fetchData={fetchData} */}
-          <PostHeader />
-        </div>
+        {WelcomePage()}
       </div>
     // </ModelStateContext.Provider>
   );

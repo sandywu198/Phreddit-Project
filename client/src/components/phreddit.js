@@ -7,6 +7,8 @@ import {AddNewCommentComponent} from "./newComment.js";
 import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
 import {CreateHomeButtonColorEmitter, CreateCommunityButtonColorEmitter, NavBarEmitter, CommunityNameButtonColorEmitter} from "./navBar.js";
 import {DisplayPosts, DisplayPosts1, GetPostThreadsArrayFunction, DisplayActivePosts, GetSortedThreadRoot} from "./postSortingFunctions.js";
+import {WelcomePage} from "./welcomePage.js";
+import {NavBar} from "./navBar.js";
 import axios from 'axios';
 
 // create global context for sharing one Mode object as a state
@@ -29,77 +31,21 @@ export function MetaData(){
   }, []);
 }
 
+export function HomePage(){
+  return(
+    <>
+      {TopBanner()}
+      <hr id = "delimeter"></hr>
+      <div className="text-under-header">
+        <NavBar /> {/*  fetchData={fetchData} */}
+        <PostHeader />
+      </div>
+    </>
+  )
+}
+
 export const sortPostEmitter = new EventEmitter();
 sortPostEmitter.setMaxListeners(25);
-
-// SEMI WORKING PREVIOUS VERSION
-// export const SortedPostListing = ({communityIndex, postsFromSearch}) => {
-//   // console.log("\n model in sorting: ", model, " communityIndex: ", communityIndex, " postsFromSearch: ", postsFromSearch, "\n")
-//   // postsFromSearch = new Set(postsFromSearch);
-//   const [communities, setCommunities] = useState(null);
-//   const [postListing, updatePostListing] = useState(null);
-//   useEffect (() => {
-//     axios.get("http://localhost:8000/communities").then(res => {
-//       setCommunities(res.data);
-//       updatePostListing(
-//         (communityIndex < 0 && postsFromSearch.length === 0) ? 
-//         <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} /> :
-//         ((postsFromSearch.length > 0) ?  <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} />:
-//         <DisplayPosts newToOld={true} specificCommunity={res.data[communityIndex].name} postsFromSearch={[]} />));
-//       console.log("\n postListing: ", postListing, "\n");
-//     });
-//   }, []); //[communityIndex, postListing, postsFromSearch]
-//   useEffect(() => {
-//     const getPostListing = (newestToOldest, active, communityIndex, postsFromSearch) => {
-//       console.log("\n button sort get posts\n");
-//       if(communities !== null){
-//         console.log("\n button sort get posts 2\n");
-//         console.log("\n newestToOldest: ", newestToOldest, ", active: ", active, 
-//           ", communityIndex: ", communityIndex, ", postsFromSearch: ", postsFromSearch, "\n");
-//         let updatedPostListing;
-//         if (communityIndex >= 0) {
-//           const communityName = communities[communityIndex].name;
-//           if (active) {
-//             updatedPostListing = <DisplayActivePosts specificCommunity={communityName} postsFromSearch={new Set()}/>// DisplayActivePosts(communityName, new Set()); 
-//           } else if (newestToOldest) {
-//             console.log("\n new for community \n");
-//             updatedPostListing = <DisplayPosts newToOld={true} specificCommunity={communityName} postsFromSearch={[]} />;
-//           } else {
-//             console.log("\n old for community \n");
-//             updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity={communityName} postsFromSearch={[]} />;
-//           }
-//         } else if (postsFromSearch.length > 0) {
-//           if (active) {
-//             updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={postsFromSearch}/> // DisplayActivePosts("All Posts", postsFromSearch);
-//           } else if (newestToOldest) {
-//             updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} />;
-//           } else {
-//             updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={postsFromSearch} />;
-//           }
-//         } else {
-//           if (active) {
-//             updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={new Set()}/> // DisplayActivePosts("All Posts", new Set());
-//           } else if (newestToOldest) {
-//             console.log("\n new for all posts \n");
-//             updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} />;
-//           } else {
-//             console.log("\n old for all posts \n");
-//             updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={[]} />;
-//           }
-//         }
-//         updatePostListing(updatedPostListing);
-//       }
-//     }
-//     getPostListing(true, false, communityIndex, postsFromSearch);
-//     sortPostEmitter.on("sortPosts", getPostListing);
-    
-//     return () => {
-//       sortPostEmitter.off("sortPosts", getPostListing);
-//     };
-//   }, [communities, communityIndex, postsFromSearch]); // [communities, communityIndex, postsFromSearch]    
-//   console.log("\npostListing return: ", postListing, "\n");
-//   return (<div>{postListing}</div>);
-// }
 
 export const SortedPostListing = ({communityIndex, postsFromSearch, communities, posts, comments}) => {
   // console.log("\n model in sorting: ", model, " communityIndex: ", communityIndex, " postsFromSearch: ", postsFromSearch, "\n")
@@ -281,7 +227,7 @@ export function GetCommunitiesAndLoad(){
   const [communities, setCommunities] = useState(null);
   const [linkFlairs, setLinkFlairs] = useState(null);
   const [comments, setComments] = useState(null);
-  const [pageHeader, updatePageHeader] = useState(null);
+  const [pageHeader, updatePageHeader] = useState(WelcomePage());
   // var postThreadsArray; // = GetPostThreadsArray("All Posts", []);//<GetPostThreadsArray whichCommunityName="All Posts"  postsFromSearch={[]}/>;
   // console.log("\n creating postThreadsArray in loading view: ", postThreadsArray, "\n");
   useEffect (() => {
@@ -292,21 +238,21 @@ export function GetCommunitiesAndLoad(){
         axios.get("http://localhost:8000/comments").then(commentsRes => {
           setComments(commentsRes.data);
           console.log("\n in usestate: ", communitiesRes.data, " ", commentsRes.data, " ", postsRes.data);
-          updatePageHeader(
-            <section id="hide-for-creating-community">
-              <div className="community-information" style={{display:"block"}}>
-                  <div id="community-name-sorting-buttons-line">
-                    <h3 className="post-heading" id="community-name">All Posts</h3>
-                    <PageNameSortingButtons communityIndex={-1} postsFromSearch={[]}/>
-                  </div>
-                  <h4 className="community-heading" id="community-post-count">{postsRes.data.length + " Post" 
-                  + ((postsRes.data.length === 1) ? "" : "s")}</h4>
-                  <hr id = "delimeter"/>
-                  {/* <SortedPostListing model={model} communityIndex={-1} postsFromSearch={[]}/> */}
-                  <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data}/>
-              </div>
-            </section>
-          );
+          // updatePageHeader(
+          //   <section id="hide-for-creating-community">
+          //     <div className="community-information" style={{display:"block"}}>
+          //         <div id="community-name-sorting-buttons-line">
+          //           <h3 className="post-heading" id="community-name">All Posts</h3>
+          //           <PageNameSortingButtons communityIndex={-1} postsFromSearch={[]}/>
+          //         </div>
+          //         <h4 className="community-heading" id="community-post-count">{postsRes.data.length + " Post" 
+          //         + ((postsRes.data.length === 1) ? "" : "s")}</h4>
+          //         <hr id = "delimeter"/>
+          //         {/* <SortedPostListing model={model} communityIndex={-1} postsFromSearch={[]}/> */}
+          //         <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data}/>
+          //     </div>
+          //   </section>
+          // );
         })
       })
     })
