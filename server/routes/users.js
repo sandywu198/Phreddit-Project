@@ -79,7 +79,8 @@ router.get('/login', (req, res) => {
 // Get all users
 router.get('/', async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    // const users = await User.find().select('-password'); //can use if we want to hide the password on the localhost
+    const users = await User.find()
     res.send(users);
   } catch (error) {
     res.status(500).send({ message: 'Error retrieving users', error: error.message });
@@ -94,7 +95,8 @@ router.get('/:id', getUser, (req, res) => {
 // Middleware to get a user by id
 async function getUser(req, res, next) {
   try {
-    const user = await User.findById(req.params.id).select('-password');
+    // const user = await User.findById(req.params.id).select('-password'); //can use if we want to hide the password on the localhost
+    const user = await User.findById(req.params.id)
     if (user == null) {
       return res.status(404).send({ message: 'User not found GETUSER' });
     }
