@@ -4,6 +4,7 @@ import { HomePage } from "./phreddit.js";
 import axios from 'axios';
 
 export function WelcomePage(){
+  console.log("\n welcomepage \n");
     const [register, setRegister] = useState(false);
     const [login, setLogin] = useState(false);
     const [guest, setGuest] = useState(false);
