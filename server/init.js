@@ -32,7 +32,7 @@ if (!userArgs[0].startsWith('mongodb')) {
     return
 }
 
-let adminArgs = process.argv.slice(3, 8);
+let adminArgs = process.argv.slice(3, 6);
 console.log("\n adminArgs: ", adminArgs, "\n");
 
 let mongoDB = userArgs[0];
@@ -44,8 +44,8 @@ async function createUser(userObj) {
     try {
         const hashedPassword = await bcrypt.hash(userObj.password, 10);
         let newUserDoc = new UserModel({
-            firstName: userObj.firstName,
-            lastName: userObj.lastName,
+            firstName: "admin",
+            lastName: "admin",
             displayName: userObj.displayName,
             email: userObj.email,
             password: hashedPassword,
@@ -111,11 +111,9 @@ function createCommunity(communityObj) {
 
 async function initializeDB() {
     const user1 = {
-        firstName: adminArgs[0],
-        lastName: adminArgs[1],
-        displayName:  adminArgs[2],
-        email: adminArgs[3],
-        password: adminArgs[4],
+        displayName:  adminArgs[0],
+        email: adminArgs[1],
+        password: adminArgs[2],
     }
     let userRef1 = await createUser(user1);
     // link flair objects
