@@ -920,7 +920,7 @@ export function SinglePost({post, postIndex, specificCommunity}) {
         for(let c in communitiesRes.data){
           if(communitiesRes.data[c].postIDs.includes(post.id)){
             post.communityName = communitiesRes.data[c].name;
-            // console.log("\n set post community in single post: ", post, "\n");
+            console.log("\n set post community in single post: ", post, "\n");
           } 
         }
       }
