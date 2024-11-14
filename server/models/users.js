@@ -9,6 +9,8 @@ const UserSchema = new Schema({
     displayName: {type: String, required: true},
     email: {type: String, required:true},
     password: {type: String, required:true},
+    startTime: {type: Date, required:true, default: Date.now},
+    reputation: {type: Number, required:true, default: 100},
 })
 
 UserSchema.virtual('url').get(function() {

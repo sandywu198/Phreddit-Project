@@ -829,7 +829,7 @@ export const LogoutButton = () => {
       <button id="logout-button" 
       onMouseEnter={() => {LogoutButtonColorEmitter.emit("hover", true)}}
       onMouseLeave={() => {LogoutButtonColorEmitter.emit("hover", false)}}
-      onClick={() => {WelcomePage()}}
+      onClick={() => {<WelcomePage />}}
       style={{backgroundColor:((clickColor === hoverColor) ? hoverColor: "orangered")}}>Log Out </button>
   );
 };  

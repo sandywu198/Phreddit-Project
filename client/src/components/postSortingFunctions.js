@@ -943,7 +943,6 @@ export function SinglePost({post, postIndex, specificCommunity}) {
           | ${displayTime(post.postedDate)}`}
       </p>
       <h3>{post.title}</h3>
-      {console.log("\nlinkFlair in single post ", linkFlair, " \n")}
       {linkFlair && <p className="link-flair">{linkFlair.content}</p>}
       <p>{post.content.substring(0,80)}...</p>
       <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 

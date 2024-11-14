@@ -4,6 +4,7 @@ import { HomePage } from "./phreddit.js";
 import axios from 'axios';
 
 export function WelcomePage(){
+  console.log("\n welcomepage \n");
     const [register, setRegister] = useState(false);
     const [login, setLogin] = useState(false);
     const [guest, setGuest] = useState(false);
@@ -128,8 +129,16 @@ export const RegisterUser = () => {
       }));
     };
     const submitUser = () => {
+      const user ={
+        firstName: formInputs.firstName,
+        lastName: formInputs.lastName,
+        displayName: formInputs.displayName,
+        email: formInputs.email,
+        password: formInputs.password,
+        confirmPassword: formInputs.confirmPassword,
+      }
       console.log("\n submitUser: ", formInputs, "\n");
-      axios.post('http://localhost:8000/users/register', formInputs)
+      axios.post('http://localhost:8000/users/register', user)
       .then(res => {
         window.alert("Successfully registered! Please login at the welcome page. You will now be redirected.");
         setRegistered(true);
