@@ -9,8 +9,6 @@
 ** users.
 */
 
-// TO DO: ADD USERS TO initializeDB.js
-
 // initializeDB.js - Will add initial application data to MongoDB database
 // Run this script to test your schema
 // Start the mongoDB service as a background process before running the script
@@ -49,24 +47,13 @@ async function createUser(userObj) {
             displayName: userObj.displayName,
             email: userObj.email,
             password: hashedPassword,
+            reputation: ("reputation" in userObj) ? userObj.reputation : 100,
         });
         return await newUserDoc.save();
     } catch (error) {
         console.error('Error creating user:', error);
     }
 }
-
-// function createUser(userObj){
-//     // const hashedPassword = bcrypt.hash(userObj.password, 10);
-//     let newUserDoc = new UserModel({
-//         firstName: userObj.firstName,
-//         lastName:  userObj.lastName,
-//         displayName:  userObj.displayName,
-//         email: userObj.email,
-//         password:  userObj.password,
-//     })
-//     return newUserDoc.save();
-// }
 
 function createLinkFlair(linkFlairObj) {
     let newLinkFlairDoc = new LinkFlairModel({
@@ -92,7 +79,7 @@ function createPost(postObj) {
         postedBy: postObj.postedBy,
         postedDate: postObj.postedDate,
         views: postObj.views,
-        linkFlairIDs: postObj.linkFlairIDs,
+        linkFlairID: postObj.linkFlairID,
         commentIDs: postObj.commentIDs,
     });
     return newPostDoc.save();
@@ -110,12 +97,15 @@ function createCommunity(communityObj) {
 }
 
 async function initializeDB() {
+    // admin user account
     const user1 = {
         displayName:  adminArgs[0],
         email: adminArgs[1],
         password: adminArgs[2],
+        reputation: 1000,
     }
     let userRef1 = await createUser(user1);
+
     // link flair objects
     const linkFlair1 = { // link flair 1
         linkFlairID: 'lf1',

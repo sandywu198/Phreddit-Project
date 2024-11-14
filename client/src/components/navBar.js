@@ -79,7 +79,7 @@ export const CreateCommunityButton = () => {
 };
 
 // Navbar Component
-export function NavBar({userStatus}) {
+export function NavBar({userStatus, user}) {
   const [refreshCount, setRefreshCount] = useState(0);
   const [curNavBar, updateNavBar] = useState(
     <div className="navbar">
@@ -110,7 +110,7 @@ export function NavBar({userStatus}) {
     };
     NavBarEmitter.on('updateNavBar', changeNavBar);
     return () => NavBarEmitter.off('updateNavBar', changeNavBar);
-  }, [refreshCount, userStatus]);
+  }, [refreshCount, userStatus, user]);
   return (<section>{curNavBar}</section>);
 }
 

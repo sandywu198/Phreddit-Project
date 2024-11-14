@@ -53,6 +53,7 @@ export const LoginUser = () => {
         email: '',
         password: '',
     });
+    const [userObj, setUserObj] = useState(null);
     const handleInputChange = (event) => {
       const { name, value } = event.target;
       setFormInputs(prevInputs => ({
@@ -76,11 +77,12 @@ export const LoginUser = () => {
       axios.post('http://localhost:8000/users/login', formInputs)
       .then(res => {
         setLoggedin(true);
+        setUserObj(res.data.user);
       }).catch(err => {
         window.alert(err.response.data.message);
       }) 
     };
-    return (loggedin ? <HomePage userStatus={"login"}/> : 
+    return (loggedin ? <HomePage userStatus={"login"} user={userObj}/> : 
       (<form id="user-login-page-stuff">
         <div className="form-div">
             <label htmlFor="login-email">Email (Account Name): </label>
