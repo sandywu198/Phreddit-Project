@@ -18,6 +18,7 @@
 // (e.g., mongodb://127.0.0.1:27017/fake_so)
 
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const CommunityModel = require('./models/communities');
 const PostModel = require('./models/posts');
 const CommentModel = require('./models/comments');
@@ -39,16 +40,33 @@ mongoose.connect(mongoDB);
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-function createUser(userObj){
-    let newUserDoc = new UserModel({
-        firstName: "admin",
-        lastName:  "admin",
-        displayName:  userObj.displayName,
-        email: userObj.email,
-        password:  userObj.password,
-    })
-    return newUserDoc.save();
+async function createUser(userObj) {
+    try {
+        const hashedPassword = await bcrypt.hash(userObj.password, 10);
+        let newUserDoc = new UserModel({
+            firstName: "admin",
+            lastName: "admin",
+            displayName: userObj.displayName,
+            email: userObj.email,
+            password: hashedPassword,
+        });
+        return await newUserDoc.save();
+    } catch (error) {
+        console.error('Error creating user:', error);
+    }
 }
+
+// function createUser(userObj){
+//     // const hashedPassword = bcrypt.hash(userObj.password, 10);
+//     let newUserDoc = new UserModel({
+//         firstName: userObj.firstName,
+//         lastName:  userObj.lastName,
+//         displayName:  userObj.displayName,
+//         email: userObj.email,
+//         password:  userObj.password,
+//     })
+//     return newUserDoc.save();
+// }
 
 function createLinkFlair(linkFlairObj) {
     let newLinkFlairDoc = new LinkFlairModel({
