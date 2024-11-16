@@ -3,7 +3,7 @@ import {displayTime, postThreadDFS} from "./postThreading.js";
 import EventEmitter from "events";
 import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.js";
 import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
-import {WelcomePage} from "./welcomePage.js";
+import {WelcomePageEmitter} from "./welcomePage.js";
 import axios from 'axios';
 
 // component for the top horizontal banner
@@ -94,18 +94,6 @@ export const UserProfileButton = ({user}) => {
 };  
 
 
-export const UserProfile = ({user}) => {
-  console.log("\n user profile: ", user, "\n");
-  return (
-    <>
-    <h2>Display Name: {user.displayName}</h2>
-    <h2>Email Address: {user.email}</h2>
-    <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
-    <h3>Reputation: {user.reputation} </h3>
-    </>
-  )
-}
-
 export const LogoutButtonColorEmitter = new EventEmitter();
 LogoutButtonColorEmitter.setMaxListeners(25);
 
@@ -144,11 +132,10 @@ export const LogoutButton = () => {
       <button id="logout-button" 
       onMouseEnter={() => {LogoutButtonColorEmitter.emit("hover", true)}}
       onMouseLeave={() => {LogoutButtonColorEmitter.emit("hover", false)}}
-      onClick={() => {<WelcomePage />}}
+      onClick={() => {console.log("\n clicked log out! \n"); WelcomePageEmitter.emit('logout', true);}}
       style={{backgroundColor:((clickColor === hoverColor) ? hoverColor: "orangered")}}>Log Out </button>
   );
 };  
-
 
 export function SearchBoxComponent(){
   const [searchInput, changeInput] = useState("");

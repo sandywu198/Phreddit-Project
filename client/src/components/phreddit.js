@@ -9,7 +9,8 @@ import {CreateHomeButtonColorEmitter, CreateCommunityButtonColorEmitter, NavBarE
 import {DisplayPosts, DisplayPosts1, GetPostThreadsArrayFunction, DisplayActivePosts, GetSortedThreadRoot} from "./postSortingFunctions.js";
 import {WelcomePage} from "./welcomePage.js";
 import {NavBar} from "./navBar.js";
-import {TopBanner, UserProfile} from "./banner.js";
+import {TopBanner } from "./banner.js";
+import {UserProfile} from "./userProfile.js";
 import axios from 'axios';
 
 // create global context for sharing one Mode object as a state
