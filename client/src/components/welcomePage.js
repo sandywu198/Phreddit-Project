@@ -25,6 +25,12 @@ export function WelcomePage(){
     <button type="button" id="guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
   </>
   );
+  function resetAll() {
+    setRegister(false);
+    setLogin(false);
+    setGuest(false);
+    setLogout(false);
+  }
   useEffect(() => {
     const handleLogout = (status) => {
       setLogout(status);
@@ -37,6 +43,7 @@ export function WelcomePage(){
   useEffect(() => {
     if(logout){
       console.log("\n logging out \n");
+      resetAll();
       setPageContent(
       <>
         <section className="logo-title">
@@ -49,11 +56,14 @@ export function WelcomePage(){
         <button type="button" id="login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
         <button type="button" id="guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
       </>)
-    }else if(register){
+    } else if(register){
+      resetAll();
       setPageContent(<RegisterUser />)
     } else if(login){
+      resetAll()
       setPageContent(<LoginUser />)
     } else if(guest){
+      resetAll()
       setPageContent(<HomePage userStatus={"guest"}/>)
     }
   }, [register, login, guest, logout])

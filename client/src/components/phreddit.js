@@ -41,7 +41,7 @@ export function HomePage({userStatus, user}){
       <hr id = "delimeter"></hr>
       <div className="text-under-header">
         <NavBar userStatus={userStatus} user={user}/> {/*  fetchData={fetchData} */}
-        <PostHeader />
+        <PostHeader user={user}/>
       </div>
     </>
   )
@@ -266,7 +266,7 @@ export function GetCommunitiesAndLoad(){
     // })
   }, []); // [posts]
   useEffect(() => {
-    const loadCommunity = (communityIndex, searchString, post, replyToPost, commentRepliedTo, user) => {
+    const loadCommunity = (communityIndex, searchString, post, replyToPost, commentRepliedTo, user, admin, comment) => {
       // if communityIndex === -1, it's the All Posts View
       if(communityIndex === -1){
         CreatePostButtonColorEmitter.emit('clickedColor', false)
@@ -321,8 +321,8 @@ export function GetCommunitiesAndLoad(){
           CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
           updatePageHeader(
         <section id="hide-for-creating-community"> 
-          {/* <CreateCommunityComponent model={model}/> */}
-          <CreateCommunityComponent />
+          {console.log("\n CreateCommunityComponent user: ", user, "\n")}
+          <CreateCommunityComponent user={user}/>
         </section>
         )
         NavBarEmitter.emit('updateNavBar')
@@ -517,7 +517,7 @@ export function GetCommunitiesAndLoad(){
           CreateHomeButtonColorEmitter.emit('clickedColor', true)
           CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
           updatePageHeader(
-          <AddNewCommentComponent post={post} replyToPost={replyToPost} commentRepliedTo={commentRepliedTo}/>
+          <AddNewCommentComponent post={post} replyToPost={replyToPost} commentRepliedTo={commentRepliedTo} comment={comment}/>
         )
       }
       // if -8, it's user profile page view
@@ -526,7 +526,7 @@ export function GetCommunitiesAndLoad(){
         CreateCommunityButtonColorEmitter.emit('clickedColor', false)
         CreateHomeButtonColorEmitter.emit('clickedColor', true)
         CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
-        updatePageHeader(<UserProfile user={user} />)
+        updatePageHeader(<UserProfile user={user} admin={admin}/>)
       }
       // otherwise, it's for loading a specific community page view
       else{
@@ -758,7 +758,7 @@ export function GetCommunitiesAndLoad(){
 //   });
 // }
 
-export function PostHeader(){
+export function PostHeader({user}){
   return(
     <div className="main-homepage" id="page-view">
       <section className="post-header">
@@ -784,9 +784,7 @@ export function PageNameSortingButtons({communityIndex, postsFromSearch}){
       </div>
     )
   }, [communityIndex, postsFromSearch]) 
-  return(
-    <>{buttons}</>
-  );
+  return(<>{buttons}</>);
 }
 
 

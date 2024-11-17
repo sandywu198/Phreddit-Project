@@ -9,6 +9,7 @@ const CommunitySchema = new Schema({
     postIDs: [{type: Schema.Types.ObjectId, ref: "Post" }],
     startDate: {type: Date, required:true, default: Date.now},
     members: [{type: String, required:true}],
+    createdBy: {type: String, required: true, minLength: 1},
     /* virtual property
     memberCount: {type: Number}
     url: {type: String}, 

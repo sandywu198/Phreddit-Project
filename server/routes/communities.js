@@ -39,11 +39,14 @@ router.put('/:id', async (req, res) => {
 
 // Create a new community
 router.post('/', async (req, res) =>{
+    console.log("\n req.body: ", req.body, "\n");
     const community = new Community({
         name: req.body.name,
         description: req.body.description,
-        members: req.body.members
+        members: req.body.members,
+        createdBy: req.body.createdBy,
     });
+    console.log("\n community: ", community, "\n");
     try{
         const newCommunity = await community.save();
         res.status(201).send(newCommunity);

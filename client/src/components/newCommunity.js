@@ -6,11 +6,11 @@ import axios from 'axios';
 export const communityClickedEmitter = new EventEmitter();
 communityClickedEmitter.setMaxListeners(25);
 
-export const CreateCommunityComponent = () => {
+export const CreateCommunityComponent = ({user}) => {
+  console.log("\n CreateCommunityComponent user: ", user, "\n");
   const [formInputs, setFormInputs] = useState({
     name: "",
     description: '',
-    username: '',
   });
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -20,7 +20,7 @@ export const CreateCommunityComponent = () => {
     }));
   };
   const validateInputs = () => {
-    const { name, description, username } = formInputs;
+    const { name, description } = formInputs;
     if (name.trim().length === 0 || name.length > 100) {
       window.alert("The community name must be between 1 and 100 characters.");
       return false;
@@ -29,13 +29,9 @@ export const CreateCommunityComponent = () => {
       window.alert("The community description must be between 1 and 500 characters.");
       return false;
     }
-    if (username.length === 0) {
-      window.alert("The username cannot be empty.");
-      return false;
-    }
     return true;
   };
-  const createCommunity = async () => {
+  const createCommunity = async (user) => {
     if (!validateInputs()){
       return;
     }
@@ -53,9 +49,11 @@ export const CreateCommunityComponent = () => {
         description: formInputs.description,
         postIDs: [],
         startDate: new Date(),
-        members: [formInputs.username],
-        memberCount: 1
+        members: [user.displayName],
+        memberCount: 1, 
+        createdBy: user.displayName,
       };
+      console.log("\n communityObj: ", communityObj, "\n");
       const response = await axios.post('http://localhost:8000/communities', communityObj);
       console.log("New community created:", response.data);
       // use existingCommunities.data.length as the community index since the index such be 
@@ -90,17 +88,6 @@ export const CreateCommunityComponent = () => {
         />
       </div>
       <div className="form-div">
-        <label htmlFor="new-community-creator-box">Creator Username: </label>
-        <input 
-          type="text" 
-          name="username"
-          placeholder="Username" 
-          id="new-community-creator-box" 
-          value={formInputs.username} 
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="form-div">
         <label htmlFor="new-community-description-box">Community Description: </label>
         <textarea 
           name="description"
@@ -111,7 +98,7 @@ export const CreateCommunityComponent = () => {
         ></textarea>
       </div>
       <div className="form-div">
-        <button type="button" id="create-community-button" onClick={createCommunity}>
+        <button type="button" id="create-community-button" onClick={() => {createCommunity(user)}}>
           Engender Community
         </button>
       </div>
