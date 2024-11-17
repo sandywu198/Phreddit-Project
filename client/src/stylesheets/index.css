@@ -165,10 +165,10 @@ h3#community-head{
   margin-bottom: 5px;
   border: none; 
 }
-
+/* 
 #community-button:hover{
   background-color:orangered;
-}
+} */
 
 .text-under-header{
   display:flex;

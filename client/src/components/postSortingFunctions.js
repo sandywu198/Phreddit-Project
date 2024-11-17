@@ -4,7 +4,7 @@ import {communityClickedEmitter} from "./newCommunity.js";
 import {NavBarEmitter} from "./navBar.js";
 import axios from 'axios';
 
-export const DisplayPosts = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments}) => {
+export const DisplayPosts = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments, user}) => {
   const postsArrayFinal = useRef([]);
   console.log("\n in display posts \n");
   if(posts.length > 0 && communities.length > 0){
@@ -39,15 +39,16 @@ export const DisplayPosts = ({newToOld, specificCommunity, postsFromSearch, comm
   // useEffect(() => {
     
   // }, [posts, communities, comments, newToOld, specificCommunity, postsFromSearch]);
+  console.log("\n DisplayPosts user: ", user, "\n");
   return (
     <section id = "posts-listing-section">
-      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments)}
+      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments, user)}
     </section>
   );
 }
 
 // make another function for sorting from old to newest so the page is re-rendered immediately
-export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments}) => {
+export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments, user}) => {
   const postsArrayFinal = useRef([]);
   console.log("\n in display 1 posts \n");
   if(posts.length > 0 && communities.length > 0){
@@ -81,9 +82,10 @@ export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, com
   // useEffect(() => {
     
   // }, [posts, communities, comments, newToOld, specificCommunity, postsFromSearch]);
+  console.log("\n DisplayPosts1 user: ", user, "\n");
   return (
     <section id = "posts-listing-section">
-      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments)}
+      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments, user)}
     </section>
   );
 }
@@ -181,7 +183,7 @@ export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, com
 // }
 
 // testing, version underneath was previous version
-export function DisplayActivePosts({specificCommunity, postsFromSearch, communities, posts, comments}){
+export function DisplayActivePosts({specificCommunity, postsFromSearch, communities, posts, comments, user}){
   // const [sortedPosts, setSortedPosts] = useState([]);
   // const [communities, setCommunities] = useState([]);
   // useEffect(() => {
@@ -241,10 +243,11 @@ export function DisplayActivePosts({specificCommunity, postsFromSearch, communit
     console.log("DISPLAY ACTIVE sortedPosts: ", sortedPosts);
     console.log("DISPLAY ACTIVE POSTS", specificCommunity);
   }
+  console.log("\n DisplayActivePosts user: ", user, "\n");
   return (
     <div>
       {/* {console.log("\n sortedPosts in return: ", sortedPosts, " specificCommunity: ", specificCommunity, "\n")} */}
-      {CreatePostsInHTML(sortedPosts, specificCommunity, communities, posts, comments)}
+      {CreatePostsInHTML(sortedPosts, specificCommunity, communities, posts, comments, user)}
     </div>
   )
 };
@@ -353,7 +356,7 @@ export function DisplayActivePosts({specificCommunity, postsFromSearch, communit
 //     </div>)
 // }
 
-export function CreatePostsInHTML(postsArray, specificCommunity, communities, posts, comments) {
+export function CreatePostsInHTML(postsArray, specificCommunity, communities, posts, comments, user) {
   console.log("\npostsArray in creating posts: ", postsArray, " \n");
   console.log("\n going into post threads array from create posts\n");
   var postThreadsArray = GetPostThreadsArrayFunction(communities, posts, comments, specificCommunity, [], communities, posts, comments); // <GetPostThreadsArray whichCommunityName={specificCommunity} postsFromSearch={[]}/>;
@@ -372,6 +375,7 @@ export function CreatePostsInHTML(postsArray, specificCommunity, communities, po
   //   createdPosts.push(SinglePost(postsArray[postsArrayIndex], postsArrayIndex, specificCommunity, CommentsRepliesCountMap));
   // }
   // console.log("\ncreatedPosts: ", createdPosts, "\n");
+  console.log("\n CreatePostsInHTML user: ", user, "\n");
   return (
     <div>
       {console.log("\n postsArray in creating return: ", postsArray, "\n")}
@@ -384,6 +388,7 @@ export function CreatePostsInHTML(postsArray, specificCommunity, communities, po
           }}
           postIndex={index}
           specificCommunity={specificCommunity}
+          user={user}
         />
       ))}
     </div>
@@ -899,57 +904,57 @@ console.log("\npostsArray in creating posts: ", postsArray, " \n");
 //   )
 // }
 
-export function SinglePost({post, postIndex, specificCommunity}) {
+export function SinglePost({post, postIndex, specificCommunity, user}) {
   const [linkFlair, setLinkFlair] = useState(null);
-  const [communities, setCommunities] = useState([]);
+  const [content, setContent] = useState(null);
+  const fetchData = async (linkflairContent) => {
+    try{
+      const [communitiesRes] = await Promise.all([
+        axios.get("http://localhost:8000/communities"), 
+      ]);
+      // console.log("\n", communities, "\n");
+      // console.log("\n communities in single post: ", communities, "\n");
+      // var community;
+      for(let c in communitiesRes.data){
+        if(communitiesRes.data[c].postIDs.includes(post.id)){
+          post.communityName = communitiesRes.data[c].name;
+          console.log("\n set post community in single post: ", post, "\n");
+          setContent(
+            <section className="post-Section" onClick={() => {
+              communityClickedEmitter.emit("communityClicked", -6, "", post, false, null, user);
+              NavBarEmitter.emit("updateNavBar");
+            }}>
+              {console.log("\n here post in singlepost: ", post, "\n")}
+              <p>{specificCommunity !== "All Posts" 
+                  ? `${post.postedBy} | ${displayTime(post.postedDate)}` 
+                  : `${post.communityName || ""} | ${post.postedBy} 
+                  | ${displayTime(post.postedDate)}`}
+              </p>
+              <h3>{post.title}</h3>
+              {linkflairContent && <p className="link-flair">{linkflairContent.content}</p>}
+              <p>{post.content.substring(0,80)}...</p>
+              <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
+               ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"}`}
+              </p>
+              <hr id="delimeter" />
+            </section>
+          );
+        }
+      }
+    }
+    catch(error){
+      console.error("Error fetching data:", error);
+    }
+  };
   useEffect(() => {
     if (post.linkFlairID) {
       axios.get(`http://localhost:8000/linkflairs/${post.linkFlairID}`)
-        .then(response => setLinkFlair(response.data))
+        .then(response => {setLinkFlair(response.data); fetchData(response.data);})
         .catch(error => console.error("Error fetching link flair:", error));
     }
-    const fetchData = async () => {
-      try{
-        const [communitiesRes] = await Promise.all([
-          axios.get("http://localhost:8000/communities"), 
-        ]);
-        setCommunities(communitiesRes.data);
-        // console.log("\n", communities, "\n");
-        // console.log("\n communities in single post: ", communities, "\n");
-        // var community;
-        for(let c in communitiesRes.data){
-          if(communitiesRes.data[c].postIDs.includes(post.id)){
-            post.communityName = communitiesRes.data[c].name;
-            // console.log("\n set post community in single post: ", post, "\n");
-          } 
-        }
-      }
-      catch(error){
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, [post.linkFlairID, post, communities]);
-
+  }, [post]);
   return(
-    <section className="post-Section" onClick={() => {
-      communityClickedEmitter.emit("communityClicked", -6, "", post, false);
-      NavBarEmitter.emit("updateNavBar");
-    }}>
-      {/* {console.log("\n post in singlepost: ", post, "\n")} */}
-      <p>{specificCommunity !== "All Posts" 
-          ? `${post.postedBy} | ${displayTime(post.postedDate)}` 
-          : `${post.communityName || ""} | ${post.postedBy} 
-          | ${displayTime(post.postedDate)}`}
-      </p>
-      <h3>{post.title}</h3>
-      {linkFlair && <p className="link-flair">{linkFlair.content}</p>}
-      <p>{post.content.substring(0,80)}...</p>
-      <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
-       ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"}`}
-      </p>
-      <hr id="delimeter" />
-    </section>
+    <>{content}</>
   )
 }
 /* 
