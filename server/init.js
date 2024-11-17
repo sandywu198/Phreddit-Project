@@ -42,8 +42,8 @@ async function createUser(userObj) {
     try {
         const hashedPassword = await bcrypt.hash(userObj.password, 10);
         let newUserDoc = new UserModel({
-            firstName: "admin",
-            lastName: "admin",
+            firstName: ("firstName" in userObj) ? userObj.firstName : "admin",
+            lastName: ("lastName" in userObj) ? userObj.lastName : "admin",
             displayName: userObj.displayName,
             email: userObj.email,
             password: hashedPassword,
@@ -100,6 +100,8 @@ function createCommunity(communityObj) {
 async function initializeDB() {
     // admin user account
     const user1 = {
+        firstName: 'admin',
+        lastName: 'admin',
         displayName:  adminArgs[0],
         email: adminArgs[1],
         password: adminArgs[2],

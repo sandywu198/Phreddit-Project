@@ -9,40 +9,29 @@ import {CreatePostsInHTML} from "./postSortingFunctions.js";
 import axios from 'axios';
 
 export const UserProfile = ({user, admin}) => {
-    console.log("\n user profile: ", user, "\n");
+    console.log("\n user profile: ", user, " admin: ", admin, "\n");
     const [content, setContent] = useState(null);
     useEffect(() => {
-        async function fetchData(){
-            try{
-                const [postsRes, communitiesRes, commentsRes, usersRes] = await Promise.all([
-                    axios.get("http://localhost:8000/posts"),
-                    axios.get("http://localhost:8000/communities"),
-                    axios.get("http://localhost:8000/comments"),
-                    axios.get("http://localhost:8000/users"),
-                ]);
-                setContent(
-                <>
-                    <h2>Display Name: {user.displayName}</h2>
-                    <h2>Email Address: {user.email}</h2>
-                    <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
-                    <h3>Reputation: {user.reputation} </h3>
-                    <hr id="delimeter"></hr>
-                    {user.displayName === "admin" && 
-                    <button className="user-profile-heading" id="all-users-button"
-                    onClick={() => {UserProfileSortingEmitter.emit('sort', 'users')}}>Users</button>}    
-                    <UserProfileSortingButtons user={user}/>
-                    <UserProfileListing posts={postsRes.data} 
-                    communities={communitiesRes.data} comments={commentsRes.data}
-                    users={usersRes.data} user={user} admin={admin}
-                    />
-                </>
-                )
-            }
-            catch(error){
-                console.error("Error fetching data: ", error);
-            }
-        }
-        fetchData();
+        axios.get("http://localhost:8000/posts").then(postsRes => {
+            axios.get("http://localhost:8000/communities").then(communitiesRes => {
+              axios.get("http://localhost:8000/comments").then(commentsRes => {
+                axios.get("http://localhost:8000/users").then(usersRes => {
+                    console.log("\n user: ", user, " admin: ", admin, "\n");
+                    setContent(<>
+                        <h2>Display Name: {user.displayName}</h2>
+                        <h2>Email Address: {user.email}</h2>
+                        <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
+                        <h3>Reputation: {user.reputation} </h3>
+                        <hr id="delimeter"></hr>
+                        {admin && <UserProfileSortingButtons user={user}/>}
+                        {admin && <UserProfileListing posts={postsRes.data} 
+                        communities={communitiesRes.data} comments={commentsRes.data}
+                        users={usersRes.data} user={user} admin={admin}/>}
+                    </>)
+                })
+              })
+            })
+        })
     }, [user, admin])
     return (<>{content}</>)
 }
@@ -54,8 +43,9 @@ export function UserProfileSortingButtons({user}){
         console.log("\n user profile page sorting: \n");
         setButtons(
         <div className="sorting-buttons">
-            <button className="user-profile-heading" id="users-created"
-            onClick={() => {UserProfileSortingEmitter.emit("sort", "users")}}>Users</button>
+            {user.firstName === "admin" && 
+            <button className="user-profile-heading" id="all-users-button"
+            onClick={() => {UserProfileSortingEmitter.emit('sort', 'users')}}>Users</button>}    
             <button className="user-profile-heading" id="posts-created"
             onClick={() => {UserProfileSortingEmitter.emit("sort", "posts")}}>Posts</button>
             <button className="user-profile-heading" id="communities-created"
@@ -88,11 +78,11 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             } else if(type === "posts"){
                 var userPosts = posts.filter(post => post.postedBy === user.displayName);
                 console.log("\n userPosts: ", userPosts, "\n");
-                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments))
+                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user))
             } else if(type === "comments"){
                 var userComments = comments.filter(comment => comment.commentedBy === user.displayName);
                 console.log("\n userComments: ", userComments, "\n");
-                setUserListing(userComments.map((comment) => (<SingleComment comment={comment} user={user} admin={admin}/>)))
+                setUserListing(userComments.map((comment) => (<SingleComment key={comment.id} comment={comment} user={user} admin={admin}/>)))
             } else if(type === "communities"){
                 var userCommunities = communities.filter(community => community.createdBy === user.displayName);
                 console.log("\n userCommunities: ", userCommunities, "\n");
@@ -123,7 +113,7 @@ In addition, there should be a delete button next to each
 user element in the listing. An dialog box should appear
 to allow the admin to confirm their decision to delete a
 user. 
--8, "", null, true, null, user, (user.displayName === "admin")
+-8, "", null, true, null, user, (user.firstName === "admin")
 */
 
 export function SingleUser({user, admin}) {

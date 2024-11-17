@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { communityClickedEmitter } from "./newCommunity.js";
 import axios from 'axios';
 
-export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, comment }) => {
+export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, comment, user }) => {
+  console.log("\n AddNewCommentComponent: ", user, "\n");
   const [formInputs, setFormInputs] = useState({
-    content: '',
-    username: '',
+    content: comment ? comment.content : '',
+    commentedBy: user.displayName,
   });
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -15,13 +16,9 @@ export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, co
     }));
   };
   const validateInputs = () => {
-    const { content, username } = formInputs;
+    const { content } = formInputs;
     if (content.length === 0 || content.length > 500) {
       window.alert("The comment content must be between 1 and 500 characters.");
-      return false;
-    }
-    if (username.length === 0) {
-      window.alert("The username cannot be empty.");
       return false;
     }
     return true;
@@ -31,7 +28,7 @@ export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, co
     try {
       const newComment = {
         content: formInputs.content,
-        commentedBy: formInputs.username
+        commentedBy: formInputs.commentedBy,
       };
       console.log('Attempting to submit comment:', newComment);
       console.log('Replying to post:', replyToPost);
@@ -62,17 +59,6 @@ export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, co
   };
   return (
     <form id="new-comment-page-stuff">
-      <div className="form-div">
-        <label htmlFor="new-comment-username-box">Username: </label>
-        <input 
-          type="text" 
-          name="username"
-          placeholder="Username" 
-          id="new-comment-username-box"
-          value={formInputs.username} 
-          onChange={handleInputChange}
-        />
-      </div>
       <div className="form-div">
         <label htmlFor="new-comment-content-box">Comment Content: </label>
         <textarea 

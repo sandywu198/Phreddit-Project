@@ -88,7 +88,7 @@ export const UserProfileButton = ({user}) => {
       <button id="user-profile-button" 
       onMouseEnter={() => {UserProfileButtonColorEmitter.emit("hover", true)}}
       onMouseLeave={() => {UserProfileButtonColorEmitter.emit("hover", false)}}
-      onClick={() => {console.log("\n user profile button clicked! \n"); communityClickedEmitter.emit('communityClicked', -8, "", null, true, null, user, (user.displayName === "admin"))}}
+      onClick={() => {console.log("\n user profile button clicked! \n"); communityClickedEmitter.emit('communityClicked', -8, "", null, true, null, user, (user.firstName === "admin"))}}
       style={{backgroundColor:((clickColor === hoverColor) ? hoverColor: "orangered")}}>{user.displayName} </button>
   );
 };  

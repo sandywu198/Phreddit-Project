@@ -79,18 +79,21 @@ export const CreateCommunityButton = ({user}) => {
 export function NavBar({userStatus, user}) {
   const [refreshCount, setRefreshCount] = useState(0);
   const [curUser, setCurUser] = useState(user);
+  const [curUserStatus, setCurUserStatus] = useState(userStatus);
   const [curNavBar, updateNavBar] = useState(
     <div className="navbar">
       <CreateHomeButton />
       <hr id="delimeter" />
       <div className="community">
         <h3 id="community-head">Communities</h3>
-        {(userStatus === "login") ? <CreateCommunityButton user={user}/> : <button id="community-button"> Create Community </button>}
+        {console.log("\n NavBar curUserStatus 2: ", curUserStatus, " ", (curUserStatus === "login"), "\n")}
+        {(curUserStatus === "login") ? <CreateCommunityButton user={user} userStatus={curUserStatus}/> : <button id="community-button"> Create Community </button>}
+        {/* {(curUserStatus === "guest") ? <button id="community-button">Create Community</button>: <CreateCommunityButton user={curUser} userStatus={curUserStatus}/>} */}
         <GetCommunities refreshCount={refreshCount}/>
       </div>
     </div>
   );
-  console.log("\n NavBar user: ", user, "\n");
+  console.log("\n NavBar curUserStatus: ", curUserStatus, " ", (curUserStatus === "login"), "\n")
   useEffect(() => {
     const changeNavBar = () => {
       console.log("\n curUser: ", curUser, "\n");
@@ -102,7 +105,9 @@ export function NavBar({userStatus, user}) {
           <hr id="delimeter" />
           <div className="community">
             <h3 id="community-head">Communities</h3>
-            {(userStatus === "login") ? <CreateCommunityButton user={curUser}/> : <button id="community-button"> Create Community </button>}
+            {console.log("\n NavBar curUserStatus 2: ", curUserStatus, " ", (curUserStatus === "login"), "\n")}
+            {(curUserStatus === "login") ? <CreateCommunityButton user={curUser} userStatus={curUserStatus}/> : <button id="community-button">Create Community</button>}
+            {/* {(curUserStatus === "guest") ? <button id="community-button">Create Community</button>: <CreateCommunityButton user={curUser} userStatus={curUserStatus}/>} */}
             <GetCommunities refreshCount={refreshCount}/>
           </div>
         </div>
