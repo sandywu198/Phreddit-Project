@@ -56,18 +56,6 @@ async function createUser(userObj) {
     }
 }
 
-// function createUser(userObj){
-//     // const hashedPassword = bcrypt.hash(userObj.password, 10);
-//     let newUserDoc = new UserModel({
-//         firstName: userObj.firstName,
-//         lastName:  userObj.lastName,
-//         displayName:  userObj.displayName,
-//         email: userObj.email,
-//         password:  userObj.password,
-//     })
-//     return newUserDoc.save();
-// }
-
 function createLinkFlair(linkFlairObj) {
     let newLinkFlairDoc = new LinkFlairModel({
         content: linkFlairObj.content,
@@ -92,7 +80,7 @@ function createPost(postObj) {
         postedBy: postObj.postedBy,
         postedDate: postObj.postedDate,
         views: postObj.views,
-        linkFlairIDs: postObj.linkFlairIDs,
+        linkFlairID: postObj.linkFlairID,
         commentIDs: postObj.commentIDs,
     });
     return newPostDoc.save();
@@ -110,12 +98,6 @@ function createCommunity(communityObj) {
 }
 
 async function initializeDB() {
-    const user1 = {
-        displayName:  adminArgs[0],
-        email: adminArgs[1],
-        password: adminArgs[2],
-    }
-    let userRef1 = await createUser(user1);
     // link flair objects
     const linkFlair1 = { // link flair 1
         linkFlairID: 'lf1',
