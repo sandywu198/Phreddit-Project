@@ -901,8 +901,9 @@ console.log("\npostsArray in creating posts: ", postsArray, " \n");
 
 export function SinglePost({post, postIndex, specificCommunity}) {
   const [linkFlair, setLinkFlair] = useState(null);
-  const [communities, setCommunities] = useState([]);
+  // const [communities, setCommunities] = useState([]);
   useEffect(() => {
+    console.log("\n SinglePost post: ", post, "\n");
     if (post.linkFlairID) {
       axios.get(`http://localhost:8000/linkflairs/${post.linkFlairID}`)
         .then(response => setLinkFlair(response.data))
@@ -913,14 +914,14 @@ export function SinglePost({post, postIndex, specificCommunity}) {
         const [communitiesRes] = await Promise.all([
           axios.get("http://localhost:8000/communities"), 
         ]);
-        setCommunities(communitiesRes.data);
+        // setCommunities(communitiesRes.data);
         // console.log("\n", communities, "\n");
         // console.log("\n communities in single post: ", communities, "\n");
         // var community;
         for(let c in communitiesRes.data){
           if(communitiesRes.data[c].postIDs.includes(post.id)){
             post.communityName = communitiesRes.data[c].name;
-            console.log("\n set post community in single post: ", post, "\n");
+            // console.log("\n set post community in single post: ", post, "\n");
           } 
         }
       }
@@ -929,7 +930,7 @@ export function SinglePost({post, postIndex, specificCommunity}) {
       }
     };
     fetchData();
-  }, [post.linkFlairID, post, communities]);
+  }, [post.linkFlairID, post]);
 
   return(
     <section className="post-Section" onClick={() => {
@@ -943,6 +944,7 @@ export function SinglePost({post, postIndex, specificCommunity}) {
           | ${displayTime(post.postedDate)}`}
       </p>
       <h3>{post.title}</h3>
+      {/* {console.log("\nlinkFlair in single post ", linkFlair, " \n")} */}
       {linkFlair && <p className="link-flair">{linkFlair.content}</p>}
       <p>{post.content.substring(0,80)}...</p>
       <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
