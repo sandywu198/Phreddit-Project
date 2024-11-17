@@ -12,29 +12,37 @@ export const UserProfile = ({user, admin}) => {
     console.log("\n user profile: ", user, "\n");
     const [content, setContent] = useState(null);
     useEffect(() => {
-        axios.get("http://localhost:8000/posts").then(postsRes => {
-            axios.get("http://localhost:8000/communities").then(communitiesRes => {
-              axios.get("http://localhost:8000/comments").then(commentsRes => {
-                axios.get("http://localhost:8000/users").then(usersRes => {
-                    console.log("\n user: ", user, " admin: ", admin, "\n");
-                    setContent(<>
-                        <h2>Display Name: {user.displayName}</h2>
-                        <h2>Email Address: {user.email}</h2>
-                        <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
-                        <h3>Reputation: {user.reputation} </h3>
-                        <hr id="delimeter"></hr>
-                        {user.displayName === "admin" && 
-                        <button className="user-profile-heading" id="all-users-button"
-                        onClick={() => {UserProfileSortingEmitter.emit('sort', 'users')}}>Users</button>}    
-                        <UserProfileSortingButtons user={user}/>
-                        <UserProfileListing posts={postsRes.data} 
-                        communities={communitiesRes.data} comments={commentsRes.data}
-                        users={usersRes.data} user={user} admin={admin}/>
-                    </>)
-                })
-              })
-            })
-        })
+        async function fetchData(){
+            try{
+                const [postsRes, communitiesRes, commentsRes, usersRes] = await Promise.all([
+                    axios.get("http://localhost:8000/posts"),
+                    axios.get("http://localhost:8000/communities"),
+                    axios.get("http://localhost:8000/comments"),
+                    axios.get("http://localhost:8000/users"),
+                ]);
+                setContent(
+                <>
+                    <h2>Display Name: {user.displayName}</h2>
+                    <h2>Email Address: {user.email}</h2>
+                    <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
+                    <h3>Reputation: {user.reputation} </h3>
+                    <hr id="delimeter"></hr>
+                    {user.displayName === "admin" && 
+                    <button className="user-profile-heading" id="all-users-button"
+                    onClick={() => {UserProfileSortingEmitter.emit('sort', 'users')}}>Users</button>}    
+                    <UserProfileSortingButtons user={user}/>
+                    <UserProfileListing posts={postsRes.data} 
+                    communities={communitiesRes.data} comments={commentsRes.data}
+                    users={usersRes.data} user={user} admin={admin}
+                    />
+                </>
+                )
+            }
+            catch(error){
+                console.error("Error fetching data: ", error);
+            }
+        }
+        fetchData();
     }, [user, admin])
     return (<>{content}</>)
 }
@@ -46,6 +54,8 @@ export function UserProfileSortingButtons({user}){
         console.log("\n user profile page sorting: \n");
         setButtons(
         <div className="sorting-buttons">
+            <button className="user-profile-heading" id="users-created"
+            onClick={() => {UserProfileSortingEmitter.emit("sort", "users")}}>Users</button>
             <button className="user-profile-heading" id="posts-created"
             onClick={() => {UserProfileSortingEmitter.emit("sort", "posts")}}>Posts</button>
             <button className="user-profile-heading" id="communities-created"
