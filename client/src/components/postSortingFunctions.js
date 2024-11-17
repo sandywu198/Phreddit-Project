@@ -592,32 +592,33 @@ export function GetPostThreadsArrayFunction(communities, posts, comments,
 }
 
 export function GetPostThreadsArrayFunction2(whichCommunityName, postsFromSearch) {
-  axios.get("http://localhost:8000/posts").then(postsRes => {
-    axios.get("http://localhost:8000/communities").then(communitiesRes => {
-      axios.get("http://localhost:8000/comments").then(commentsRes => {
-        var communities = communitiesRes.data;
-        var comments = commentsRes.data;
-        var posts = postsRes.data;
-        var printPostThreadsArray = [];
-        if (communities && posts && comments) {
-          console.log("\n communities: ", communities, "\n");
-          console.log("\n posts: ", posts, "\n");
-          console.log("\n comments: ", comments, "\n");
-          const commentMap = new Map(comments.map(comment => [comment.id, comment]));
+  async function fetchData(){
+    try{
+      const [postsRes, communitiesRes, commentsRes] = await Promise.all([
+        axios.get("http://localhost:8000/posts"),
+        axios.get("http://localhost:8000/communities"),
+        axios.get("http://localhost:8000/comments"),
+      ]);
+      var printPostThreadsArray = [];
+        if (communitiesRes.data && postsRes.data && commentsRes.data) {
+          console.log("\n communities: ", communitiesRes.data, "\n");
+          console.log("\n posts: ", postsRes.data, "\n");
+          console.log("\n comments: ", commentsRes.data, "\n");
+          const commentMap = new Map((commentsRes.data).map(comment => [comment.id, comment]));
           console.log("\n commentMap: ", commentMap, "\n");
-          let filteredPosts = posts;
+          let filteredPosts = postsRes.data;
           if (whichCommunityName !== "All Posts") {
             var community;
-            for(let c in communities){
+            for(let c in communitiesRes.data){
               // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
-              if(communities[c].name === whichCommunityName){
-                community = communities[c];
+              if((communitiesRes.data)[c].name === whichCommunityName){
+                community = (communitiesRes.data)[c];
                 // console.log("\n community: ", community, "\n");
               } 
             }
             // console.log("\n community found: ", community, "\n");
             if(community){
-              filteredPosts = posts.filter(post => community.postIDs.includes(post.id));
+              filteredPosts = (postsRes.data).filter(post => community.postIDs.includes(post.id));
             }
           }
           console.log("\n filteredPosts: ", filteredPosts, "\n");
@@ -634,9 +635,12 @@ export function GetPostThreadsArrayFunction2(whichCommunityName, postsFromSearch
           console.log("\n printPostThreadsArray: ", printPostThreadsArray, "\n");
         }
         return printPostThreadsArray;
-      })
-    })
-  })
+    }
+    catch(error){
+      console.error("Error fetching data", error);
+    }
+  }
+  fetchData();
 }
 
   // custom hook version

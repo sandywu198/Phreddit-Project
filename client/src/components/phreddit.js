@@ -236,37 +236,65 @@ export function GetCommunitiesAndLoad(user){
   // var postThreadsArray; // = GetPostThreadsArray("All Posts", []);//<GetPostThreadsArray whichCommunityName="All Posts"  postsFromSearch={[]}/>;
   // console.log("\n creating postThreadsArray in loading view: ", postThreadsArray, "\n");
   useEffect (() => {
-    axios.get("http://localhost:8000/posts").then(postsRes => {
-      setPosts(postsRes.data);
-      axios.get("http://localhost:8000/communities").then(communitiesRes => {
-        setCommunities(communitiesRes.data);
-        axios.get("http://localhost:8000/comments").then(commentsRes => {
-          setComments(commentsRes.data);
-          console.log("\n in usestate: ", communitiesRes.data, " ", commentsRes.data, " ", postsRes.data);
-          updatePageHeader(
-            <section id="hide-for-creating-community">
-              <div className="community-information" style={{display:"block"}}>
-                  <div id="community-name-sorting-buttons-line">
-                    <h3 className="post-heading" id="community-name">All Posts</h3>
-                    <PageNameSortingButtons communityIndex={-1} postsFromSearch={[]}/>
-                  </div>
-                  <h4 className="community-heading" id="community-post-count">{postsRes.data.length + " Post" 
-                  + ((postsRes.data.length === 1) ? "" : "s")}</h4>
-                  <hr id = "delimeter"/>
-                  {/* <SortedPostListing model={model} communityIndex={-1} postsFromSearch={[]}/> */}
-                  <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data}/>
-              </div>
-            </section>
-          );
-        })
-      })
-    })
+    async function fetchData(){
+      try{
+        const [postsRes, communitiesRes, commentsRes] = await Promise.all([
+          axios.get("http://localhost:8000/posts"),
+          axios.get("http://localhost:8000/communities"),
+          axios.get("http://localhost:8000/comments"),
+        ]);
+        updatePageHeader(
+          <section id="hide-for-creating-community">
+            <div className="community-information" style={{display:"block"}}>
+                <div id="community-name-sorting-buttons-line">
+                  <h3 className="post-heading" id="community-name">All Posts</h3>
+                  <PageNameSortingButtons communityIndex={-1} postsFromSearch={[]}/>
+                </div>
+                <h4 className="community-heading" id="community-post-count">{postsRes.data.length + " Post" 
+                + ((postsRes.data.length === 1) ? "" : "s")}</h4>
+                <hr id = "delimeter"/>
+                {/* <SortedPostListing model={model} communityIndex={-1} postsFromSearch={[]}/> */}
+                <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data}/>
+            </div>
+          </section>
+        );
+      }
+      catch(error){
+        console.error("Error fetching data", error);
+      }
+    }
+    fetchData();
+  }, []);
+    // axios.get("http://localhost:8000/posts").then(postsRes => {
+    //   setPosts(postsRes.data);
+    //   axios.get("http://localhost:8000/communities").then(communitiesRes => {
+    //     setCommunities(communitiesRes.data);
+    //     axios.get("http://localhost:8000/comments").then(commentsRes => {
+    //       setComments(commentsRes.data);
+    //       console.log("\n in usestate: ", communitiesRes.data, " ", commentsRes.data, " ", postsRes.data);
+          // updatePageHeader(
+          //   <section id="hide-for-creating-community">
+          //     <div className="community-information" style={{display:"block"}}>
+          //         <div id="community-name-sorting-buttons-line">
+          //           <h3 className="post-heading" id="community-name">All Posts</h3>
+          //           <PageNameSortingButtons communityIndex={-1} postsFromSearch={[]}/>
+          //         </div>
+          //         <h4 className="community-heading" id="community-post-count">{postsRes.data.length + " Post" 
+          //         + ((postsRes.data.length === 1) ? "" : "s")}</h4>
+          //         <hr id = "delimeter"/>
+          //         {/* <SortedPostListing model={model} communityIndex={-1} postsFromSearch={[]}/> */}
+          //         <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data}/>
+          //     </div>
+          //   </section>
+          // );
+        // })
+    // })
     // axios.get("http://localhost:8000/posts").then(res => {
     //   setPosts(res.data);
     //   console.log("\nres.data", res.data, " posts: ", posts, "\n");
     //   // console.log("\n posts.length: ", posts.length, "\n")
     // })
-  }, []); // [posts]
+  // }, []) // [posts]
   useEffect(() => {
     const loadCommunity = (communityIndex, searchString, post, replyToPost, commentRepliedTo, user, admin, comment) => {
       // if communityIndex === -1, it's the All Posts View
@@ -335,47 +363,24 @@ export function GetCommunitiesAndLoad(user){
           CreateCommunityButtonColorEmitter.emit('clickedColor', false)
           CreateHomeButtonColorEmitter.emit('clickedColor', true)
           CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
-          axios.get("http://localhost:8000/posts").then(postsRes => {
-            setPosts(postsRes.data);
-            axios.get("http://localhost:8000/communities").then(communitiesRes => {
-              setCommunities(communitiesRes.data);
-              axios.get("http://localhost:8000/comments").then(commentsRes => {
-                setComments(commentsRes.data);
-                var postThreadsArray = GetPostThreadsArrayFunction(communitiesRes.data, postsRes.data, commentsRes.data, "All Posts", []);
+          async function fetchData(){
+            try{
+              const [postsRes, communitiesRes, commentsRes] = await Promise.all([
+                axios.get("http://localhost:8000/posts"),
+                axios.get("http://localhost:8000/communities"),
+                axios.get("http://localhost:8000/comments"),
+              ]);
+              var postThreadsArray = GetPostThreadsArrayFunction(communitiesRes.data, postsRes.data, commentsRes.data, "All Posts", []);
                 console.log("\n in main control search postThreadsArray: ", postThreadsArray, "\n");
                 updatePageHeader(
                   <HandleSearchLogic searchString={searchString} communityIndex={communityIndex} printPostThreadsArray={postThreadsArray} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data}/>)
-                // if (postsFromSearch.length === 0) {
-                //   updatePageHeader(
-                //     <div>
-                //       <h3 className="post-heading" id="community-name">No results found for: {searchString}</h3>
-                //       <p id="post-number">0 Posts</p>
-                //       <hr id="delimeter"></hr>
-                //       <section id="posts-listing-section">
-                //         <img src='image/0 search results.jpg' alt='No results found' />
-                //       </section>
-                //     </div>
-                //   );
-                // } else {
-                //   var postNum = postsFromSearch.length + " Post" + (postsFromSearch.length === 1 ? "" : "s");
-                //   updatePageHeader(
-                //     <div>
-                //       <div id="community-name-sorting-buttons-line">
-                //         <h3 className="post-heading" id="community-name">Results for: {searchString}</h3>
-                //         {PageNameSortingButtons(-1, postsFromSearch)}
-                //       </div>
-                //       <p id="post-number">{postNum}</p>
-                //       <hr id="delimeter" />
-                //       <section id="posts-listing-section">
-                //         <SortedPostListing model={model} communityIndex={communityIndex} postsFromSearch={postsFromSearch} />
-                //       </section>
-                //     </div>
-                //   );
-                // }
                 NavBarEmitter.emit('updateNavBar');
-              })
-            })
-          })
+            }
+            catch(error){
+              console.error("Error fetching data", error);
+            }
+          }
+          fetchData();
         }
       // if communityIndex === -6, it's post view
       else if(communityIndex === -6){
