@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(400).send({ message: 'Invalid credentials' });
     }
-    res.status(201).send({ message: 'Login successful', user: { displayName: user.displayName } });
+    res.status(201).send({ message: 'Login successful', user: user});
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: 'Server error', error: error.message });
@@ -87,7 +87,23 @@ router.get('/', async (req, res) => {
   }
 });
 
-// // Get a specific user by id
+// Get a specific user by email
+router.get('/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    res.status(200).send(user); // This sends the user object as JSON
+  } catch (error) {
+    res.status(500).send('Server error');
+  }
+});
+
+// Get a specific user by id
 router.get('/:id', getUser, (req, res) => {
   res.send(res.user);
 });

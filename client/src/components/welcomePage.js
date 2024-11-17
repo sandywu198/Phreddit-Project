@@ -2,49 +2,72 @@ import React, { useState, useEffect } from "react";
 import { communityClickedEmitter } from "./newCommunity.js";
 import { HomePage } from "./phreddit.js";
 import axios from 'axios';
+import EventEmitter from 'events';
+
+export const WelcomePageEmitter = new EventEmitter();
 
 export function WelcomePage(){
   console.log("\n welcomepage \n");
-    const [register, setRegister] = useState(false);
-    const [login, setLogin] = useState(false);
-    const [guest, setGuest] = useState(false);
-    const [clear, setClear] = useState(false);
-    const [pageContent, setPageContent] = useState(
-    <>
-      <section className="logo-title">
-        <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
-        style={{cursor:"pointer"}}></img>        {/* // onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}} */}
-        <h3 className="Company_Name" id="phreddit-website-name"
-        style={{cursor:"pointer"}}> Phreddit</h3> {/* //onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}  */}
-      </section>
-      <button type="button" id="register-new-user" onClick={() => {setRegister(true)}}> Register </button>
-      <button type="button" id="login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
-      <button type="button" id="guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
-    </>
-    );
-    useEffect(() => {
-        if(register){
-            setPageContent(<RegisterUser />)
-        } else if(login){
-            setPageContent(<LoginUser />)
-        } else if(guest){
-            setPageContent(<HomePage userStatus={"guest"}/>)
-        }
-    }, [register, login, guest])
-    return (<>
-    {pageContent}
-      {/* <section className="logo-title">
-        <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
-        style={{cursor:"pointer"}}></img>        
-        <h3 className="Company_Name" id="phreddit-website-name"
-        style={{cursor:"pointer"}}> Phreddit</h3> 
-      </section>
-      <button type="button" id="register-new-user" onClick={() => {setRegister(true)}}> Register </button>
-      {register && <RegisterUser />}
-      <button type="button" id="login-user" onClick={() => {setLogin(true)}}> Login </button>       
-      {login && <LoginUser />}
-      <button type="button" id="guest-user" onClick={() => {HomePage()}}> Continue as Guest </button>       */}
-    </>)
+  const [register, setRegister] = useState(false);
+  const [login, setLogin] = useState(false);
+  const [guest, setGuest] = useState(false);
+  const [logout, setLogout] = useState(false);
+  const [pageContent, setPageContent] = useState(
+  <>
+    <section className="logo-title">
+      <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
+      style={{cursor:"pointer"}}></img>        {/* // onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}} */}
+      <h3 className="Company_Name" id="phreddit-website-name"
+      style={{cursor:"pointer"}}> Phreddit</h3> {/* //onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}  */}
+    </section>
+    <button type="button" id="register-new-user" onClick={() => {setRegister(true)}}> Register </button>
+    <button type="button" id="login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
+    <button type="button" id="guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
+  </>
+  );
+  function resetAll() {
+    setRegister(false);
+    setLogin(false);
+    setGuest(false);
+    setLogout(false);
+  }
+  useEffect(() => {
+    const handleLogout = (status) => {
+      setLogout(status);
+    };
+    WelcomePageEmitter.on('logout', handleLogout);
+    return () => {
+      WelcomePageEmitter.off('logout', handleLogout);
+    };
+  }, []); 
+  useEffect(() => {
+    if(logout){
+      console.log("\n logging out \n");
+      resetAll();
+      setPageContent(
+      <>
+        <section className="logo-title">
+          <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
+          style={{cursor:"pointer"}}></img>        {/* // onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}} */}
+          <h3 className="Company_Name" id="phreddit-website-name"
+          style={{cursor:"pointer"}}> Phreddit</h3> {/* //onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}  */}
+        </section>
+        <button type="button" id="register-new-user" onClick={() => {setRegister(true)}}> Register </button>
+        <button type="button" id="login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
+        <button type="button" id="guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
+      </>)
+    } else if(register){
+      resetAll();
+      setPageContent(<RegisterUser />)
+    } else if(login){
+      resetAll()
+      setPageContent(<LoginUser />)
+    } else if(guest){
+      resetAll()
+      setPageContent(<HomePage userStatus={"guest"}/>)
+    }
+  }, [register, login, guest, logout])
+  return (<>{pageContent}</>)
 }
 
 export const LoginUser = () => {
@@ -53,6 +76,7 @@ export const LoginUser = () => {
         email: '',
         password: '',
     });
+    const [userObj, setUserObj] = useState(null);
     const handleInputChange = (event) => {
       const { name, value } = event.target;
       setFormInputs(prevInputs => ({
@@ -76,11 +100,12 @@ export const LoginUser = () => {
       axios.post('http://localhost:8000/users/login', formInputs)
       .then(res => {
         setLoggedin(true);
+        setUserObj(res.data.user);
       }).catch(err => {
         window.alert(err.response.data.message);
       }) 
     };
-    return (loggedin ? <HomePage userStatus={"login"}/> : 
+    return (loggedin ? <HomePage userStatus={"login"} user={userObj}/> : 
       (<form id="user-login-page-stuff">
         <div className="form-div">
             <label htmlFor="login-email">Email (Account Name): </label>

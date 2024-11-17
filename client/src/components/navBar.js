@@ -16,7 +16,6 @@ CommunityNameButtonColorEmitter.setMaxListeners(25);
 export const CreateHomeButton = () => {
   const [clickColor, setClickColor] = useState('orangered');
   const [hoverColor, setHoverColor] = useState('lightgray');
-
   useEffect(() => {
     const changeClickColor = (changeColor) => {
       setClickColor(changeColor ? 'lightgray' : 'orangered');
@@ -24,7 +23,6 @@ export const CreateHomeButton = () => {
     CreateHomeButtonColorEmitter.on('clickedColor', changeClickColor);
     return () => CreateHomeButtonColorEmitter.off('clickedColor', changeClickColor);
   }, []);
-
   useEffect(() => {
     const changeHoverColor = (changeColor) => {
       setHoverColor(changeColor ? 'lightgray' : 'orangered');
@@ -32,7 +30,6 @@ export const CreateHomeButton = () => {
     CreateHomeButtonColorEmitter.on('hover', changeHoverColor);
     return () => CreateHomeButtonColorEmitter.off('hover', changeHoverColor);
   }, []);
-
   return (
     <button
       className="home-link"
@@ -48,7 +45,7 @@ export const CreateHomeButton = () => {
 };
 
 // Community Button
-export const CreateCommunityButton = () => {
+export const CreateCommunityButton = ({user}) => {
   const [clickColor, setClickColor] = useState('lightgray');
   const [hoverColor, setHoverColor] = useState('lightgray');
   useEffect(() => {
@@ -71,7 +68,7 @@ export const CreateCommunityButton = () => {
       onMouseEnter={() => CreateCommunityButtonColorEmitter.emit("hover", true)}
       onMouseLeave={() => CreateCommunityButtonColorEmitter.emit("hover", false)}
       style={{ backgroundColor: clickColor === hoverColor ? hoverColor : "orangered" }}
-      onClick={() => communityClickedEmitter.emit("communityClicked", -3, "", null, false)}
+      onClick={() => communityClickedEmitter.emit("communityClicked", -3, "", null, false, null, user)}
     >
       Create Community
     </button>
@@ -79,21 +76,24 @@ export const CreateCommunityButton = () => {
 };
 
 // Navbar Component
-export function NavBar({userStatus}) {
+export function NavBar({userStatus, user}) {
   const [refreshCount, setRefreshCount] = useState(0);
+  const [curUser, setCurUser] = useState(user);
   const [curNavBar, updateNavBar] = useState(
     <div className="navbar">
       <CreateHomeButton />
       <hr id="delimeter" />
       <div className="community">
         <h3 id="community-head">Communities</h3>
-        {(userStatus === "login") ? <CreateCommunityButton/> : <button id="community-button"> Create Community </button>}
+        {(userStatus === "login") ? <CreateCommunityButton user={user}/> : <button id="community-button"> Create Community </button>}
         <GetCommunities refreshCount={refreshCount}/>
       </div>
     </div>
   );
+  console.log("\n NavBar user: ", user, "\n");
   useEffect(() => {
     const changeNavBar = () => {
+      console.log("\n curUser: ", curUser, "\n");
       console.log("\n changeNavBar invoked \n");
       setRefreshCount(refreshCount + 1)
       updateNavBar(
@@ -102,7 +102,7 @@ export function NavBar({userStatus}) {
           <hr id="delimeter" />
           <div className="community">
             <h3 id="community-head">Communities</h3>
-            {(userStatus === "login") ? <CreateCommunityButton/> : <button id="community-button"> Create Community </button>}
+            {(userStatus === "login") ? <CreateCommunityButton user={curUser}/> : <button id="community-button"> Create Community </button>}
             <GetCommunities refreshCount={refreshCount}/>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function NavBar({userStatus}) {
     };
     NavBarEmitter.on('updateNavBar', changeNavBar);
     return () => NavBarEmitter.off('updateNavBar', changeNavBar);
-  }, [refreshCount, userStatus]);
+  }, [refreshCount, userStatus, user]);
   return (<section>{curNavBar}</section>);
 }
 

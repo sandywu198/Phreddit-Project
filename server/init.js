@@ -9,8 +9,6 @@
 ** users.
 */
 
-// TO DO: ADD USERS TO initializeDB.js
-
 // initializeDB.js - Will add initial application data to MongoDB database
 // Run this script to test your schema
 // Start the mongoDB service as a background process before running the script
@@ -49,24 +47,13 @@ async function createUser(userObj) {
             displayName: userObj.displayName,
             email: userObj.email,
             password: hashedPassword,
+            reputation: ("reputation" in userObj) ? userObj.reputation : 100,
         });
         return await newUserDoc.save();
     } catch (error) {
         console.error('Error creating user:', error);
     }
 }
-
-// function createUser(userObj){
-//     // const hashedPassword = bcrypt.hash(userObj.password, 10);
-//     let newUserDoc = new UserModel({
-//         firstName: userObj.firstName,
-//         lastName:  userObj.lastName,
-//         displayName:  userObj.displayName,
-//         email: userObj.email,
-//         password:  userObj.password,
-//     })
-//     return newUserDoc.save();
-// }
 
 function createLinkFlair(linkFlairObj) {
     let newLinkFlairDoc = new LinkFlairModel({
@@ -92,7 +79,7 @@ function createPost(postObj) {
         postedBy: postObj.postedBy,
         postedDate: postObj.postedDate,
         views: postObj.views,
-        linkFlairIDs: postObj.linkFlairIDs,
+        linkFlairID: postObj.linkFlairID,
         commentIDs: postObj.commentIDs,
     });
     return newPostDoc.save();
@@ -105,17 +92,29 @@ function createCommunity(communityObj) {
         postIDs: communityObj.postIDs,
         startDate: communityObj.startDate,
         members: communityObj.members,
+        createdBy: communityObj.createdBy,
     });
     return newCommunityDoc.save();
 }
 
 async function initializeDB() {
+    // admin user account
     const user1 = {
         displayName:  adminArgs[0],
         email: adminArgs[1],
         password: adminArgs[2],
+        reputation: 1000,
+    }
+    const user2 = {
+        firstName: 'big',
+        lastName: 'feet',
+        displayName:  'bigfeet',
+        email: 'bigfeet@gmail.com',
+        password: 'password',
     }
     let userRef1 = await createUser(user1);
+    let userRef2 = await createUser(user2);
+
     // link flair objects
     const linkFlair1 = { // link flair 1
         linkFlairID: 'lf1',
@@ -139,6 +138,15 @@ async function initializeDB() {
     let linkFlairRef4 = await createLinkFlair(linkFlair4);
     
     // comment objects
+    const comment8 = { // comment 8
+        commentID: 'comment8',
+        content: 'Random comment',
+        commentIDs: [],
+        commentedBy: 'bigfeet',
+        commentedDate: new Date('July 10, 2024 12:43:00'),
+    };
+    let commentRef8 = await createComment(comment8);
+
     const comment7 = { // comment 7
         commentID: 'comment7',
         content: 'Generic poster slogan #42',
@@ -223,8 +231,19 @@ async function initializeDB() {
         commentIDs: [commentRef4, commentRef5],
         views: 1023,
     };
+    const post3 = { // post 3
+        postID: 'p3',
+        title: "Remember when this was a CS channel?",
+        content: 'Does anyone else remember when they didn\'t have chatGPT?',
+        linkFlairID: linkFlairRef2,
+        postedBy: 'admin',
+        postedDate: new Date('November 9, 2024 4:24:00'),
+        commentIDs: [commentRef8],
+        views: 12345,
+    };
     let postRef1 = await createPost(post1);
     let postRef2 = await createPost(post2);
+    let postRef3 = await createPost(post3);
     
     // community objects
     const community1 = {// community object 1
@@ -233,16 +252,18 @@ async function initializeDB() {
         description: 'A practical application of the principles of justice.',
         postIDs: [postRef1],
         startDate: new Date('August 10, 2014 04:18:00'),
-        members: ['rollo', 'shemp', 'catlady13', 'astyanax', 'trucknutz69'],
+        members: ['rollo', 'shemp', 'catlady13', 'astyanax', 'trucknutz69', 'admin'],
+        createdBy: 'admin',
         memberCount: 4,
     };
     const community2 = { // community object 2
         communityID: 'community2',
         name: 'The History Channel',
         description: 'A fantastical reimagining of our past and present.',
-        postIDs: [postRef2],
+        postIDs: [postRef2, postRef3],
         startDate: new Date('May 4, 2017 08:32:00'),
-        members: ['MarcoArelius', 'astyanax', 'outtheretruth47', 'bigfeet'],
+        members: ['MarcoArelius', 'astyanax', 'outtheretruth47', 'bigfeet', 'admin'],
+        createdBy: 'bigfeet',
         memberCount: 4,
     };
     let communityRef1 = await createCommunity(community1);
