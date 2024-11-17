@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { communityClickedEmitter } from "./newCommunity.js";
 import axios from 'axios';
 
-export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo }) => {
+export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, comment }) => {
   const [formInputs, setFormInputs] = useState({
     content: '',
     username: '',

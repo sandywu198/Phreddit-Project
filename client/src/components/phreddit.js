@@ -9,6 +9,8 @@ import {CreateHomeButtonColorEmitter, CreateCommunityButtonColorEmitter, NavBarE
 import {DisplayPosts, DisplayPosts1, GetPostThreadsArrayFunction, DisplayActivePosts, GetSortedThreadRoot} from "./postSortingFunctions.js";
 import {WelcomePage} from "./welcomePage.js";
 import {NavBar} from "./navBar.js";
+import {TopBanner } from "./banner.js";
+import {UserProfile} from "./userProfile.js";
 import axios from 'axios';
 
 // create global context for sharing one Mode object as a state
@@ -31,15 +33,15 @@ export function MetaData(){
   }, []);
 }
 
-export function HomePage({userStatus}){
+export function HomePage({userStatus, user}){
   console.log("\n userStatus: ", userStatus, "\n");
   return(
     <>
-      {TopBanner(userStatus)}
+      {TopBanner(userStatus, user)}
       <hr id = "delimeter"></hr>
       <div className="text-under-header">
-        <NavBar userStatus={userStatus}/> {/*  fetchData={fetchData} */}
-        <PostHeader />
+        <NavBar userStatus={userStatus} user={user}/> {/*  fetchData={fetchData} */}
+        <PostHeader user={user}/>
       </div>
     </>
   )
@@ -264,7 +266,7 @@ export function GetCommunitiesAndLoad(){
     // })
   }, []); // [posts]
   useEffect(() => {
-    const loadCommunity = (communityIndex, searchString, post, replyToPost, commentRepliedTo) => {
+    const loadCommunity = (communityIndex, searchString, post, replyToPost, commentRepliedTo, user, admin, comment) => {
       // if communityIndex === -1, it's the All Posts View
       if(communityIndex === -1){
         CreatePostButtonColorEmitter.emit('clickedColor', false)
@@ -319,8 +321,8 @@ export function GetCommunitiesAndLoad(){
           CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
           updatePageHeader(
         <section id="hide-for-creating-community"> 
-          {/* <CreateCommunityComponent model={model}/> */}
-          <CreateCommunityComponent />
+          {console.log("\n CreateCommunityComponent user: ", user, "\n")}
+          <CreateCommunityComponent user={user}/>
         </section>
         )
         NavBarEmitter.emit('updateNavBar')
@@ -515,8 +517,16 @@ export function GetCommunitiesAndLoad(){
           CreateHomeButtonColorEmitter.emit('clickedColor', true)
           CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
           updatePageHeader(
-          <AddNewCommentComponent post={post} replyToPost={replyToPost} commentRepliedTo={commentRepliedTo}/>
+          <AddNewCommentComponent post={post} replyToPost={replyToPost} commentRepliedTo={commentRepliedTo} comment={comment}/>
         )
+      }
+      // if -8, it's user profile page view
+      else if(communityIndex === -8){
+        CreatePostButtonColorEmitter.emit('clickedColor', false)
+        CreateCommunityButtonColorEmitter.emit('clickedColor', false)
+        CreateHomeButtonColorEmitter.emit('clickedColor', true)
+        CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
+        updatePageHeader(<UserProfile user={user} admin={admin}/>)
       }
       // otherwise, it's for loading a specific community page view
       else{
@@ -748,137 +758,7 @@ export function GetCommunitiesAndLoad(){
 //   });
 // }
 
-export const UserProfileButtonColorEmitter = new EventEmitter();
-UserProfileButtonColorEmitter.setMaxListeners(25);
-
-export const UserProfileButton = () => {
-  const [clickColor, updateClickColor] = useState('lightgray');
-  const [hoverColor, updateHoverColor] = useState('lightgray');
-  useEffect(() => {
-      const changeClickColor = (changeColor) => {
-      console.log("\n changeColor from click: ", changeColor, "\n");
-      if(changeColor){
-          updateClickColor("orangered");
-      } else{
-          updateClickColor("lightgray");
-      }
-      };
-      UserProfileButtonColorEmitter.on('clickedColor', changeClickColor);
-      return () => {
-        UserProfileButtonColorEmitter.off('clickedColor', changeClickColor);
-      };
-  }, []);
-  useEffect(() => {
-      const changeHoverColor = (changeColor) => {
-      console.log("\n changeColor from hover: ", changeColor, "\n");
-      if(changeColor){
-          updateHoverColor("orangered");
-      } else{
-          updateHoverColor("lightgray");
-      }
-      };
-      UserProfileButtonColorEmitter.on('hover', changeHoverColor);
-      return () => {
-        UserProfileButtonColorEmitter.off('clickedColor', changeHoverColor);
-      };
-  }, [hoverColor]);
-  return (
-      <button id="user-profile-button" 
-      onMouseEnter={() => {UserProfileButtonColorEmitter.emit("hover", true)}}
-      onMouseLeave={() => {UserProfileButtonColorEmitter.emit("hover", false)}}
-      // onClick={() => {WelcomePage()}}
-      style={{backgroundColor:((clickColor === hoverColor) ? hoverColor: "orangered")}}>User </button>
-  );
-};  
-
-export const LogoutButtonColorEmitter = new EventEmitter();
-LogoutButtonColorEmitter.setMaxListeners(25);
-
-export const LogoutButton = () => {
-  const [clickColor, updateClickColor] = useState('lightgray');
-  const [hoverColor, updateHoverColor] = useState('lightgray');
-  useEffect(() => {
-      const changeClickColor = (changeColor) => {
-      console.log("\n changeColor from click: ", changeColor, "\n");
-      if(changeColor){
-          updateClickColor("orangered");
-      } else{
-          updateClickColor("lightgray");
-      }
-      };
-      LogoutButtonColorEmitter.on('clickedColor', changeClickColor);
-      return () => {
-        LogoutButtonColorEmitter.off('clickedColor', changeClickColor);
-      };
-  }, []);
-  useEffect(() => {
-      const changeHoverColor = (changeColor) => {
-      console.log("\n changeColor from hover: ", changeColor, "\n");
-      if(changeColor){
-          updateHoverColor("orangered");
-      } else{
-          updateHoverColor("lightgray");
-      }
-      };
-      LogoutButtonColorEmitter.on('hover', changeHoverColor);
-      return () => {
-        LogoutButtonColorEmitter.off('clickedColor', changeHoverColor);
-      };
-  }, [hoverColor]);
-  return (
-      <button id="logout-button" 
-      onMouseEnter={() => {LogoutButtonColorEmitter.emit("hover", true)}}
-      onMouseLeave={() => {LogoutButtonColorEmitter.emit("hover", false)}}
-      onClick={() => {<WelcomePage />}}
-      style={{backgroundColor:((clickColor === hoverColor) ? hoverColor: "orangered")}}>Log Out </button>
-  );
-};  
-
-// component for the top horizontal banner
-export function TopBanner(userStatus){
-  if(userStatus === "guest"){
-    // user profile should be guest and non-functional 
-    // create post should be gray and non-functional
-    return (
-      <div className="banner">
-        <section className="logo-title">
-          <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
-          style={{cursor:"pointer"}}></img>
-          <h3 className="Company_Name" id="phreddit-website-name"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
-          style={{cursor:"pointer"}}> Phreddit</h3>
-        </section>
-        <section className="search-container">
-          <img src="image\Search Logo.png" className="input-icon" alt="Search"></img>  
-          <SearchBoxComponent />
-        </section>
-        <button className="guest-banner-element" id="guest-profile-button">Guest</button>
-        <button className="guest-banner-element" id="guest-create-post-button">Create Post</button>
-      </div>);
-  } else if(userStatus === "login"){
-    return (
-      <div className="banner">
-        <section className="logo-title">
-          <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
-          style={{cursor:"pointer"}}></img>
-          <h3 className="Company_Name" id="phreddit-website-name"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
-          style={{cursor:"pointer"}}> Phreddit</h3>
-        </section>
-        <section className="search-container">
-          <img src="image\Search Logo.png" className="input-icon" alt="Search"></img>  
-          <SearchBoxComponent />
-        </section>
-        <CreatePostButton />
-        <UserProfileButton />
-        <LogoutButton />
-      </div>);
-  }
-}
-
-export function PostHeader(){
+export function PostHeader({user}){
   return(
     <div className="main-homepage" id="page-view">
       <section className="post-header">
@@ -904,35 +784,8 @@ export function PageNameSortingButtons({communityIndex, postsFromSearch}){
       </div>
     )
   }, [communityIndex, postsFromSearch]) 
-  return(
-    <>{buttons}</>
-  );
+  return(<>{buttons}</>);
 }
 
-
-export function SearchBoxComponent(){
-  const [searchInput, changeInput] = useState("");
-  const typingSearch = (event) =>{
-    console.log("\nsearchInput before: ", searchInput, "\n");
-    const newSearch = event.target.value;
-    changeInput(newSearch);
-    console.log("\nsearchInput after: ", searchInput, "\n");
-  }
-  const enteredSearch = (event) => {
-    if(event.key === "Enter"){
-      event.preventDefault();
-      const newSearch = event.target.value;
-      console.log("\nsearch entered!\n");
-      changeInput("");
-      communityClickedEmitter.emit("communityClicked", -4, newSearch, null, false);
-    } 
-  }
-  return (
-    <form id="search-form">
-        <input type="text" value={searchInput} onChange={typingSearch} className="search-bar" placeholder="Search Phreddit..." 
-        onKeyDown={enteredSearch} id="search-phreddit-box" />
-    </form>
-  )
-}
 
   
