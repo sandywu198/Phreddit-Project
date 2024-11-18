@@ -46,13 +46,19 @@ export const CreatePostButton = () =>{
     );
 };  
 
-export const CommunityListDropdown = ({ onInputChange }) => {
+export const CommunityListDropdown = ({ user, onInputChange }) => {
   const [communities, setCommunities] = useState([]);
   const [selectedCommunity, setSelectedCommunity] = useState("");
 
   useEffect(() => {
       axios.get("http://localhost:8000/communities")
-          .then(res => setCommunities(res.data))
+          .then(res => {
+            const userCommunities = res.data.filter(community => community.createdBy === user.displayName);
+            console.log("\n userCommunities: ", userCommunities, "\n");
+            const otherCommunities = res.data.filter(community => community.createdBy !== user.displayName);
+            console.log("\n otherCommunities: ", otherCommunities, "\n");
+            setCommunities([...userCommunities, ...otherCommunities]);
+            })
           .catch(error => console.error("Error fetching communities:", error));
   }, []);
   const handleChange = (event) => {
@@ -164,14 +170,14 @@ export const LinkFlairDropdown = ({ onInputChange }) => {
     );
 };
 
-export const CreatePostComponent = () => {
+export const CreatePostComponent = ({user}) => {
     const [formData, setFormData] = useState({
         community: '',
         title: '',
         content: '',
         linkFlairID: '',
         newLinkFlair: '',
-        postedBy: ''
+        postedBy: user.displayName,
     });
     console.log("New Post Community ID:", formData.community);
     const handleInputChange = useCallback((field, value) => {
@@ -224,23 +230,11 @@ export const CreatePostComponent = () => {
   };
    return (
        <form id="new-post-page-stuff" onSubmit={handleSubmit}>
-           <CommunityListDropdown onInputChange={(value) => handleInputChange('community', value)} />
+           <CommunityListDropdown user={user} onInputChange={(value) => handleInputChange('community', value)} />
            <PostTitleComponent onInputChange={(value) => handleInputChange('title', value)} />
            <PostContentComponent onInputChange={(value) => handleInputChange('content', value)} />
            <LinkFlairDropdown onInputChange={(value) => handleInputChange('linkFlairID', value)} />
            <NewLinkFlair onInputChange={(input) => handleInputChange('newLinkFlair', input)} />
-           
-           <div className="form-div">
-               <label htmlFor="posted-by">Posted By:</label>
-               <input 
-                   type="text" 
-                   id="posted-by" 
-                   value={formData.postedBy} 
-                   onChange={(e) => handleInputChange('postedBy', e.target.value)} 
-                   required 
-               />
-           </div>
-
            <button type="submit">Create Post</button>
        </form>
    );
