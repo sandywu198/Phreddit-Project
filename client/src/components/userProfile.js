@@ -23,10 +23,10 @@ export const UserProfile = ({user, admin}) => {
                         <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
                         <h3>Reputation: {user.reputation} </h3>
                         <hr id="delimeter"></hr>
-                        {admin && <UserProfileSortingButtons user={user}/>}
-                        {admin && <UserProfileListing posts={postsRes.data} 
+                        <UserProfileSortingButtons user={user} admin={admin}/>
+                        <UserProfileListing posts={postsRes.data} 
                         communities={communitiesRes.data} comments={commentsRes.data}
-                        users={usersRes.data} user={user} admin={admin}/>}
+                        users={usersRes.data} user={user} admin={admin}/>
                     </>)
                 })
               })
@@ -36,14 +36,14 @@ export const UserProfile = ({user, admin}) => {
     return (<>{content}</>)
 }
 
-export function UserProfileSortingButtons({user}){
+export function UserProfileSortingButtons({user, admin}){
     console.log("\n UserProfileSortingButtons: ", "user: ",  user, "\n");
     var [buttons, setButtons] = useState('');
     useEffect(() => {
         console.log("\n user profile page sorting: \n");
         setButtons(
         <div className="sorting-buttons">
-            {user.firstName === "admin" && 
+            {admin && 
             <button className="user-profile-heading" id="all-users-button"
             onClick={() => {UserProfileSortingEmitter.emit('sort', 'users')}}>Users</button>}    
             <button className="user-profile-heading" id="posts-created"
@@ -70,7 +70,7 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
     useEffect(() => {
         const sortUserListing = (type) => {
             // setUserListing(status);
-            if(type === "users"){
+            if(admin && type === "users"){
                 console.log("\n users: ", users, "\n");
                 setUserListing(users.map((user) => (
                     <SingleUser key={user.displayName} user={user} admin={admin}/>
@@ -90,7 +90,7 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             }
         };
         UserProfileSortingEmitter.on('sort', sortUserListing);
-        sortUserListing("users");
+        admin ? sortUserListing("users") : sortUserListing("posts");
         return () => {
             UserProfileSortingEmitter.off('sort', sortUserListing);
         };
@@ -156,7 +156,7 @@ export function SingleComment({comment, user, admin}) {
         communityClickedEmitter.emit("communityClicked", -7, "", null, false, null, user, admin, comment);
         NavBarEmitter.emit("updateNavBar");
       }}>
-        <p>{comment.content.substring(0,20)}</p>
+        <p>{comment.content.substring(0,20)}...</p>
         <hr id="delimeter" />
       </section>
     )
