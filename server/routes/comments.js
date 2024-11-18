@@ -18,6 +18,30 @@ router.get('/:id', getComment, (req, res) => {
     res.send(res.comment);
 });
 
+// update existing comment
+router.patch('/:id', getComment, async (req, res) => {
+  const { content } = req.body;
+  try {
+    res.comment.content = content;
+    const updatedComment = await res.comment.save(); 
+    res.send(updatedComment);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// delete existing comment
+router.delete('/:id', getComment, async (req, res) => {
+  try {
+    console.log("\n delete req: ", req.params);
+    const result = await Comment.findByIdAndDelete(req.params.id); 
+    console.log("\n deleting: ", result);
+    res.send({ message: 'Comment has been deleted' });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
 // create new comment
 router.post('/', async (req, res) => {
   const comment = new Comment({

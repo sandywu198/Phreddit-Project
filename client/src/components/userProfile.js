@@ -5,7 +5,7 @@ import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.
 import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
 import {WelcomePage} from "./welcomePage.js";
 import {NavBarEmitter} from "./navBar.js";
-import {CreatePostsInHTML} from "./postSortingFunctions.js";
+import {CreatePostsInHTML, GetPostThreadsArrayFunction} from "./postSortingFunctions.js";
 import axios from 'axios';
 
 export const UserProfile = ({user, admin}) => {
@@ -82,7 +82,7 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             } else if(type === "comments"){
                 var userComments = comments.filter(comment => comment.commentedBy === user.displayName);
                 console.log("\n userComments: ", userComments, "\n");
-                setUserListing(userComments.map((comment) => (<SingleComment key={comment.id} comment={comment} user={user} admin={admin}/>)))
+                setUserListing(userComments.map((comment) => (<SingleComment key={comment.id} comment={comment} user={user} admin={admin} communities={communities} posts={posts} comments={comments}/>)))
             } else if(type === "communities"){
                 var userCommunities = communities.filter(community => community.createdBy === user.displayName);
                 console.log("\n userCommunities: ", userCommunities, "\n");
@@ -150,12 +150,18 @@ export function SingleCommunity({communities, community, user, admin}) {
 }
 
 // TO DO: figure out post titles
-export function SingleComment({comment, user, admin}) {
+export function SingleComment({posts, communities, comments, comment, user, admin}) {
+    const [postThreads, setPostThreads] = useState(GetPostThreadsArrayFunction(communities, posts, comments, "All Posts", []));
+    console.log("\n postThreads: ", postThreads, "\n");
+    console.log("\n SingleComment here", postThreads.filter(thread => thread.some(node => node.postThreadNode.id === comment.id)), "\n");
+    console.log("\n 2: ", postThreads.filter(thread => thread.some(node => node.postThreadNode.id === comment.id))[0][0], "\n");
+    const [postTitle, setPostTitle] = useState(postThreads.filter(thread => thread.some(node => node.postThreadNode.id === comment.id))[0][0].postThreadNode.title);
     return(
       <section className="post-Section" onClick={() => {
-        communityClickedEmitter.emit("communityClicked", -7, "", null, false, null, user, admin, comment);
+        communityClickedEmitter.emit("communityClicked", -7, "", null, false, null, user, admin, comment, true);
         NavBarEmitter.emit("updateNavBar");
       }}>
+        <h4>{postTitle}</h4>
         <p>{comment.content.substring(0,20)}...</p>
         <hr id="delimeter" />
       </section>

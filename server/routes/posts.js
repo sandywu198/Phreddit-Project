@@ -48,6 +48,19 @@ router.get('/:id/comments', getPost, async (req, res) => {
     }
 });
 
+// remove comment from post
+router.patch('/:id/comments/:commentId', getPost, async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    res.post.commentIDs.pull(commentId);
+    await res.post.save();
+    res.send(res.post);
+  } catch (error) {
+    console.error('Error removing comment:', error);
+    res.status(500).send({ message: error.message });
+  }
+});
+
 // Add comment to post
 router.put('/:id/comments', async (req, res) => {
   console.log('POST request received for adding comment to post');
