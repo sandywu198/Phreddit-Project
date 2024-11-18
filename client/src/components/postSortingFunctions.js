@@ -359,7 +359,7 @@ export function DisplayActivePosts({specificCommunity, postsFromSearch, communit
 export function CreatePostsInHTML(postsArray, specificCommunity, communities, posts, comments, user) {
   console.log("\npostsArray in creating posts: ", postsArray, " \n");
   console.log("\n going into post threads array from create posts\n");
-  var postThreadsArray = GetPostThreadsArrayFunction(communities, posts, comments, specificCommunity, [], communities, posts, comments); // <GetPostThreadsArray whichCommunityName={specificCommunity} postsFromSearch={[]}/>;
+  var postThreadsArray = GetPostThreadsArrayFunction(communities, posts, comments, specificCommunity, []); // <GetPostThreadsArray whichCommunityName={specificCommunity} postsFromSearch={[]}/>;
   console.log("\npostThreadsArray in creating: ", postThreadsArray, "\n");
   const CommentsRepliesCountMap = new Map();
   for(let postIndex = 0; postIndex < postThreadsArray.length; postIndex++){
@@ -589,6 +589,29 @@ export function GetPostThreadsArrayFunction(communities, posts, comments,
   }
   console.log("\n returning printPostThreadsArray: ", printPostThreadsArray, "\n");
   return printPostThreadsArray;
+}
+
+export function GetCommentThreadsArrayFunction(communities, posts, comments, 
+  whichCommunityName, postsFromSearch) {
+  var printCommentThreadsArray = [];
+  if (communities && posts && comments) {
+    console.log("\n communities: ", communities, "\n");
+    console.log("\n posts: ", posts, "\n");
+    console.log("\n comments: ", comments, "\n");
+    const commentMap = new Map(comments.map(comment => [comment.id, comment]));
+    console.log("\n commentMap: ", commentMap, "\n");
+    let filteredComments = comments;
+    const threadRoots = filteredComments.map(comment => MakePostThreads(comment, comment.commentIDs, commentMap));
+    console.log("\n threadRoots: ", threadRoots, "\n");
+    printCommentThreadsArray = threadRoots.map(root => {
+      const arrayOfNodes = [];
+      postThreadDFS(root, 0, arrayOfNodes);
+      return arrayOfNodes;
+    });
+    console.log("\n printCommentThreadsArray: ", printCommentThreadsArray, "\n");
+  }
+  console.log("\n returning printCommentThreadsArray: ", printCommentThreadsArray, "\n");
+  return printCommentThreadsArray;
 }
 
 export function GetPostThreadsArrayFunction2(whichCommunityName, postsFromSearch) {

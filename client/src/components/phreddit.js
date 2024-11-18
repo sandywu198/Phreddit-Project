@@ -525,7 +525,7 @@ export function GetCommunitiesAndLoad(user){
           CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
           console.log("\n phreddit -7: ", curUser, "\n");
           updatePageHeader(
-          <AddNewCommentComponent post={post} replyToPost={replyToPost} commentRepliedTo={commentRepliedTo} comment={comment} user={curUser}/>
+          <AddNewCommentComponent post={post} replyToPost={replyToPost} commentRepliedTo={commentRepliedTo} comment={comment} user={curUser} admin={admin}/>
         )
       }
       // if -8, it's user profile page view
