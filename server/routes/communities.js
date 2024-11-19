@@ -23,9 +23,29 @@ router.get('/:id', getCommunity, (req, res) => {
 router.get('/:id/members', getCommunity, async(req, res) => {
     res.status(200).send(res.community.members)
 });
+s
+// add a member to the community
+router.put(':id', async(req, res) =>{
+    try{
+        const communityId = req.params.id;
+        const memDisplayName = req.params.member;
+        const updateMember = await Community.findByIdAndUpdate(
+            {_id:communityId},
+            {$push: {members: memDisplayName}},
+            {new:true}
+        );
+        if (!updateMember) {
+            return res.status(404).send({ error: 'Community not found' });
+        }
+        res.status(200).send(updateMember);
+    }
+    catch(error){
+        res.status(400).send({ message: "Error adding member to community", error: error.message });
+    }
+});
 
 // Delete a member from the community
-router.delete(':id/members', getCommunity, async(req, res) => {
+router.patch(':id', getCommunity, async(req, res) => {
     try{
         const memberDel = req.params.member;
         const memberIndex = res.community.members.indexOf(memberDel);
@@ -84,7 +104,7 @@ router.delete('/:id/community-id', getCommunity, async (req, res) => {
 });
 
 // Add post to community
-router.put('/:id', async (req, res) => {
+router.put('/:id/', async (req, res) => {
     console.log('PUT request received for community update');
     try {
         const communityId = req.params.id;
