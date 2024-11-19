@@ -114,8 +114,16 @@ async function initializeDB() {
         email: 'bigfeet@gmail.com',
         password: 'password',
     }
+    const user3 = {
+        firstName: 'marco',
+        lastName: 'arelius',
+        displayName:  'MarcoArelius',
+        email: 'MarcoArelius@gmail.com',
+        password: 'password',
+    }
     let userRef1 = await createUser(user1);
     let userRef2 = await createUser(user2);
+    let userRef3 = await createUser(user3);
 
     // link flair objects
     const linkFlair1 = { // link flair 1
@@ -140,6 +148,15 @@ async function initializeDB() {
     let linkFlairRef4 = await createLinkFlair(linkFlair4);
     
     // comment objects
+    const comment9 = { // comment 9
+        commentID: 'comment9',
+        content: 'Hi comment',
+        commentIDs: [],
+        commentedBy: 'bigfeet',
+        commentedDate: new Date('April 10, 2024 12:43:00'),
+    };
+    let commentRef9 = await createComment(comment9);
+
     const comment8 = { // comment 8
         commentID: 'comment8',
         content: 'Random comment',
@@ -243,10 +260,32 @@ async function initializeDB() {
         commentIDs: [commentRef8],
         views: 12345,
     };
+    const post4 = { // post 4
+        postID: 'p4',
+        title: "Admin post",
+        content: 'Title',
+        linkFlairID: linkFlairRef2,
+        postedBy: 'admin',
+        postedDate: new Date('November 19, 2024 4:24:00'),
+        commentIDs: [],
+        views: 0,
+    };
+    const post5 = { // post 5
+        postID: 'p5',
+        title: "MarcoArelius history",
+        content: 'see title',
+        linkFlairID: linkFlairRef4,
+        postedBy: 'MarcoArelius',
+        postedDate: new Date('November 19, 2024 4:24:00'),
+        commentIDs: [commentRef9],
+        views: 0,
+    };
     let postRef1 = await createPost(post1);
     let postRef2 = await createPost(post2);
     let postRef3 = await createPost(post3);
-    
+    let postRef4 = await createPost(post4);
+    let postRef5 = await createPost(post5);
+
     // community objects
     const community1 = {// community object 1
         communityID: 'community1',
@@ -268,8 +307,30 @@ async function initializeDB() {
         createdBy: 'bigfeet',
         memberCount: 4,
     };
+    const community3 = { // community object 3
+        communityID: 'community3',
+        name: 'Admin Channel',
+        description: 'Exclusive space for admin only.',
+        postIDs: [postRef4],
+        startDate: new Date('May 4, 2022 08:32:00'),
+        members: ['admin'],
+        createdBy: 'admin',
+        memberCount: 1,
+    };
+    const community4 = { // community object 4
+        communityID: 'community4',
+        name: 'MarcoArelius Community',
+        description: 'MarcoArelius Space',
+        postIDs: [postRef5],
+        startDate: new Date('June 4, 2022 08:32:00'),
+        members: ['MarcoArelius', 'admin'],
+        createdBy: 'MarcoArelius',
+        memberCount: 2,
+    };
     let communityRef1 = await createCommunity(community1);
     let communityRef2 = await createCommunity(community2);
+    let communityRef3 = await createCommunity(community3);
+    let communityRef4 = await createCommunity(community4);
     
     if (db) {
         db.close();
