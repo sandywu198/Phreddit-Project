@@ -339,7 +339,7 @@ export function GetCommunitiesAndLoad(user){
           updatePageHeader(
           <section id="hide-for-creating-community"> 
             {/* <CreatePostComponent model={model} /> */}
-            <CreatePostComponent user={curUser}/>
+            <CreatePostComponent user={curUser} post={post}/>
           </section>
         )
         NavBarEmitter.emit('updateNavBar')

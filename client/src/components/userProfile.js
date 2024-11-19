@@ -78,7 +78,7 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             } else if(type === "posts"){
                 var userPosts = posts.filter(post => post.postedBy === user.displayName);
                 console.log("\n userPosts: ", userPosts, "\n");
-                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user))
+                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user, true))
             } else if(type === "comments"){
                 var userComments = comments.filter(comment => comment.commentedBy === user.displayName);
                 console.log("\n userComments: ", userComments, "\n");
