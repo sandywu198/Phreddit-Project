@@ -78,21 +78,38 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             // setUserListing(status);
             if(admin && type === "users"){
                 console.log("\n users: ", users, "\n");
-                setUserListing(users.map((user) => (
-                    <SingleUser key={user.displayName} user={user} admin={admin}/>
-                )))
+                const nonAdminUsers = users.filter(user => user.firstName !== "admin");
+                if(nonAdminUsers.length > 0){
+                    setUserListing(nonAdminUsers.map((user) => (
+                        <SingleUser key={user.displayName} user={user} admin={admin}/>
+                    )))
+                } else{
+                    setUserListing(<p>No users available.</p>)
+                }
             } else if(type === "posts"){
                 var userPosts = posts.filter(post => post.postedBy === user.displayName);
                 console.log("\n userPosts: ", userPosts, "\n");
-                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user, true))
+                if(userPosts.length > 0){
+                    setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user, true));
+                } else{
+                    setUserListing(<p>No posts available. Go make some posts!</p>)
+                }
             } else if(type === "comments"){
                 var userComments = comments.filter(comment => comment.commentedBy === user.displayName);
                 console.log("\n userComments: ", userComments, "\n");
-                setUserListing(userComments.map((comment) => (<SingleComment key={comment.id} comment={comment} user={user} admin={admin} communities={communities} posts={posts} comments={comments}/>)))
+                if(userComments.length > 0){
+                    setUserListing(userComments.map((comment) => (<SingleComment key={comment.id} comment={comment} user={user} admin={admin} communities={communities} posts={posts} comments={comments}/>)));
+                } else{
+                    setUserListing(<p>No comments available. Go make some comments!</p>)
+                }
             } else if(type === "communities"){
                 var userCommunities = communities.filter(community => community.createdBy === user.displayName);
                 console.log("\n userCommunities: ", userCommunities, "\n");
-                setUserListing(userCommunities.map((community) => (<SingleCommunity key={community.name} communities={communities} community={community} user={user} admin={admin}/>)))
+                if(userCommunities.length > 0){
+                    setUserListing(userCommunities.map((community) => (<SingleCommunity key={community.name} communities={communities} community={community} user={user} admin={admin}/>)));
+                } else{
+                    setUserListing(<p>No communities available. Go make some communities!</p>)
+                }
             }
         };
         UserProfileSortingEmitter.on('sort', sortUserListing);

@@ -25,45 +25,50 @@ export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, co
     return true;
   };
   const deleteComment = async () => {
-    try{
-      // delete comment ids in posts and comments
-      axios.get("http://localhost:8000/posts").then(postsRes => {
-        axios.get("http://localhost:8000/communities").then(communitiesRes => {
-          axios.get("http://localhost:8000/comments").then(commentsRes => {
-            const commentThreadsArray = GetCommentThreadsArrayFunction(communitiesRes.data, postsRes.data, commentsRes.data, 'All Posts', []);
-            console.log("\n commentThreadsArray: ", commentThreadsArray, "\n");
-            const commentsToDelete = commentThreadsArray.filter(thread => thread[0].postThreadNode.id === comment.id)[0];
-            console.log("\n commentsToDelete: ", commentsToDelete, "\n");
-            for(let c = 0; c < commentsToDelete.length; c++){
-              console.log("\n deleting... ", commentsToDelete[c].postThreadNode.id, "\n");
-              axios.delete(`http://localhost:8000/comments/${commentsToDelete[c].postThreadNode.id}`)
-                .then(response => {
-                  console.log('Comment removed:', response.data);
-                })
-                .catch(error => {
-                  console.error('Error removing comment:', error.response ? error.response.data : error.message);
-                }); 
-              console.log("\n comment deleted \n");
-            }
-            for(let c = 0; c < commentsToDelete.length; c++){
-              const postsToUpdate = postsRes.data.filter(post1 => post1.commentIDs.includes(commentsToDelete[c].postThreadNode.id));
-              console.log("\n postsToUpdate: ", postsToUpdate, "\n");
-              for(let p = 0; p < postsToUpdate.length; p++){
-                axios.patch(`http://localhost:8000/posts/${postsToUpdate[p].id}/comments/${commentsToDelete[c].postThreadNode.id}`) 
+    const confirmDelete = window.confirm('Are you sure you want to delete this comment?');
+    if(confirmDelete){
+      try{
+        // delete comment ids in posts and comments
+        axios.get("http://localhost:8000/posts").then(postsRes => {
+          axios.get("http://localhost:8000/communities").then(communitiesRes => {
+            axios.get("http://localhost:8000/comments").then(commentsRes => {
+              const commentThreadsArray = GetCommentThreadsArrayFunction(communitiesRes.data, postsRes.data, commentsRes.data, 'All Posts', []);
+              console.log("\n commentThreadsArray: ", commentThreadsArray, "\n");
+              const commentsToDelete = commentThreadsArray.filter(thread => thread[0].postThreadNode.id === comment.id)[0];
+              console.log("\n commentsToDelete: ", commentsToDelete, "\n");
+              for(let c = 0; c < commentsToDelete.length; c++){
+                console.log("\n deleting... ", commentsToDelete[c].postThreadNode.id, "\n");
+                axios.delete(`http://localhost:8000/comments/${commentsToDelete[c].postThreadNode.id}`)
                   .then(response => {
                     console.log('Comment removed:', response.data);
                   })
                   .catch(error => {
                     console.error('Error removing comment:', error.response ? error.response.data : error.message);
-                  });
+                  }); 
+                console.log("\n comment deleted \n");
               }
-            }
-            communityClickedEmitter.emit("communityClicked", -8, "", null, false, null, user, admin);
+              for(let c = 0; c < commentsToDelete.length; c++){
+                const postsToUpdate = postsRes.data.filter(post1 => post1.commentIDs.includes(commentsToDelete[c].postThreadNode.id));
+                console.log("\n postsToUpdate: ", postsToUpdate, "\n");
+                for(let p = 0; p < postsToUpdate.length; p++){
+                  axios.patch(`http://localhost:8000/posts/${postsToUpdate[p].id}/comments/${commentsToDelete[c].postThreadNode.id}`) 
+                    .then(response => {
+                      console.log('Comment removed:', response.data);
+                    })
+                    .catch(error => {
+                      console.error('Error removing comment:', error.response ? error.response.data : error.message);
+                    });
+                }
+              }
+              communityClickedEmitter.emit("communityClicked", -8, "", null, false, null, user, admin);
+            })
           })
         })
-      })
-    } catch (error){
-      console.log("\n error: ", error, "\n");
+      } catch (error){
+        console.log("\n error: ", error, "\n");
+      }
+    } else{
+      console.log("\n user canceled deleting the comment\n");
     }
   }
   const submitComment = async () => {
