@@ -119,154 +119,160 @@ user.
 export function SingleUser({user, admin}) {
     const [curUser, setCurUser] = useState(user);
     const deleteUser = async () => {
-        try{
-            console.log("\n deleting user\n");
-            axios.get("http://localhost:8000/posts").then(postsRes => {
-                axios.get("http://localhost:8000/communities").then(communitiesRes => {
-                  axios.get("http://localhost:8000/comments").then(commentsRes => {
-                    var userCommunities;
-                    // get all the communities created by the user
-                    axios.get(`http://localhost:8000/communities/community/${curUser.displayName}`)
-                    .then(response => {
-                        userCommunities = response.data;
-                        const communityNames = [];
-                        for(let i = 0; i < userCommunities.length; i++){
-                            communityNames.push(userCommunities[i].name);
-                        }
-                        console.log("\n communityNames: ", communityNames, "\n");
-                        // delete all communities created by the user
-                        axios.delete(`http://localhost:8000/communities/${curUser.displayName}`)
+        const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+        if(confirmDelete){
+            try{
+                console.log("\n deleting user\n");
+                axios.get("http://localhost:8000/posts").then(postsRes => {
+                    axios.get("http://localhost:8000/communities").then(communitiesRes => {
+                      axios.get("http://localhost:8000/comments").then(commentsRes => {
+                        var userCommunities;
+                        // get all the communities created by the user
+                        axios.get(`http://localhost:8000/communities/community/${curUser.displayName}`)
                         .then(response => {
-                            console.log(response.data.message);
-                        })
-                        .catch(error => {
-                            console.error('Error deleting community:', error.response ? error.response.data : error.message);
-                        });
-                        const posts = postsRes.data;
-                        posts.forEach(post => {
-                            // var community = communities.find(c => c.postIDs.includes(post.id));
-                            var community;
-                            for(let c in communitiesRes.data){
-                              // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
-                              if(communitiesRes.data[c].postIDs.includes(post.id)){
-                                community = communitiesRes.data[c].name;
-                                // console.log("\n community: ", community, "\n");
-                              } 
+                            userCommunities = response.data;
+                            const communityNames = [];
+                            for(let i = 0; i < userCommunities.length; i++){
+                                communityNames.push(userCommunities[i].name);
                             }
-                            // console.log("\n community found: ", community, "\n");
-                            if(community){
-                              post.communityName = community;
-                            }
-                            // console.log("\n post now: ", post, "\n");
-                        });
-                        const postThreads = GetPostThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, "All Posts", []);
-                        // delete posts and comments by user or in deleted communities
-                        console.log("\n postThreads: ", postThreads, "\n");
-                        for(let j = 0; j < postThreads.length; j++){
-                            console.log("\n postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
-                            if((communityNames.includes(postThreads[j][0].postThreadNode.communityName) || 
-                                postThreads[j][0].postThreadNode.postedBy === curUser.displayName)){
-                                console.log("\n qualify postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
-                                axios.delete(`http://localhost:8000/posts/${postThreads[j][0].postThreadNode.id}`)
-                                .then(response => {
-                                    console.log(response.data.message);
-                                })
-                                .catch(error => {
-                                    console.log('Error deleting community:', error.response ? error.response.data : error.message);
-                                });
-                                console.log("\n rest postThreads[j]: ", postThreads[j], "\n");
-                                for(let k = 1; k < postThreads[j].length; k++){
-                                    axios.delete(`http://localhost:8000/comments/${postThreads[j][k].postThreadNode.id}`)
+                            console.log("\n communityNames: ", communityNames, "\n");
+                            // delete all communities created by the user
+                            axios.delete(`http://localhost:8000/communities/${curUser.displayName}`)
+                            .then(response => {
+                                console.log(response.data.message);
+                            })
+                            .catch(error => {
+                                console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                            });
+                            const posts = postsRes.data;
+                            posts.forEach(post => {
+                                // var community = communities.find(c => c.postIDs.includes(post.id));
+                                var community;
+                                for(let c in communitiesRes.data){
+                                  // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
+                                  if(communitiesRes.data[c].postIDs.includes(post.id)){
+                                    community = communitiesRes.data[c].name;
+                                    // console.log("\n community: ", community, "\n");
+                                  } 
+                                }
+                                // console.log("\n community found: ", community, "\n");
+                                if(community){
+                                  post.communityName = community;
+                                }
+                                // console.log("\n post now: ", post, "\n");
+                            });
+                            const postThreads = GetPostThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, "All Posts", []);
+                            // delete posts and comments by user or in deleted communities
+                            console.log("\n postThreads: ", postThreads, "\n");
+                            for(let j = 0; j < postThreads.length; j++){
+                                console.log("\n postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                                if((communityNames.includes(postThreads[j][0].postThreadNode.communityName) || 
+                                    postThreads[j][0].postThreadNode.postedBy === curUser.displayName)){
+                                    console.log("\n qualify postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                                    axios.delete(`http://localhost:8000/posts/${postThreads[j][0].postThreadNode.id}`)
                                     .then(response => {
                                         console.log(response.data.message);
                                     })
                                     .catch(error => {
                                         console.log('Error deleting community:', error.response ? error.response.data : error.message);
                                     });
-                                }
-                                // if posts were deleted from communities, update the communities
-                                const updateCommunities = communitiesRes.data.filter(com => com.postIDs.includes(postThreads[j][0].postThreadNode.id));
-                                for(let m = 0; m < updateCommunities.length; m++){
-                                    axios.put(`http://localhost:8000/communities/${updateCommunities[m].id}/delete-post`, {postID: postThreads[j][0].postThreadNode.id})
-                                    .then(response => {
-                                        console.log('Updated community:', response.data);
-                                    })
-                                    .catch(error => {
-                                        console.error('Error removing post from community:', error.response.data);
-                                    });
+                                    console.log("\n rest postThreads[j]: ", postThreads[j], "\n");
+                                    for(let k = 1; k < postThreads[j].length; k++){
+                                        axios.delete(`http://localhost:8000/comments/${postThreads[j][k].postThreadNode.id}`)
+                                        .then(response => {
+                                            console.log(response.data.message);
+                                        })
+                                        .catch(error => {
+                                            console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                                        });
+                                    }
+                                    // if posts were deleted from communities, update the communities
+                                    const updateCommunities = communitiesRes.data.filter(com => com.postIDs.includes(postThreads[j][0].postThreadNode.id));
+                                    for(let m = 0; m < updateCommunities.length; m++){
+                                        axios.put(`http://localhost:8000/communities/${updateCommunities[m].id}/delete-post`, {postID: postThreads[j][0].postThreadNode.id})
+                                        .then(response => {
+                                            console.log('Updated community:', response.data);
+                                        })
+                                        .catch(error => {
+                                            console.error('Error removing post from community:', error.response.data);
+                                        });
+                                    }
                                 }
                             }
-                        }
-                        // delete the user
-                        axios.delete(`http://localhost:8000/users/${curUser.id}`)
-                        .then(response => {
-                            console.log(response.data.message);
-                            communityClickedEmitter.emit('communityClicked', -8, "", null, true, null, curUser, (curUser.firstName === "admin"));
-                        })
-                        .catch(error => {
-                            console.log('Error deleting community:', error.response ? error.response.data : error.message);
-                        });
-                        // delete user comments
-                        const commentThreadsArray = GetCommentThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, 'All Posts', []);
-                        console.log("\n commentThreadsArray: ", commentThreadsArray, "\n");
-                        console.log("\n curUser: ", curUser, "\n");
-                        console.log("\n commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName): ", commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName), "\n");
-                        const commentsToDelete = commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName);
-                        console.log("\n commentsToDelete: ", commentsToDelete, "\n");
-                        for(let c = 0; c < commentsToDelete.length; c++){
-                            console.log("\n deleting... ", commentsToDelete[c][0].postThreadNode.id, "\n");
-                            axios.delete(`http://localhost:8000/comments/${commentsToDelete[c][0].postThreadNode.id}`)
-                                .then(response => {
-                                console.log('Comment removed:', response.data);
-                                })
-                                .catch(error => {
-                                console.error('Error removing comment:', error.response ? error.response.data : error.message);
-                                }); 
-                            console.log("\n comment deleted \n");
-                        }
-                        for(let c = 0; c < commentsToDelete.length; c++){
-                        const postsToUpdate = posts.filter(post1 => post1.commentIDs.includes(commentsToDelete[c][0].postThreadNode.id));
-                        console.log("\n postsToUpdate: ", postsToUpdate, "\n");
-                        for(let p = 0; p < postsToUpdate.length; p++){
-                            axios.patch(`http://localhost:8000/posts/${postsToUpdate[p].id}/comments/${commentsToDelete[c][0].postThreadNode.id}`) 
+                            // delete the user
+                            axios.delete(`http://localhost:8000/users/${curUser.id}`)
                             .then(response => {
-                                console.log('Comment removed:', response.data);
+                                console.log(response.data.message);
+                                communityClickedEmitter.emit('communityClicked', -8, "", null, true, null, curUser, (curUser.firstName === "admin"));
                             })
                             .catch(error => {
-                                console.error('Error removing comment:', error.response ? error.response.data : error.message);
+                                console.log('Error deleting community:', error.response ? error.response.data : error.message);
                             });
-                        }
-                        }
+                            // delete user comments
+                            const commentThreadsArray = GetCommentThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, 'All Posts', []);
+                            console.log("\n commentThreadsArray: ", commentThreadsArray, "\n");
+                            console.log("\n curUser: ", curUser, "\n");
+                            console.log("\n commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName): ", commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName), "\n");
+                            const commentsToDelete = commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName);
+                            console.log("\n commentsToDelete: ", commentsToDelete, "\n");
+                            for(let c = 0; c < commentsToDelete.length; c++){
+                                console.log("\n deleting... ", commentsToDelete[c][0].postThreadNode.id, "\n");
+                                axios.delete(`http://localhost:8000/comments/${commentsToDelete[c][0].postThreadNode.id}`)
+                                    .then(response => {
+                                    console.log('Comment removed:', response.data);
+                                    })
+                                    .catch(error => {
+                                    console.error('Error removing comment:', error.response ? error.response.data : error.message);
+                                    }); 
+                                console.log("\n comment deleted \n");
+                            }
+                            for(let c = 0; c < commentsToDelete.length; c++){
+                            const postsToUpdate = posts.filter(post1 => post1.commentIDs.includes(commentsToDelete[c][0].postThreadNode.id));
+                            console.log("\n postsToUpdate: ", postsToUpdate, "\n");
+                            for(let p = 0; p < postsToUpdate.length; p++){
+                                axios.patch(`http://localhost:8000/posts/${postsToUpdate[p].id}/comments/${commentsToDelete[c][0].postThreadNode.id}`) 
+                                .then(response => {
+                                    console.log('Comment removed:', response.data);
+                                })
+                                .catch(error => {
+                                    console.error('Error removing comment:', error.response ? error.response.data : error.message);
+                                });
+                            }
+                            }
+                            communityClickedEmitter.emit("communityClicked", -1, "", null, false, null, user, admin);
+                        })
+                        .catch(error => {
+                            console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                        });
+                        // // delete all posts from deleted communities
+                        // for(let c = 0; c < userCommunities.length; c++){
+                        //     for(let i = 0; i < userCommunities[c].postIDs.length; i++){
+                        //         axios.delete(`http://localhost:8000/posts/${userCommunities[c].postIDs[i]}`)
+                        //         .then(response => {
+                        //             console.log(response.data.message);
+                        //         })
+                        //         .catch(error => {
+                        //             console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                        //         });
+                        //     }
+                        // }
+                        // // delete all posts
+                        // axios.delete(`http://localhost:8000/posts/${curUser.displayName}`)
+                        // .then(response => {
+                        //     console.log(response.data.message);
+                        // })
+                        // .catch(error => {
+                        //     console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                        // });
+                        // // delete all comments
+                        })                   
                     })
-                    .catch(error => {
-                        console.error('Error deleting community:', error.response ? error.response.data : error.message);
-                    });
-                    // // delete all posts from deleted communities
-                    // for(let c = 0; c < userCommunities.length; c++){
-                    //     for(let i = 0; i < userCommunities[c].postIDs.length; i++){
-                    //         axios.delete(`http://localhost:8000/posts/${userCommunities[c].postIDs[i]}`)
-                    //         .then(response => {
-                    //             console.log(response.data.message);
-                    //         })
-                    //         .catch(error => {
-                    //             console.error('Error deleting community:', error.response ? error.response.data : error.message);
-                    //         });
-                    //     }
-                    // }
-                    // // delete all posts
-                    // axios.delete(`http://localhost:8000/posts/${curUser.displayName}`)
-                    // .then(response => {
-                    //     console.log(response.data.message);
-                    // })
-                    // .catch(error => {
-                    //     console.error('Error deleting community:', error.response ? error.response.data : error.message);
-                    // });
-                    // // delete all comments
-                    })                   
                 })
-            })
-        } catch (error){
-            console.log("\n error: ", error, "\n");
+            } catch (error){
+                console.log("\n error: ", error, "\n");
+            }
+        } else{
+            console.log("\n user delete was not confirmed \n");
         }
     }
     return(
