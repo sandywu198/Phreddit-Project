@@ -108,14 +108,29 @@ router.get('/:id', getUser, (req, res) => {
   res.send(res.user);
 });
 
+// Delete user by id
+router.delete('/:id', getUser, async (req, res) => {
+  try {
+    // if it's already been deleted, skip
+    if(!res.user){
+      return res.send({message: "User does not exist"});
+    }
+    await res.user.deleteOne(); 
+    res.send({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).send({ message: error.message });
+  }
+});
+
 // Middleware to get a user by id
 async function getUser(req, res, next) {
   try {
     // const user = await User.findById(req.params.id).select('-password'); //can use if we want to hide the password on the localhost
     const user = await User.findById(req.params.id)
-    if (user == null) {
-      return res.status(404).send({ message: 'User not found GETUSER' });
-    }
+    // if (user == null) {
+    //   return res.status(404).send({ message: 'User not found GETUSER' });
+    // }
     res.user = user;
     next();
   } catch (error) {

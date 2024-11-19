@@ -33,14 +33,29 @@ router.patch('/:id', getComment, async (req, res) => {
 // delete existing comment
 router.delete('/:id', getComment, async (req, res) => {
   try {
+    // if it's already been deleted, skip
+    if(!res.comment){
+      return res.send({message: "Comment does not exist"});
+    }
+    // delete if it exists
     console.log("\n delete req: ", req.params);
-    const result = await Comment.findByIdAndDelete(req.params.id); 
-    console.log("\n deleting: ", result);
+    await res.comment.deleteOne(); 
     res.send({ message: 'Comment has been deleted' });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
 });
+
+// router.delete('/:id', getComment, async (req, res) => {
+//   try {
+//     console.log("\n delete req: ", req.params);
+//     const result = await Comment.findByIdAndDelete(req.params.id); 
+//     console.log("\n deleting: ", result);
+//     res.send({ message: 'Comment has been deleted' });
+//   } catch (error) {
+//     res.status(500).send({ message: error.message });
+//   }
+// });
 
 // create new comment
 router.post('/', async (req, res) => {
@@ -102,9 +117,9 @@ router.get('/:id/replies', getComment, async (req, res) => {
 async function getComment(req, res, next) {
     try {
       const comment = await Comment.findById(req.params.id);
-      if (comment == null) {
-        return res.status(404).send({ message: 'Comment not found'});
-      }
+      // if (comment == null) {
+      //   return res.status(404).send({ message: 'Comment not found'});
+      // }
       res.comment = comment;
       next();
     } 

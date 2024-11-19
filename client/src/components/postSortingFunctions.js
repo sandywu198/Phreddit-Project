@@ -978,6 +978,8 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
       axios.get(`http://localhost:8000/linkflairs/${post.linkFlairID}`)
         .then(response => {setLinkFlair(response.data); fetchData(response.data);})
         .catch(error => console.error("Error fetching link flair:", error));
+    } else{
+      fetchData(null);
     }
   }, [post]);
   return(
