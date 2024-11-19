@@ -535,7 +535,8 @@ export function GetCommunitiesAndLoad(user){
         CreateCommunityButtonColorEmitter.emit('clickedColor', false)
         CreateHomeButtonColorEmitter.emit('clickedColor', true)
         CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
-        updatePageHeader(<UserProfile user={curUser} admin={admin}/>)
+        console.log("\n -8 curUser: ", curUser, "\n");
+        updatePageHeader(<UserProfile user={user} admin={admin}/>)
       }
       // otherwise, it's for loading a specific community page view
       else{
