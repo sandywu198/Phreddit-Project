@@ -324,7 +324,7 @@ export function SingleComment({posts, communities, comments, comment, user, admi
         NavBarEmitter.emit("updateNavBar");
       }}>
         <h4>{postTitle}</h4>
-        <p>{comment.content.substring(0,20)}...</p>
+        <p>{comment.content.substring(0,20)}{(comment.content.length > 20)? "..." : ""}</p>
         <hr id="delimeter" />
       </section>
     )

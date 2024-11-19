@@ -970,7 +970,7 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
               </p>
               <h3>{post.title}</h3>
               {linkflairContent && <p className="link-flair">{linkflairContent.content}</p>}
-              <p>{post.content.substring(0,80)}...</p>
+              <p>{post.content.substring(0,80)}{(post.content.length > 80)? "..." : ""}</p>
               <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
                ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"}`}
               </p>
@@ -1026,7 +1026,7 @@ export function SinglePost2({post, postIndex, specificCommunity, user}) {
               </p>
               <h3>{post.title}</h3>
               {linkflairContent && <p className="link-flair">{linkflairContent.content}</p>}
-              <p>{post.content.substring(0,80)}...</p>
+              <p>{post.content.substring(0,80)}{(post.content.length > 80)? "..." : ""}</p>
               <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
                ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"}`}
               </p>

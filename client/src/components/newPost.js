@@ -50,7 +50,7 @@ export const CreatePostButton = () =>{
 
 export const CommunityListDropdown = ({ post, user, onInputChange }) => {
   const [communities, setCommunities] = useState([]);
-  const [selectedCommunity, setSelectedCommunity] = useState(post.communityName);
+  const [selectedCommunity, setSelectedCommunity] = useState((post) ? post.communityName : "");
   useEffect(() => {
       axios.get("http://localhost:8000/communities")
           .then(res => {
@@ -83,7 +83,7 @@ export const CommunityListDropdown = ({ post, user, onInputChange }) => {
 };
 
 export const PostTitleComponent = ({ post, onInputChange }) => {
-    const [title, setTitle] = useState(post.title);
+    const [title, setTitle] = useState((post) ? post.title : "");
     const handleChange = (event) => {
         setTitle(event.target.value);
         onInputChange(event.target.value);
@@ -104,7 +104,7 @@ export const PostTitleComponent = ({ post, onInputChange }) => {
 };
 
 export const PostContentComponent = ({post, onInputChange }) => {
-    const [content, setContent] = useState(post.content);
+    const [content, setContent] = useState((post) ? post.content : "");
     const handleChange = (event) => {
         setContent(event.target.value);
         onInputChange(event.target.value);
@@ -147,14 +147,16 @@ export const LinkFlairDropdown = ({ post, onInputChange }) => {
     const [linkFlairs, setLinkFlairs] = useState([]);
     const [selectedFlair, setSelectedFlair] = useState("");
     useEffect(() => {
-        axios.get("http://localhost:8000/linkflairs")
+            axios.get("http://localhost:8000/linkflairs")
             .then(res => {
                 setLinkFlairs(res.data);
                 console.log("\n post: ", post, "\n");
                 console.log("\n LinkFlairDropdown: ", res.data, "\n");
-                const lfObj = res.data.find(lf => lf.id === post.linkFlairID);
-                console.log("\n LinkFlairDropdown: ", lfObj, "\n");
-                setSelectedFlair((lfObj) ? lfObj.content: "");
+                if(post){
+                    const lfObj = res.data.find(lf => lf.id === post.linkFlairID);
+                    console.log("\n LinkFlairDropdown: ", lfObj, "\n");
+                    setSelectedFlair((lfObj) ? lfObj.content: "");
+                }
             })
             .catch(error => console.error("Error fetching link flairs:", error));
     }, []);
@@ -296,11 +298,20 @@ export const CreatePostComponent = ({user, post}) => {
           const response = await axios.post('http://localhost:8000/posts', newPost);
           console.log('New post created:', response.data);
           console.log("POSTID @ NEWPOSTS", response.data._id);
-          const communityResponse = await axios.put(`http://localhost:8000/communities/${formData.community}`, {
-            postID: response.data._id
-        });
-        console.log('Community updated:', communityResponse.data);
-        communityClickedEmitter.emit("communityClicked", -1, "");
+          axios.get(`http://localhost:8000/communities/communityName/${formData.community}`)
+          .then(res => {
+            console.log("\n", "res here: ", res, "\n");
+            axios.put(`http://localhost:8000/communities/${res.data.id}`, { postID: response.data._id
+            }).then(res1 => {
+                console.log('Community updated:', res1.data);
+                communityClickedEmitter.emit("communityClicked", -1, "");
+            }).catch(error => console.log("\n error updating community with post \n"))
+          })
+          .catch(error => console.log("\n error getting community id by name \n"))
+        //   const communityID = await axios.get(`http://localhost:8000/communities/communityName/${formData.community}`);
+        //   const communityResponse = await axios.put(`http://localhost:8000/communities/${communityID.id}`, {
+        //     postID: response.data._id
+        // });
       } catch (error) {
           console.error('Error creating post:', error.response ? error.response.data : error.message);
       }

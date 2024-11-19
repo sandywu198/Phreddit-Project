@@ -18,6 +18,21 @@ router.get('/:id', getCommunity, (req, res) => {
     res.send(res.community);
 });
 
+// Get a specific community by name
+router.get('/communityName/:name', async (req, res) => {
+    try {
+      const { name } = req.params;
+      const community = await Community.findOne({ name: name });
+      if (community.length === 0) {
+        return res.status(404).send({ message: 'No communities made by this user' });
+      }
+      res.send(community);
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+      res.status(500).send({ message: error.message });
+    }
+});
+
 // Get communities by user
 router.get('/community/:createdBy', async (req, res) => {
     try {
