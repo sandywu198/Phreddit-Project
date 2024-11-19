@@ -16,18 +16,24 @@ export const UserProfile = ({user, admin}) => {
             axios.get("http://localhost:8000/communities").then(communitiesRes => {
               axios.get("http://localhost:8000/comments").then(commentsRes => {
                 axios.get("http://localhost:8000/users").then(usersRes => {
-                    console.log("\n user: ", user, " admin: ", admin, "\n");
-                    setContent(<>
-                        <h2>Display Name: {user.displayName}</h2>
-                        <h2>Email Address: {user.email}</h2>
-                        <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
-                        <h3>Reputation: {user.reputation} </h3>
-                        <hr id="delimeter"></hr>
-                        <UserProfileSortingButtons user={user} admin={admin}/>
-                        <UserProfileListing posts={postsRes.data} 
-                        communities={communitiesRes.data} comments={commentsRes.data}
-                        users={usersRes.data} user={user} admin={admin}/>
-                    </>)
+                    axios.get(`http://localhost:8000/users/admin/firstName`).then(adminRes => {
+                        console.log("\n user: ", user, " admin: ", admin, "\n");
+                        setContent(<>
+                            {admin && user.displayName !== "admin" && <button id="return-admin"
+                            onClick={() => 
+                            {communityClickedEmitter.emit('communityClicked', -8, "", null, true, null, adminRes.data, true);}}>
+                                Return to Admin Profile</button>}
+                            <h2>Display Name: {user.displayName}</h2>
+                            <h2>Email Address: {user.email}</h2>
+                            <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
+                            <h3>Reputation: {user.reputation} </h3>
+                            <hr id="delimeter"></hr>
+                            <UserProfileSortingButtons user={user} admin={admin}/>
+                            <UserProfileListing posts={postsRes.data} 
+                            communities={communitiesRes.data} comments={commentsRes.data}
+                            users={usersRes.data} user={user} admin={admin}/>
+                        </>)
+                    })
                 })
               })
             })
@@ -43,7 +49,7 @@ export function UserProfileSortingButtons({user, admin}){
         console.log("\n user profile page sorting: \n");
         setButtons(
         <div className="sorting-buttons">
-            {admin && 
+            {admin && user.firstName === "admin" &&
             <button className="user-profile-heading" id="all-users-button"
             onClick={() => {UserProfileSortingEmitter.emit('sort', 'users')}}>Users</button>}    
             <button className="user-profile-heading" id="posts-created"
@@ -90,7 +96,7 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             }
         };
         UserProfileSortingEmitter.on('sort', sortUserListing);
-        admin ? sortUserListing("users") : sortUserListing("posts");
+        (admin && user.firstName === "admin") ? sortUserListing("users") : sortUserListing("posts");
         return () => {
             UserProfileSortingEmitter.off('sort', sortUserListing);
         };
@@ -256,7 +262,8 @@ export function SingleUser({user, admin}) {
     }
     return(
       <section className="post-Section" onClick={() => {
-        communityClickedEmitter.emit("communityClicked", -8, "", null, false, null, user, admin);
+        console.log("\n clicked in users list: ", user,"\n");
+        communityClickedEmitter.emit("communityClicked", -8, "", null, false, null, user, true);
         NavBarEmitter.emit("updateNavBar");
       }}>
         <p>{user.displayName}</p>

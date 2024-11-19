@@ -88,7 +88,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get a specific user by email
-router.get('/:email', async (req, res) => {
+router.get('/:email/email', async (req, res) => {
   try {
     const email = req.params.email;
     const user = await User.findOne({ email });
@@ -106,6 +106,22 @@ router.get('/:email', async (req, res) => {
 // Get a specific user by id
 router.get('/:id', getUser, (req, res) => {
   res.send(res.user);
+});
+
+// Get a specific user by first name
+router.get('/:firstName/firstName', async (req, res) => {
+  try {
+    const firstName = req.params.firstName;
+    const user = await User.findOne({ firstName });
+
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    res.send(user); // This sends the user object as JSON
+  } catch (error) {
+    res.status(500).send('Server error');
+  }
 });
 
 // Delete user by id
