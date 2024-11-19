@@ -78,7 +78,7 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             } else if(type === "posts"){
                 var userPosts = posts.filter(post => post.postedBy === user.displayName);
                 console.log("\n userPosts: ", userPosts, "\n");
-                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user))
+                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user, true))
             } else if(type === "comments"){
                 var userComments = comments.filter(comment => comment.commentedBy === user.displayName);
                 console.log("\n userComments: ", userComments, "\n");
@@ -244,27 +244,6 @@ export function SingleUser({user, admin}) {
                         .catch(error => {
                             console.error('Error deleting community:', error.response ? error.response.data : error.message);
                         });
-                        // // delete all posts from deleted communities
-                        // for(let c = 0; c < userCommunities.length; c++){
-                        //     for(let i = 0; i < userCommunities[c].postIDs.length; i++){
-                        //         axios.delete(`http://localhost:8000/posts/${userCommunities[c].postIDs[i]}`)
-                        //         .then(response => {
-                        //             console.log(response.data.message);
-                        //         })
-                        //         .catch(error => {
-                        //             console.error('Error deleting community:', error.response ? error.response.data : error.message);
-                        //         });
-                        //     }
-                        // }
-                        // // delete all posts
-                        // axios.delete(`http://localhost:8000/posts/${curUser.displayName}`)
-                        // .then(response => {
-                        //     console.log(response.data.message);
-                        // })
-                        // .catch(error => {
-                        //     console.error('Error deleting community:', error.response ? error.response.data : error.message);
-                        // });
-                        // // delete all comments
                         })                   
                     })
                 })
@@ -298,7 +277,7 @@ export function SingleCommunity({communities, community, user, admin}) {
     }
     return(
       <section className="post-Section" onClick={() => {
-        communityClickedEmitter.emit("communityClicked", index, "", null, false, null, user, admin);
+        communityClickedEmitter.emit("communityClicked", -3, "", null, false, null, user, admin, null, community);
         NavBarEmitter.emit("updateNavBar");
       }}>
         <p>{community.name}</p>
@@ -306,6 +285,8 @@ export function SingleCommunity({communities, community, user, admin}) {
       </section>
     )
 }
+
+// communityClickedEmitter.emit("communityClicked", index, "", null, false, null, user, admin, null, true);
 
 export function SingleComment({posts, communities, comments, comment, user, admin}) {
     const [postThreads, setPostThreads] = useState(GetPostThreadsArrayFunction(communities, posts, comments, "All Posts", []));

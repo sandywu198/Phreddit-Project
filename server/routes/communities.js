@@ -48,6 +48,17 @@ router.delete('/:createdBy', async (req, res) => {
     }
 });
 
+// Delete community by id
+router.delete('/:id/community-id', getCommunity, async (req, res) => {
+    try {
+        await res.community.deleteOne(); // Deletes the community
+        res.send({ message: 'Community deleted successfully' });
+    } catch (error) {
+        console.log('Error deleting community:', error);
+        res.status(500).send({ message: 'Error deleting community', error: error.message });
+    }
+});
+
 // Add post to community
 router.put('/:id', async (req, res) => {
     console.log('PUT request received for community update');
@@ -103,6 +114,19 @@ router.post('/', async (req, res) =>{
     }
     catch(error){
         res.status(400).send({message: "Error creating community", error});
+    }
+});
+
+// Edit community fields
+router.put('/:id/edit-community', getCommunity, async (req, res) => {
+    try {
+        const updates = req.body; 
+        Object.assign(res.community, updates);
+        const updatedCommunity = await res.community.save();
+        res.send(updatedCommunity);
+    } catch (error) {
+        console.log('Error updating community:', error);
+        res.status(400).send({ message: 'Error updating community', error: error.message });
     }
 });
 

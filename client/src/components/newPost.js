@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from 'axios'; 
 import EventEmitter from 'events'; 
 import { communityClickedEmitter } from "./newCommunity.js"; 
+import { GetPostThreadsArrayFunction } from "./postSortingFunctions.js";
+import {NavBarEmitter} from "./navBar.js";
 
 export const CreatePostButtonColorEmitter = new EventEmitter();
 CreatePostButtonColorEmitter.setMaxListeners(25);
@@ -46,10 +48,9 @@ export const CreatePostButton = () =>{
     );
 };  
 
-export const CommunityListDropdown = ({ user, onInputChange }) => {
+export const CommunityListDropdown = ({ post, user, onInputChange }) => {
   const [communities, setCommunities] = useState([]);
-  const [selectedCommunity, setSelectedCommunity] = useState("");
-
+  const [selectedCommunity, setSelectedCommunity] = useState(post.communityName);
   useEffect(() => {
       axios.get("http://localhost:8000/communities")
           .then(res => {
@@ -70,24 +71,23 @@ export const CommunityListDropdown = ({ user, onInputChange }) => {
   return (
       <div className="list-dropdown">
           <label htmlFor="community-dropdown">Choose Community</label>
+          {console.log("\n selectedCommunity: ", selectedCommunity, "\n")}
           <select id="community-dropdown" value={selectedCommunity} onChange={handleChange} required> 
               <option value="">Select a community</option>
               {communities.map((community) => (
-                  <option key={community._id} value={community._id}>{community.name}</option>
+                  <option key={community.name} value={community.name}>{community.name}</option>
               ))}
           </select>
       </div>
   );
 };
 
-export const PostTitleComponent = ({ onInputChange }) => {
-    const [title, setTitle] = useState("");
-
+export const PostTitleComponent = ({ post, onInputChange }) => {
+    const [title, setTitle] = useState(post.title);
     const handleChange = (event) => {
         setTitle(event.target.value);
         onInputChange(event.target.value);
     };
-
     return (
         <div className="form-div">
             <label htmlFor="new-post-title">Post Title:</label>
@@ -103,14 +103,12 @@ export const PostTitleComponent = ({ onInputChange }) => {
     );
 };
 
-export const PostContentComponent = ({ onInputChange }) => {
-    const [content, setContent] = useState("");
-
+export const PostContentComponent = ({post, onInputChange }) => {
+    const [content, setContent] = useState(post.content);
     const handleChange = (event) => {
         setContent(event.target.value);
         onInputChange(event.target.value);
     };
-
     return (
         <div className="form-div">
             <label htmlFor="new-post-content">Post Content:</label>
@@ -124,7 +122,7 @@ export const PostContentComponent = ({ onInputChange }) => {
     );
 };
 
-export const NewLinkFlair = ({ onInputChange }) => {
+export const NewLinkFlair = ({ post, onInputChange }) => {
     const [newLinkFlair, updateLinkFlair] = useState("");
     const changeLinkFlair = (event) => {
         const newLinkflair = event.target.value;
@@ -145,12 +143,19 @@ export const NewLinkFlair = ({ onInputChange }) => {
     );
 };
 
-export const LinkFlairDropdown = ({ onInputChange }) => {
+export const LinkFlairDropdown = ({ post, onInputChange }) => {
     const [linkFlairs, setLinkFlairs] = useState([]);
     const [selectedFlair, setSelectedFlair] = useState("");
     useEffect(() => {
         axios.get("http://localhost:8000/linkflairs")
-            .then(res => setLinkFlairs(res.data))
+            .then(res => {
+                setLinkFlairs(res.data);
+                console.log("\n post: ", post, "\n");
+                console.log("\n LinkFlairDropdown: ", res.data, "\n");
+                const lfObj = res.data.find(lf => lf.id === post.linkFlairID);
+                console.log("\n LinkFlairDropdown: ", lfObj, "\n");
+                setSelectedFlair((lfObj) ? lfObj.content: "");
+            })
             .catch(error => console.error("Error fetching link flairs:", error));
     }, []);
     const handleChange = (event) => {
@@ -170,12 +175,15 @@ export const LinkFlairDropdown = ({ onInputChange }) => {
     );
 };
 
-export const CreatePostComponent = ({user}) => {
+export const CreatePostComponent = ({user, post}) => {
+    console.log("\n CreatePostComponent post: ", post,"\n");
+    const [curPost, setCurPost] = useState(post);
+    console.log("\n CreatePostComponent curPost: ", curPost,"\n");
     const [formData, setFormData] = useState({
-        community: '',
-        title: '',
-        content: '',
-        linkFlairID: '',
+        community: (curPost) ? curPost.communityName: '',
+        title: (curPost) ? curPost.title: '',
+        content: (curPost) ? curPost.content: '',
+        linkFlairID: (curPost) ? curPost.linkFlairID: '',
         newLinkFlair: '',
         postedBy: user.displayName,
     });
@@ -183,8 +191,72 @@ export const CreatePostComponent = ({user}) => {
     const handleInputChange = useCallback((field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     }, []);
-    const handleSubmit = async (event) => {
-      event.preventDefault();
+    const deletePost = async (post) => {
+        axios.get("http://localhost:8000/posts").then(postsRes => {
+            axios.get("http://localhost:8000/communities").then(communitiesRes => {
+                axios.get("http://localhost:8000/comments").then(commentsRes => {
+                const posts = postsRes.data;
+                posts.forEach(post => {
+                // var community = communities.find(c => c.postIDs.includes(post.id));
+                var community1;
+                for(let c in communitiesRes.data){
+                    // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
+                    if(communitiesRes.data[c].postIDs.includes(post.id)){
+                    community1 = communitiesRes.data[c].name;
+                    // console.log("\n community: ", community, "\n");
+                    } 
+                }
+                // console.log("\n community found: ", community, "\n");
+                if(community1){
+                    post.communityName = community1;
+                }
+                // console.log("\n post now: ", post, "\n");
+                });
+                const postThreads = GetPostThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, "All Posts", []);
+                // delete posts and comments from the community to delete
+                console.log("\n postThreads: ", postThreads, "\n");
+                for(let j = 0; j < postThreads.length; j++){
+                    console.log("\n postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                    if(postThreads[j][0].postThreadNode.id === post.id){
+                        console.log("\n qualify postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                        axios.delete(`http://localhost:8000/posts/${postThreads[j][0].postThreadNode.id}`)
+                        .then(response => {
+                            console.log(response.data.message);
+                            for(let k = 1; k < postThreads[j].length; k++){
+                                axios.delete(`http://localhost:8000/comments/${postThreads[j][k].postThreadNode.id}`)
+                                .then(response => {
+                                    console.log(response.data.message);
+                                })
+                                .catch(error => {
+                                    console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                                });
+                            }
+                            // if posts were deleted from communities, update the communities
+                            const updateCommunities = communitiesRes.data.filter(com => com.postIDs.includes(postThreads[j][0].postThreadNode.id));
+                            for(let m = 0; m < updateCommunities.length; m++){
+                                axios.put(`http://localhost:8000/communities/${updateCommunities[m].id}/delete-post`, {postID: postThreads[j][0].postThreadNode.id})
+                                .then(response => {
+                                    console.log('Updated community:', response.data);
+                                })
+                                .catch(error => {
+                                    console.error('Error removing post from community:', error.response.data);
+                                });
+                            }
+                            communityClickedEmitter.emit("communityClicked", -1, "", null, false, null, user);
+                            NavBarEmitter.emit('updateNavBar');
+                        })
+                        .catch(error => {
+                            console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                        });
+                        console.log("\n rest postThreads[j]: ", postThreads[j], "\n");
+                    }
+                }
+                })
+            })
+        })
+    }
+    const handleSubmit = async () => {
+    //   event.preventDefault();
       if(formData.newLinkFlair && formData.linkFlairID){
         window.alert("At most one link flair can be chosen!");
         return;
@@ -229,13 +301,14 @@ export const CreatePostComponent = ({user}) => {
       }
   };
    return (
-       <form id="new-post-page-stuff" onSubmit={handleSubmit}>
-           <CommunityListDropdown user={user} onInputChange={(value) => handleInputChange('community', value)} />
-           <PostTitleComponent onInputChange={(value) => handleInputChange('title', value)} />
-           <PostContentComponent onInputChange={(value) => handleInputChange('content', value)} />
-           <LinkFlairDropdown onInputChange={(value) => handleInputChange('linkFlairID', value)} />
-           <NewLinkFlair onInputChange={(input) => handleInputChange('newLinkFlair', input)} />
-           <button type="submit">Create Post</button>
+       <form id="new-post-page-stuff">
+           <CommunityListDropdown post={post} user={user} onInputChange={(value) => handleInputChange('community', value)} />
+           <PostTitleComponent post={post} onInputChange={(value) => handleInputChange('title', value)} />
+           <PostContentComponent post={post} onInputChange={(value) => handleInputChange('content', value)} />
+           <LinkFlairDropdown post={post}  onInputChange={(value) => handleInputChange('linkFlairID', value)} />
+           <NewLinkFlair post={post} onInputChange={(input) => handleInputChange('newLinkFlair', input)} />
+           <button type="button" onClick={() => handleSubmit()}>Create Post</button>
+           {post && <button type="button" onClick={() => {deletePost(post)}}>Delete</button>}
        </form>
    );
 };

@@ -356,7 +356,7 @@ export function DisplayActivePosts({specificCommunity, postsFromSearch, communit
 //     </div>)
 // }
 
-export function CreatePostsInHTML(postsArray, specificCommunity, communities, posts, comments, user) {
+export function CreatePostsInHTML(postsArray, specificCommunity, communities, posts, comments, user, useSinglePost2) {
   console.log("\npostsArray in creating posts: ", postsArray, " \n");
   console.log("\n going into post threads array from create posts\n");
   var postThreadsArray = GetPostThreadsArrayFunction(communities, posts, comments, specificCommunity, []); // <GetPostThreadsArray whichCommunityName={specificCommunity} postsFromSearch={[]}/>;
@@ -380,6 +380,17 @@ export function CreatePostsInHTML(postsArray, specificCommunity, communities, po
     <div>
       {console.log("\n postsArray in creating return: ", postsArray, "\n")}
       {postsArray.map((post, index) => (
+        (useSinglePost2) ? 
+        <SinglePost2 
+        key={post.url}  // Using url as the key since it's unique according to the UML
+        post={{
+          ...post,
+          commentCount: CommentsRepliesCountMap.get(post.id) ? CommentsRepliesCountMap.get(post.id) : post.commentIDs.length
+        }}
+        postIndex={index}
+        specificCommunity={specificCommunity}
+        user={user}
+        /> :
         <SinglePost 
           key={post.url}  // Using url as the key since it's unique according to the UML
           post={{
@@ -949,6 +960,62 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
           setContent(
             <section className="post-Section" onClick={() => {
               communityClickedEmitter.emit("communityClicked", -6, "", post, false, null, user);
+              NavBarEmitter.emit("updateNavBar");
+            }}>
+              {console.log("\n here post in singlepost: ", post, "\n")}
+              <p>{specificCommunity !== "All Posts" 
+                  ? `${post.postedBy} | ${displayTime(post.postedDate)}` 
+                  : `${post.communityName || ""} | ${post.postedBy} 
+                  | ${displayTime(post.postedDate)}`}
+              </p>
+              <h3>{post.title}</h3>
+              {linkflairContent && <p className="link-flair">{linkflairContent.content}</p>}
+              <p>{post.content.substring(0,80)}...</p>
+              <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
+               ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"}`}
+              </p>
+              <hr id="delimeter" />
+            </section>
+          );
+        }
+      }
+    }
+    catch(error){
+      console.error("Error fetching data:", error);
+    }
+  };
+  useEffect(() => {
+    if (post.linkFlairID) {
+      axios.get(`http://localhost:8000/linkflairs/${post.linkFlairID}`)
+        .then(response => {setLinkFlair(response.data); fetchData(response.data);})
+        .catch(error => console.error("Error fetching link flair:", error));
+    } else{
+      fetchData(null);
+    }
+  }, [post]);
+  return(
+    <>{content}</>
+  )
+}
+
+export function SinglePost2({post, postIndex, specificCommunity, user}) {
+  const [linkFlair, setLinkFlair] = useState(null);
+  const [content, setContent] = useState(null);
+  const fetchData = async (linkflairContent) => {
+    try{
+      const [communitiesRes] = await Promise.all([
+        axios.get("http://localhost:8000/communities"), 
+      ]);
+      // console.log("\n", communities, "\n");
+      // console.log("\n communities in single post: ", communities, "\n");
+      // var community;
+      for(let c in communitiesRes.data){
+        if(communitiesRes.data[c].postIDs.includes(post.id)){
+          post.communityName = communitiesRes.data[c].name;
+          console.log("\n set post community in single post: ", post, "\n");
+          setContent(
+            <section className="post-Section" onClick={() => {
+              communityClickedEmitter.emit("communityClicked", -2, "", post, false, null, user);
               NavBarEmitter.emit("updateNavBar");
             }}>
               {console.log("\n here post in singlepost: ", post, "\n")}
