@@ -296,7 +296,8 @@ export function GetCommunitiesAndLoad(user){
     // })
   // }, []) // [posts]
   useEffect(() => {
-    const loadCommunity = (communityIndex, searchString, post, replyToPost, commentRepliedTo, user, admin, comment) => {
+    const loadCommunity = (communityIndex, searchString, post, replyToPost, 
+      commentRepliedTo, user, admin, comment, community) => {
       // if communityIndex === -1, it's the All Posts View
       if(communityIndex === -1){
         CreatePostButtonColorEmitter.emit('clickedColor', false)
@@ -352,7 +353,7 @@ export function GetCommunitiesAndLoad(user){
           updatePageHeader(
         <section id="hide-for-creating-community"> 
           {console.log("\n CreateCommunityComponent user: ", curUser, "\n")}
-          <CreateCommunityComponent user={curUser}/>
+          <CreateCommunityComponent user={curUser} community={community}/>
         </section>
         )
         NavBarEmitter.emit('updateNavBar')
