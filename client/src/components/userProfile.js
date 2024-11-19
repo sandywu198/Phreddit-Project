@@ -16,18 +16,24 @@ export const UserProfile = ({user, admin}) => {
             axios.get("http://localhost:8000/communities").then(communitiesRes => {
               axios.get("http://localhost:8000/comments").then(commentsRes => {
                 axios.get("http://localhost:8000/users").then(usersRes => {
-                    console.log("\n user: ", user, " admin: ", admin, "\n");
-                    setContent(<>
-                        <h2>Display Name: {user.displayName}</h2>
-                        <h2>Email Address: {user.email}</h2>
-                        <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
-                        <h3>Reputation: {user.reputation} </h3>
-                        <hr id="delimeter"></hr>
-                        <UserProfileSortingButtons user={user} admin={admin}/>
-                        <UserProfileListing posts={postsRes.data} 
-                        communities={communitiesRes.data} comments={commentsRes.data}
-                        users={usersRes.data} user={user} admin={admin}/>
-                    </>)
+                    axios.get(`http://localhost:8000/users/admin/firstName`).then(adminRes => {
+                        console.log("\n user: ", user, " admin: ", admin, "\n");
+                        setContent(<>
+                            {admin && user.displayName !== "admin" && <button id="return-admin"
+                            onClick={() => 
+                            {communityClickedEmitter.emit('communityClicked', -8, "", null, true, null, adminRes.data, true);}}>
+                                Return to Admin Profile</button>}
+                            <h2>Display Name: {user.displayName}</h2>
+                            <h2>Email Address: {user.email}</h2>
+                            <h3>Member Since: {displayTime(new Date(user.startTime))}</h3>
+                            <h3>Reputation: {user.reputation} </h3>
+                            <hr id="delimeter"></hr>
+                            <UserProfileSortingButtons user={user} admin={admin}/>
+                            <UserProfileListing posts={postsRes.data} 
+                            communities={communitiesRes.data} comments={commentsRes.data}
+                            users={usersRes.data} user={user} admin={admin}/>
+                        </>)
+                    })
                 })
               })
             })
@@ -43,7 +49,7 @@ export function UserProfileSortingButtons({user, admin}){
         console.log("\n user profile page sorting: \n");
         setButtons(
         <div className="sorting-buttons">
-            {admin && 
+            {admin && user.firstName === "admin" &&
             <button className="user-profile-heading" id="all-users-button"
             onClick={() => {UserProfileSortingEmitter.emit('sort', 'users')}}>Users</button>}    
             <button className="user-profile-heading" id="posts-created"
@@ -72,25 +78,42 @@ export const UserProfileListing = ({posts, communities, comments, users, user, a
             // setUserListing(status);
             if(admin && type === "users"){
                 console.log("\n users: ", users, "\n");
-                setUserListing(users.map((user) => (
-                    <SingleUser key={user.displayName} user={user} admin={admin}/>
-                )))
+                const nonAdminUsers = users.filter(user => user.firstName !== "admin");
+                if(nonAdminUsers.length > 0){
+                    setUserListing(nonAdminUsers.map((user) => (
+                        <SingleUser key={user.displayName} user={user} admin={admin}/>
+                    )))
+                } else{
+                    setUserListing(<p>No users available.</p>)
+                }
             } else if(type === "posts"){
                 var userPosts = posts.filter(post => post.postedBy === user.displayName);
                 console.log("\n userPosts: ", userPosts, "\n");
-                setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user, true))
+                if(userPosts.length > 0){
+                    setUserListing(CreatePostsInHTML(userPosts, "All Posts", communities, posts, comments, user, true));
+                } else{
+                    setUserListing(<p>No posts available. Go make some posts!</p>)
+                }
             } else if(type === "comments"){
                 var userComments = comments.filter(comment => comment.commentedBy === user.displayName);
                 console.log("\n userComments: ", userComments, "\n");
-                setUserListing(userComments.map((comment) => (<SingleComment key={comment.id} comment={comment} user={user} admin={admin} communities={communities} posts={posts} comments={comments}/>)))
+                if(userComments.length > 0){
+                    setUserListing(userComments.map((comment) => (<SingleComment key={comment.id} comment={comment} user={user} admin={admin} communities={communities} posts={posts} comments={comments}/>)));
+                } else{
+                    setUserListing(<p>No comments available. Go make some comments!</p>)
+                }
             } else if(type === "communities"){
                 var userCommunities = communities.filter(community => community.createdBy === user.displayName);
                 console.log("\n userCommunities: ", userCommunities, "\n");
-                setUserListing(userCommunities.map((community) => (<SingleCommunity key={community.name} communities={communities} community={community} user={user} admin={admin}/>)))
+                if(userCommunities.length > 0){
+                    setUserListing(userCommunities.map((community) => (<SingleCommunity key={community.name} communities={communities} community={community} user={user} admin={admin}/>)));
+                } else{
+                    setUserListing(<p>No communities available. Go make some communities!</p>)
+                }
             }
         };
         UserProfileSortingEmitter.on('sort', sortUserListing);
-        admin ? sortUserListing("users") : sortUserListing("posts");
+        (admin && user.firstName === "admin") ? sortUserListing("users") : sortUserListing("posts");
         return () => {
             UserProfileSortingEmitter.off('sort', sortUserListing);
         };
@@ -256,7 +279,8 @@ export function SingleUser({user, admin}) {
     }
     return(
       <section className="post-Section" onClick={() => {
-        communityClickedEmitter.emit("communityClicked", -8, "", null, false, null, user, admin);
+        console.log("\n clicked in users list: ", user,"\n");
+        communityClickedEmitter.emit("communityClicked", -8, "", null, false, null, user, true);
         NavBarEmitter.emit("updateNavBar");
       }}>
         <p>{user.displayName}</p>
@@ -300,7 +324,7 @@ export function SingleComment({posts, communities, comments, comment, user, admi
         NavBarEmitter.emit("updateNavBar");
       }}>
         <h4>{postTitle}</h4>
-        <p>{comment.content.substring(0,20)}...</p>
+        <p>{comment.content.substring(0,20)}{(comment.content.length > 20)? "..." : ""}</p>
         <hr id="delimeter" />
       </section>
     )

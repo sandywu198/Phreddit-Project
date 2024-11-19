@@ -50,7 +50,7 @@ export const CreatePostButton = () =>{
 
 export const CommunityListDropdown = ({ post, user, onInputChange }) => {
   const [communities, setCommunities] = useState([]);
-  const [selectedCommunity, setSelectedCommunity] = useState(post.communityName);
+  const [selectedCommunity, setSelectedCommunity] = useState((post) ? post.communityName : "");
   useEffect(() => {
       axios.get("http://localhost:8000/communities")
           .then(res => {
@@ -83,7 +83,7 @@ export const CommunityListDropdown = ({ post, user, onInputChange }) => {
 };
 
 export const PostTitleComponent = ({ post, onInputChange }) => {
-    const [title, setTitle] = useState(post.title);
+    const [title, setTitle] = useState((post) ? post.title : "");
     const handleChange = (event) => {
         setTitle(event.target.value);
         onInputChange(event.target.value);
@@ -104,7 +104,7 @@ export const PostTitleComponent = ({ post, onInputChange }) => {
 };
 
 export const PostContentComponent = ({post, onInputChange }) => {
-    const [content, setContent] = useState(post.content);
+    const [content, setContent] = useState((post) ? post.content : "");
     const handleChange = (event) => {
         setContent(event.target.value);
         onInputChange(event.target.value);
@@ -147,14 +147,16 @@ export const LinkFlairDropdown = ({ post, onInputChange }) => {
     const [linkFlairs, setLinkFlairs] = useState([]);
     const [selectedFlair, setSelectedFlair] = useState("");
     useEffect(() => {
-        axios.get("http://localhost:8000/linkflairs")
+            axios.get("http://localhost:8000/linkflairs")
             .then(res => {
                 setLinkFlairs(res.data);
                 console.log("\n post: ", post, "\n");
                 console.log("\n LinkFlairDropdown: ", res.data, "\n");
-                const lfObj = res.data.find(lf => lf.id === post.linkFlairID);
-                console.log("\n LinkFlairDropdown: ", lfObj, "\n");
-                setSelectedFlair((lfObj) ? lfObj.content: "");
+                if(post){
+                    const lfObj = res.data.find(lf => lf.id === post.linkFlairID);
+                    console.log("\n LinkFlairDropdown: ", lfObj, "\n");
+                    setSelectedFlair((lfObj) ? lfObj.content: "");
+                }
             })
             .catch(error => console.error("Error fetching link flairs:", error));
     }, []);
@@ -192,68 +194,73 @@ export const CreatePostComponent = ({user, post}) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     }, []);
     const deletePost = async (post) => {
-        axios.get("http://localhost:8000/posts").then(postsRes => {
-            axios.get("http://localhost:8000/communities").then(communitiesRes => {
-                axios.get("http://localhost:8000/comments").then(commentsRes => {
-                const posts = postsRes.data;
-                posts.forEach(post => {
-                // var community = communities.find(c => c.postIDs.includes(post.id));
-                var community1;
-                for(let c in communitiesRes.data){
-                    // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
-                    if(communitiesRes.data[c].postIDs.includes(post.id)){
-                    community1 = communitiesRes.data[c].name;
-                    // console.log("\n community: ", community, "\n");
-                    } 
-                }
-                // console.log("\n community found: ", community, "\n");
-                if(community1){
-                    post.communityName = community1;
-                }
-                // console.log("\n post now: ", post, "\n");
-                });
-                const postThreads = GetPostThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, "All Posts", []);
-                // delete posts and comments from the community to delete
-                console.log("\n postThreads: ", postThreads, "\n");
-                for(let j = 0; j < postThreads.length; j++){
-                    console.log("\n postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
-                    if(postThreads[j][0].postThreadNode.id === post.id){
-                        console.log("\n qualify postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
-                        axios.delete(`http://localhost:8000/posts/${postThreads[j][0].postThreadNode.id}`)
-                        .then(response => {
-                            console.log(response.data.message);
-                            for(let k = 1; k < postThreads[j].length; k++){
-                                axios.delete(`http://localhost:8000/comments/${postThreads[j][k].postThreadNode.id}`)
-                                .then(response => {
-                                    console.log(response.data.message);
-                                })
-                                .catch(error => {
-                                    console.log('Error deleting community:', error.response ? error.response.data : error.message);
-                                });
-                            }
-                            // if posts were deleted from communities, update the communities
-                            const updateCommunities = communitiesRes.data.filter(com => com.postIDs.includes(postThreads[j][0].postThreadNode.id));
-                            for(let m = 0; m < updateCommunities.length; m++){
-                                axios.put(`http://localhost:8000/communities/${updateCommunities[m].id}/delete-post`, {postID: postThreads[j][0].postThreadNode.id})
-                                .then(response => {
-                                    console.log('Updated community:', response.data);
-                                })
-                                .catch(error => {
-                                    console.error('Error removing post from community:', error.response.data);
-                                });
-                            }
-                            communityClickedEmitter.emit("communityClicked", -1, "", null, false, null, user);
-                            NavBarEmitter.emit('updateNavBar');
-                        })
-                        .catch(error => {
-                            console.log('Error deleting community:', error.response ? error.response.data : error.message);
-                        });
-                        console.log("\n rest postThreads[j]: ", postThreads[j], "\n");
+        const confirmDelete = window.confirm('Are you sure you want to delete this post?');
+        if(confirmDelete){
+            axios.get("http://localhost:8000/posts").then(postsRes => {
+                axios.get("http://localhost:8000/communities").then(communitiesRes => {
+                    axios.get("http://localhost:8000/comments").then(commentsRes => {
+                    const posts = postsRes.data;
+                    posts.forEach(post => {
+                    // var community = communities.find(c => c.postIDs.includes(post.id));
+                    var community1;
+                    for(let c in communitiesRes.data){
+                        // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
+                        if(communitiesRes.data[c].postIDs.includes(post.id)){
+                        community1 = communitiesRes.data[c].name;
+                        // console.log("\n community: ", community, "\n");
+                        } 
                     }
-                }
+                    // console.log("\n community found: ", community, "\n");
+                    if(community1){
+                        post.communityName = community1;
+                    }
+                    // console.log("\n post now: ", post, "\n");
+                    });
+                    const postThreads = GetPostThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, "All Posts", []);
+                    // delete posts and comments from the community to delete
+                    console.log("\n postThreads: ", postThreads, "\n");
+                    for(let j = 0; j < postThreads.length; j++){
+                        console.log("\n postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                        if(postThreads[j][0].postThreadNode.id === post.id){
+                            console.log("\n qualify postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                            axios.delete(`http://localhost:8000/posts/${postThreads[j][0].postThreadNode.id}`)
+                            .then(response => {
+                                console.log(response.data.message);
+                                for(let k = 1; k < postThreads[j].length; k++){
+                                    axios.delete(`http://localhost:8000/comments/${postThreads[j][k].postThreadNode.id}`)
+                                    .then(response => {
+                                        console.log(response.data.message);
+                                    })
+                                    .catch(error => {
+                                        console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                                    });
+                                }
+                                // if posts were deleted from communities, update the communities
+                                const updateCommunities = communitiesRes.data.filter(com => com.postIDs.includes(postThreads[j][0].postThreadNode.id));
+                                for(let m = 0; m < updateCommunities.length; m++){
+                                    axios.put(`http://localhost:8000/communities/${updateCommunities[m].id}/delete-post`, {postID: postThreads[j][0].postThreadNode.id})
+                                    .then(response => {
+                                        console.log('Updated community:', response.data);
+                                    })
+                                    .catch(error => {
+                                        console.error('Error removing post from community:', error.response.data);
+                                    });
+                                }
+                                communityClickedEmitter.emit("communityClicked", -1, "", null, false, null, user);
+                                NavBarEmitter.emit('updateNavBar');
+                            })
+                            .catch(error => {
+                                console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                            });
+                            console.log("\n rest postThreads[j]: ", postThreads[j], "\n");
+                        }
+                    }
+                    })
                 })
             })
-        })
+        } else{
+            console.log("\n user canceled delete post \n");
+        }
     }
     const handleSubmit = async () => {
     //   event.preventDefault();
@@ -291,11 +298,20 @@ export const CreatePostComponent = ({user, post}) => {
           const response = await axios.post('http://localhost:8000/posts', newPost);
           console.log('New post created:', response.data);
           console.log("POSTID @ NEWPOSTS", response.data._id);
-          const communityResponse = await axios.put(`http://localhost:8000/communities/${formData.community}`, {
-            postID: response.data._id
-        });
-        console.log('Community updated:', communityResponse.data);
-        communityClickedEmitter.emit("communityClicked", -1, "");
+          axios.get(`http://localhost:8000/communities/communityName/${formData.community}`)
+          .then(res => {
+            console.log("\n", "res here: ", res, "\n");
+            axios.put(`http://localhost:8000/communities/${res.data.id}`, { postID: response.data._id
+            }).then(res1 => {
+                console.log('Community updated:', res1.data);
+                communityClickedEmitter.emit("communityClicked", -1, "");
+            }).catch(error => console.log("\n error updating community with post \n"))
+          })
+          .catch(error => console.log("\n error getting community id by name \n"))
+        //   const communityID = await axios.get(`http://localhost:8000/communities/communityName/${formData.community}`);
+        //   const communityResponse = await axios.put(`http://localhost:8000/communities/${communityID.id}`, {
+        //     postID: response.data._id
+        // });
       } catch (error) {
           console.error('Error creating post:', error.response ? error.response.data : error.message);
       }

@@ -41,7 +41,7 @@ export function HomePage({userStatus, user}){
       <hr id = "delimeter"></hr>
       <div className="text-under-header">
         <NavBar userStatus={userStatus} user={user}/> {/*  fetchData={fetchData} */}
-        <PostHeader user={user}/>
+        <PostHeader userStatus={userStatus} user={user}/>
       </div>
     </>
   )
@@ -182,7 +182,7 @@ export function HandleSearchLogic({searchString, communityIndex, printPostThread
 };
 
 // post, true, null, user, admin, comment
-export const MakeCommentsListing = ({sortedNodeArray, post, user}) => {
+export const MakeCommentsListing = ({sortedNodeArray, post, user, userStatus}) => {
   console.log("\n sortedNodeArray in MakeCommentsListing: ", sortedNodeArray, "\n");
   let lastThreadLevel = 1;
   const result = [];
@@ -195,8 +195,8 @@ export const MakeCommentsListing = ({sortedNodeArray, post, user}) => {
     <div>
       <p>{node.postThreadNode.commentedBy + " | " + displayTime(node.postThreadNode.commentedDate)}</p>
       <p>{node.postThreadNode.content}</p>
-      <button id={`reply-button-${nodeIndex}`}
-      onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, false, node.postThreadNode, user)}}>Reply</button>
+      {userStatus !== "guest" && <button id={`reply-button-${nodeIndex}`}
+      onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, false, node.postThreadNode, user)}}>Reply</button>}
     </div>}</li>;
     if(curThreadLevel > lastThreadLevel){
       const newList = [curComment];
@@ -225,7 +225,7 @@ export const MakeCommentsListing = ({sortedNodeArray, post, user}) => {
 };
 
 // switches main page view
-export function GetCommunitiesAndLoad(user){
+export function GetCommunitiesAndLoad(user, userStatus){
   // const {model} = useContext(ModelStateContext);
   const [posts, setPosts] = useState(null);
   const [communities, setCommunities] = useState(null);
@@ -234,6 +234,7 @@ export function GetCommunitiesAndLoad(user){
   const [pageHeader, updatePageHeader] = useState(null);
   const [curUser, setCurUser] = useState(user);
   const [isMember,setIsMember] = useState(false);
+  const [curUserStatus, setCurUserStatus] = useState(userStatus);
   // var postThreadsArray; // = GetPostThreadsArray("All Posts", []);//<GetPostThreadsArray whichCommunityName="All Posts"  postsFromSearch={[]}/>;
   // console.log("\n creating postThreadsArray in loading view: ", postThreadsArray, "\n");
   useEffect (() => {
@@ -469,12 +470,12 @@ export function GetCommunitiesAndLoad(user){
                         <p className="post-heading" id="post-view-comment">{(post.views + 1) + " View" + 
                           (((post.views + 1) !== 1) ? "s" : "") + " | " + commentRepliesCount + 
                           " Comment" + ((commentRepliesCount !== 1) ? "s" : "")}</p>
-                        <button className="post-heading" id="add-comment"
-                        onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, true, null, curUser, admin, comment)}}>Add Comment</button>
+                        {curUserStatus !== "guest" && <button className="post-heading" id="add-comment"
+                        onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, true, null, curUser, admin, comment)}}>Add Comment</button>}
                         <hr id = "delimeter"/>
                         {/* display all the comments & replies */}
                         <section id="posts-listing-section">
-                        {(postResultArray !== null) && <MakeCommentsListing sortedNodeArray={sortedNodeArray} post={post} user={curUser}/> }
+                        {(postResultArray !== null) && <MakeCommentsListing sortedNodeArray={sortedNodeArray} post={post} user={curUser} userStatus={curUserStatus}/> }
                         </section>
                       </section>
                       )
@@ -506,7 +507,8 @@ export function GetCommunitiesAndLoad(user){
         CreateCommunityButtonColorEmitter.emit('clickedColor', false)
         CreateHomeButtonColorEmitter.emit('clickedColor', true)
         CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
-        updatePageHeader(<UserProfile user={curUser} admin={admin}/>)
+        console.log("\n -8 curUser: ", curUser, "\n");
+        updatePageHeader(<UserProfile user={user} admin={admin}/>)
       }
       // otherwise, it's for loading a specific community page view
       else{
@@ -773,11 +775,11 @@ export function GetCommunitiesAndLoad(user){
 //   });
 // }
 
-export function PostHeader({user}){
+export function PostHeader({userStatus, user}){
   return(
     <div className="main-homepage" id="page-view">
       <section className="post-header">
-        {GetCommunitiesAndLoad(user)}
+        {GetCommunitiesAndLoad(user, userStatus)}
       </section>
     </div>);
 }
