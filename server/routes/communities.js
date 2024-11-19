@@ -18,6 +18,36 @@ router.get('/:id', getCommunity, (req, res) => {
     res.send(res.community);
 });
 
+// Get communities by user
+router.get('/community/:createdBy', async (req, res) => {
+    try {
+      const { createdBy } = req.params;
+      const communities = await Community.find({ createdBy });
+      if (communities.length === 0) {
+        return res.status(404).send({ message: 'No communities made by this user' });
+      }
+      res.send(communities);
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+      res.status(500).send({ message: error.message });
+    }
+});
+
+// Delete community by user
+router.delete('/:createdBy', async (req, res) => {
+    try {
+      const { createdBy } = req.params;
+      const result = await Community.deleteMany({ createdBy });
+      if (result.deletedCount === 0) {
+        return res.status(404).send({ message: 'No communities to delete' });
+      }
+      res.send({ message: `community was deleted` });
+    } catch (error) {
+      console.error('Error deleting communities:', error);
+      res.status(500).send({ message: error.message });
+    }
+});
+
 // Add post to community
 router.put('/:id', async (req, res) => {
     console.log('PUT request received for community update');
@@ -34,6 +64,26 @@ router.put('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error in PUT route:', error);
         res.status(400).send({ message: "Error updating community", error: error.message });
+    }
+});
+
+// Delete post from community
+router.put('/:id/delete-post', async (req, res) => {
+    try {
+        const communityId = req.params.id;
+        const postID = req.body.postID;
+        const community = await Community.findOneAndUpdate(
+            { _id: communityId },
+            { $pull: { postIDs: postID } },
+            { new: true } 
+        );
+        if (!community) {
+            return res.send({ message: 'Community not found' });
+        }
+        res.send(community);
+    } catch (error) {
+        console.log('Error in reverse PUT route:', error);
+        res.status(400).send({ message: 'Error removing post from community', error: error.message });
     }
 });
 
@@ -60,9 +110,9 @@ router.post('/', async (req, res) =>{
 async function getCommunity(req, res, next) {
     try {
         const community = await Community.findById(req.params.id);
-        if (community == null) {
-            return res.status(404).send({ message: 'Community not found' });
-        }
+        // if (community == null) {
+        //     return res.status(404).send({ message: 'Community not found' });
+        // }
         res.community = community;
         next();
     } 

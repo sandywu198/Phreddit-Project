@@ -565,7 +565,7 @@ export function GetCommunitiesAndLoad(user){
                 : " Members")}</h4>
                     <hr id = "delimeter"/>
                     {/* {console.log("\n check communityIndex:", communityIndex, "\n")} */}
-                    <SortedPostListing communityIndex={communityIndex} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data} user={user}/>
+                    <SortedPostListing communityIndex={communityIndex} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data} user={curUser}/>
                     {sortPostEmitter.emit("sortPosts", true, false, communityIndex, [])}
                   </div>
                 )

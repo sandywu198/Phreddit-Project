@@ -5,7 +5,7 @@ import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.
 import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
 import {WelcomePage} from "./welcomePage.js";
 import {NavBarEmitter} from "./navBar.js";
-import {CreatePostsInHTML, GetPostThreadsArrayFunction} from "./postSortingFunctions.js";
+import {CreatePostsInHTML, GetPostThreadsArrayFunction, GetCommentThreadsArrayFunction} from "./postSortingFunctions.js";
 import axios from 'axios';
 
 export const UserProfile = ({user, admin}) => {
@@ -117,6 +117,158 @@ user.
 */
 
 export function SingleUser({user, admin}) {
+    const [curUser, setCurUser] = useState(user);
+    const deleteUser = async () => {
+        try{
+            console.log("\n deleting user\n");
+            axios.get("http://localhost:8000/posts").then(postsRes => {
+                axios.get("http://localhost:8000/communities").then(communitiesRes => {
+                  axios.get("http://localhost:8000/comments").then(commentsRes => {
+                    var userCommunities;
+                    // get all the communities created by the user
+                    axios.get(`http://localhost:8000/communities/community/${curUser.displayName}`)
+                    .then(response => {
+                        userCommunities = response.data;
+                        const communityNames = [];
+                        for(let i = 0; i < userCommunities.length; i++){
+                            communityNames.push(userCommunities[i].name);
+                        }
+                        console.log("\n communityNames: ", communityNames, "\n");
+                        // delete all communities created by the user
+                        axios.delete(`http://localhost:8000/communities/${curUser.displayName}`)
+                        .then(response => {
+                            console.log(response.data.message);
+                        })
+                        .catch(error => {
+                            console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                        });
+                        const posts = postsRes.data;
+                        posts.forEach(post => {
+                            // var community = communities.find(c => c.postIDs.includes(post.id));
+                            var community;
+                            for(let c in communitiesRes.data){
+                              // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
+                              if(communitiesRes.data[c].postIDs.includes(post.id)){
+                                community = communitiesRes.data[c].name;
+                                // console.log("\n community: ", community, "\n");
+                              } 
+                            }
+                            // console.log("\n community found: ", community, "\n");
+                            if(community){
+                              post.communityName = community;
+                            }
+                            // console.log("\n post now: ", post, "\n");
+                        });
+                        const postThreads = GetPostThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, "All Posts", []);
+                        // delete posts and comments by user or in deleted communities
+                        console.log("\n postThreads: ", postThreads, "\n");
+                        for(let j = 0; j < postThreads.length; j++){
+                            console.log("\n postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                            if((communityNames.includes(postThreads[j][0].postThreadNode.communityName) || 
+                                postThreads[j][0].postThreadNode.postedBy === curUser.displayName)){
+                                console.log("\n qualify postThreads[j][0].postThreadNode: ", postThreads[j][0].postThreadNode, "\n");
+                                axios.delete(`http://localhost:8000/posts/${postThreads[j][0].postThreadNode.id}`)
+                                .then(response => {
+                                    console.log(response.data.message);
+                                })
+                                .catch(error => {
+                                    console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                                });
+                                console.log("\n rest postThreads[j]: ", postThreads[j], "\n");
+                                for(let k = 1; k < postThreads[j].length; k++){
+                                    axios.delete(`http://localhost:8000/comments/${postThreads[j][k].postThreadNode.id}`)
+                                    .then(response => {
+                                        console.log(response.data.message);
+                                    })
+                                    .catch(error => {
+                                        console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                                    });
+                                }
+                                // if posts were deleted from communities, update the communities
+                                const updateCommunities = communitiesRes.data.filter(com => com.postIDs.includes(postThreads[j][0].postThreadNode.id));
+                                for(let m = 0; m < updateCommunities.length; m++){
+                                    axios.put(`http://localhost:8000/communities/${updateCommunities[m].id}/delete-post`, {postID: postThreads[j][0].postThreadNode.id})
+                                    .then(response => {
+                                        console.log('Updated community:', response.data);
+                                    })
+                                    .catch(error => {
+                                        console.error('Error removing post from community:', error.response.data);
+                                    });
+                                }
+                            }
+                        }
+                        // delete the user
+                        axios.delete(`http://localhost:8000/users/${curUser.id}`)
+                        .then(response => {
+                            console.log(response.data.message);
+                            communityClickedEmitter.emit('communityClicked', -8, "", null, true, null, curUser, (curUser.firstName === "admin"));
+                        })
+                        .catch(error => {
+                            console.log('Error deleting community:', error.response ? error.response.data : error.message);
+                        });
+                        // delete user comments
+                        const commentThreadsArray = GetCommentThreadsArrayFunction(communitiesRes.data, posts, commentsRes.data, 'All Posts', []);
+                        console.log("\n commentThreadsArray: ", commentThreadsArray, "\n");
+                        console.log("\n curUser: ", curUser, "\n");
+                        console.log("\n commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName): ", commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName), "\n");
+                        const commentsToDelete = commentThreadsArray.filter(thread => thread[0].postThreadNode.commentedBy === curUser.displayName);
+                        console.log("\n commentsToDelete: ", commentsToDelete, "\n");
+                        for(let c = 0; c < commentsToDelete.length; c++){
+                            console.log("\n deleting... ", commentsToDelete[c][0].postThreadNode.id, "\n");
+                            axios.delete(`http://localhost:8000/comments/${commentsToDelete[c][0].postThreadNode.id}`)
+                                .then(response => {
+                                console.log('Comment removed:', response.data);
+                                })
+                                .catch(error => {
+                                console.error('Error removing comment:', error.response ? error.response.data : error.message);
+                                }); 
+                            console.log("\n comment deleted \n");
+                        }
+                        for(let c = 0; c < commentsToDelete.length; c++){
+                        const postsToUpdate = posts.filter(post1 => post1.commentIDs.includes(commentsToDelete[c][0].postThreadNode.id));
+                        console.log("\n postsToUpdate: ", postsToUpdate, "\n");
+                        for(let p = 0; p < postsToUpdate.length; p++){
+                            axios.patch(`http://localhost:8000/posts/${postsToUpdate[p].id}/comments/${commentsToDelete[c][0].postThreadNode.id}`) 
+                            .then(response => {
+                                console.log('Comment removed:', response.data);
+                            })
+                            .catch(error => {
+                                console.error('Error removing comment:', error.response ? error.response.data : error.message);
+                            });
+                        }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                    });
+                    // // delete all posts from deleted communities
+                    // for(let c = 0; c < userCommunities.length; c++){
+                    //     for(let i = 0; i < userCommunities[c].postIDs.length; i++){
+                    //         axios.delete(`http://localhost:8000/posts/${userCommunities[c].postIDs[i]}`)
+                    //         .then(response => {
+                    //             console.log(response.data.message);
+                    //         })
+                    //         .catch(error => {
+                    //             console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                    //         });
+                    //     }
+                    // }
+                    // // delete all posts
+                    // axios.delete(`http://localhost:8000/posts/${curUser.displayName}`)
+                    // .then(response => {
+                    //     console.log(response.data.message);
+                    // })
+                    // .catch(error => {
+                    //     console.error('Error deleting community:', error.response ? error.response.data : error.message);
+                    // });
+                    // // delete all comments
+                    })                   
+                })
+            })
+        } catch (error){
+            console.log("\n error: ", error, "\n");
+        }
+    }
     return(
       <section className="post-Section" onClick={() => {
         communityClickedEmitter.emit("communityClicked", -8, "", null, false, null, user, admin);
@@ -125,7 +277,7 @@ export function SingleUser({user, admin}) {
         <p>{user.displayName}</p>
         <p>{user.email}</p>
         <p>{user.reputation}</p>
-        <button id="delete-user">Delete user</button>
+        <button id="delete-user" onClick={deleteUser}>Delete user</button>
         <hr id="delimeter" />
       </section>
     )
@@ -149,7 +301,6 @@ export function SingleCommunity({communities, community, user, admin}) {
     )
 }
 
-// TO DO: figure out post titles
 export function SingleComment({posts, communities, comments, comment, user, admin}) {
     const [postThreads, setPostThreads] = useState(GetPostThreadsArrayFunction(communities, posts, comments, "All Posts", []));
     console.log("\n postThreads: ", postThreads, "\n");
@@ -167,66 +318,5 @@ export function SingleComment({posts, communities, comments, comment, user, admi
       </section>
     )
 }
-    // console.log("\n model in sorting: ", model, " communityIndex: ", communityIndex, " postsFromSearch: ", postsFromSearch, "\n")
-// postsFromSearch = new Set(postsFromSearch);
-// const [postListing, updatePostListing] = useState(null);
-// useEffect (() => {
-//     console.log("\n SortedPostListing: ", " communities: ", communities, " posts ", posts, " comments: ", comments, "\n");
-//     updatePostListing(
-//     (communityIndex < 0 && postsFromSearch.length === 0) ? 
-//     <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} /> :
-//     ((postsFromSearch.length > 0) ?  <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} />:
-//     <DisplayPosts newToOld={true} specificCommunity={communities[communityIndex].name} postsFromSearch={[]} communities={communities} posts={posts} comments={comments} />));
-// }, [communityIndex, postsFromSearch, communities, posts, comments]); //[communityIndex, postListing, postsFromSearch]
-// useEffect(() => {
-//     const getPostListing = (newestToOldest, active, communityIndex, postsFromSearch) => {
-//     console.log("\n button sort get posts\n");
-//     console.log("\n SortedPostListing getPostListing: ", " communities: ", communities, " posts ", posts, " comments: ", comments, "\n");
-//     if(communities !== null){
-//         console.log("\n button sort get posts 2\n");
-//         console.log("\n newestToOldest: ", newestToOldest, ", active: ", active, 
-//         ", communityIndex: ", communityIndex, ", postsFromSearch: ", postsFromSearch, "\n");
-//         let updatedPostListing;
-//         if (communityIndex >= 0) {
-//         const communityName = communities[communityIndex].name;
-//         if (active) {
-//             updatedPostListing = <DisplayActivePosts specificCommunity={communityName} postsFromSearch={new Set()} communities={communities} posts={posts} comments={comments} />// DisplayActivePosts(communityName, new Set()); 
-//         } else if (newestToOldest) {
-//             console.log("\n new for community \n");
-//             updatedPostListing = <DisplayPosts newToOld={true} specificCommunity={communityName} postsFromSearch={[]} communities={communities} posts={posts} comments={comments} />;
-//         } else {
-//             console.log("\n old for community \n");
-//             updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity={communityName} postsFromSearch={[]} communities={communities} posts={posts} comments={comments} />;
-//         }
-//         } else if (postsFromSearch.length > 0) {
-//         if (active) {
-//             updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} /> // DisplayActivePosts("All Posts", postsFromSearch);
-//         } else if (newestToOldest) {
-//             updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} />;
-//         } else {
-//             updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} />;
-//         }
-//         } else {
-//         if (active) {
-//             updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={new Set()} communities={communities} posts={posts} comments={comments} /> // DisplayActivePosts("All Posts", new Set());
-//         } else if (newestToOldest) {
-//             console.log("\n new for all posts \n");
-//             updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} />;
-//         } else {
-//             console.log("\n old for all posts \n");
-//             updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} />;
-//         }
-//         }
-//         updatePostListing(updatedPostListing);
-//     }
-//     }
-//     getPostListing(true, false, communityIndex, postsFromSearch);
-//     sortPostEmitter.on("sortPosts", getPostListing);
-    
-//     return () => {
-//     sortPostEmitter.off("sortPosts", getPostListing);
-//     };
-// }, [communities, communityIndex, postsFromSearch, posts, comments]); // [communities, communityIndex, postsFromSearch]    
-// console.log("\npostListing return: ", postListing, "\n");
-// return (<div>{postListing}</div>);
+
 

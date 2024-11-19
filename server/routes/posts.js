@@ -18,6 +18,37 @@ router.get('/:id', getPost, (req, res) => {
     res.send(res.post);
 });
 
+// Delete post by id
+router.delete('/:id', getPost, async (req, res) => {
+  try {
+    // if it's already been deleted, skip
+    if(!res.post){
+      return res.send({message: "Post does not exist"});
+    }
+    // delete if it exists
+    await res.post.deleteOne(); 
+    res.send({ message: 'Post deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).send({ message: error.message });
+  }
+});
+
+// Delete posts by user
+// router.delete('/:createdBy', async (req, res) => {
+//   try {
+//     const { createdBy } = req.params;
+//     const result = await Post.deleteMany({ createdBy });
+//     if (result.deletedCount === 0) {
+//       return res.status(404).send({ message: 'No posts found to delete' });
+//     }
+//     res.status(200).send({ message: `${result.deletedCount} posts deleted successfully` });
+//   } catch (error) {
+//     console.error('Error deleting posts:', error);
+//     res.status(500).send({ message: error.message });
+//   }
+// });
+
 // Create a new post
 router.post('/', async (req, res) => {
     const post = new Post({
@@ -52,6 +83,10 @@ router.get('/:id/comments', getPost, async (req, res) => {
 router.patch('/:id/comments/:commentId', getPost, async (req, res) => {
   try {
     const { commentId } = req.params;
+    if(!res.post){
+      res.send("Post doesn't exist, comment not removed");
+      return; 
+    }
     res.post.commentIDs.pull(commentId);
     await res.post.save();
     res.send(res.post);
@@ -112,9 +147,9 @@ router.patch('/:id/view', getPost, async(req,res) =>{
 async function getPost(req, res, next) {
     try {
       const post = await Post.findById(req.params.id);
-      if (post == null) {
-        return res.status(404).send({ message: 'Post not found' });
-      }
+      // if (post == null) {
+      //   return res.status(404).send({ message: 'Post not found' });
+      // }
       res.post = post;
       next();
     } 
