@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Community = require('../models/communities');
 console.log('Community routes loaded');
+
 // Get all communities
 router.get('/', async (req, res) => {
     try{
         const communities = await Community.find();
-        res.send(communities);
+        res.status(200).send(communities);
     }
     catch(error){
         res.status(500).send({message: "Error retrieving communities", error});
@@ -15,8 +16,31 @@ router.get('/', async (req, res) => {
 
 // Get a specific community by ID
 router.get('/:id', getCommunity, (req, res) => {
-    res.send(res.community);
+    res.status(200).send(res.community);
 });
+
+// Get community members
+router.get('/:id/members', getCommunity, async(req, res) => {
+    res.status(200).send(res.community.members)
+});
+
+// Delete a member from the community
+router.delete(':id/members', getCommunity, async(req, res) => {
+    try{
+        const memberDel = req.params.member;
+        const memberIndex = res.community.members.indexOf(memberDel);
+        if(memberIndex === -1){
+            return res.status(404).send({ message: `Member '${memberDel}' not found in the community.` });
+        }
+        res.community.members.splice(memberIndex, 1);
+        res.community.memberCount = res.community.members.length;
+        await res.community.save();
+        res.status(200).send({message: `Member '${memberDel}' has been removed`});
+    }
+    catch(error){
+        res.status(500).send({message: `Error removing member '${memberDel}'`})
+    }
+})
 
 // Get communities by user
 router.get('/community/:createdBy', async (req, res) => {
@@ -134,9 +158,6 @@ router.put('/:id/edit-community', getCommunity, async (req, res) => {
 async function getCommunity(req, res, next) {
     try {
         const community = await Community.findById(req.params.id);
-        // if (community == null) {
-        //     return res.status(404).send({ message: 'Community not found' });
-        // }
         res.community = community;
         next();
     } 
