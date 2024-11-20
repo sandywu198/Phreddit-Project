@@ -19,11 +19,15 @@ router.get('/:id', getCommunity, (req, res) => {
 });
 
 // Get a specific community by name
-router.get('/communityName/:name', async (req, res) => {
+router.get('/:name/community-name', async (req, res) => {
     try {
       const { name } = req.params;
-      const community = await Community.findOne({ name: name });
-      if (community.length === 0) {
+    //   console.log("\n name: ", name, "\n");
+    const community = await Community.findOne({ name: name });
+    console.log("Encoded name from URL:", name);
+    console.log("Decoded name:", decodeURIComponent(name));
+    console.log("\n community: ", community, "\n");
+      if (!community) {
         return res.status(404).send({ message: 'No communities made by this user' });
       }
       res.send(community);
