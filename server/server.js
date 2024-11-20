@@ -6,7 +6,25 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+const session = require('express-session');
+
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true, 
+  }));
+
+app.use(session({
+  secret: 'CSE_316_Phreddit_key', 
+  resave: false,             
+  saveUninitialized: true,  
+  cookie: {
+    httpOnly: true,         
+    secure: false,
+    maxAge: 604800000,       // 7 days
+    // sameSite: 'None',       
+  },
+}));
+
 app.use(express.json());
 
 mongoose.connect('mongodb://127.0.0.1:27017/phreddit')

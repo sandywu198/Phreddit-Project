@@ -3,30 +3,33 @@ const bcrypt = require('bcrypt');
 const validator = require('validator');
 const User = require('../models/users');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = 'example_jwt';
 
 // Register new user
 router.post('/register', async (req, res) => {
   try {
     const { firstName, lastName, email, displayName, password, confirmPassword } = req.body;
     if (!validator.isEmail(email)) {
-      return res.status(400).send({ message: 'Please provide a valid email address' });
+      return res.status(400).send({message: 'Please provide a valid email address'});
     }
     const lowerPassword = password.toLowerCase();
     if (lowerPassword.includes(firstName.toLowerCase())) {
-      return res.status(400).send({ message: 'Password cannot contain your name!' });
+      return res.status(400).send({message: 'Password cannot contain your first name!'});
     } else if(lowerPassword.includes(lastName.toLowerCase())){
-      return res.status(400).send({ message: 'Password cannot contain your name!' });
+      return res.status(400).send({message: 'Password cannot contain your last name!'});
     } else if(lowerPassword.includes(email.toLowerCase())){
-      return res.status(400).send({ message: 'Password cannot contain your email!' });
+      return res.status(400).send({message: 'Password cannot contain your email!'});
     } else if(lowerPassword.includes(displayName.toLowerCase())){
-      return res.status(400).send({ message: 'Password cannot contain your display name!' });
+      return res.status(400).send({message: 'Password cannot contain your display name!'});
     }
     if (password !== confirmPassword) {
-      return res.status(400).send({ message: 'Passwords do not match' });
+      return res.status(400).send({message: 'Passwords do not match' });
     }
     const existingUser = await User.findOne({ $or: [{ email }, { displayName }] });
     if (existingUser) {
-      return res.status(400).send({ message: 'Email or display name already taken' });
+      return res.status(400).send({message: 'Email or display name already taken' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
@@ -43,6 +46,7 @@ router.post('/register', async (req, res) => {
     res.status(500).send({ message: 'Server error', error: error.message });
   }
 });
+
 // Get register
 router.get('/register', (req, res) => {
   res.send({
@@ -53,19 +57,59 @@ router.get('/register', (req, res) => {
 // Login user
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const {email, password} = req.body;
+    const user = await User.findOne({email});
     if (!user) {
-      return res.status(404).send({ message: 'User not found LOGIN' });
+      return res.status(404).send({message: 'User not found'});
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).send({ message: 'Invalid credentials' });
+      return res.status(400).send({message: 'Invalid credentials'});
     }
-    res.status(201).send({ message: 'Login successful', user: user});
+    const token = jwt.sign({userId: user._id}, JWT_SECRET, {expiresIn: '7d'});
+    req.session.token = token;
+    req.session.user = user;
+    console.log("\n req.session: ", req.session, "\n");
+    res.send({ message: 'Login successful', user: user });
   } catch (error) {
     console.error(error);
-    res.status(500).send({ message: 'Server error', error: error.message });
+    res.status(500).send({message: 'Server error', error: error.message});
+  }
+});
+
+// Check for returning user who didn't log out
+router.get('/return-session', async (req, res) => {
+  try {
+    console.log("\n check returning: ", req.session, "\n");
+    const token = req.session.token;
+    if (!token) {
+      return res.status(400).send({message: 'No existing session found'});
+    }
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    const user = await User.findById(decoded.userId);
+    console.log("\n user: ", user);
+    if (!user) {
+      return res.status(401).send({message: 'Invalid session'});
+    }
+    res.send({isAuthenticated: true, user: user});
+  } catch (err) {
+    res.status(400).send({message: 'Session is not valid'});
+  }
+});
+
+// Delete session when user logs out
+router.post('/logout', async (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).send({message: 'Failed to logout'});
+      }
+      res.send({message: 'Logged out successfully'});
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({message: 'Server error'});
   }
 });
 
