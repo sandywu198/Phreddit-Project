@@ -57,6 +57,31 @@ router.delete('/:id', getComment, async (req, res) => {
 //   }
 // });
 
+// change the userVoted status
+router.patch('/:id/:num/voted', getComment, async(req,res) =>{
+  try{
+    if(Number(req.params.num) === -2){
+      res.comment.userVoted = 0;
+      res.comment.upvotes = (res.comment.upvotes + 1);
+      const updatedComment = await res.comment.save();
+      res.send(updatedComment);
+    } else if(Number(req.params.num) === 2){
+      res.comment.userVoted = 0;
+      res.comment.upvotes = (res.comment.upvotes - 1);
+      const updatedComment = await res.comment.save();
+      res.send(updatedComment);
+    } else{
+      res.comment.userVoted = Number(req.params.num);
+      res.comment.upvotes = (res.comment.upvotes + Number(req.params.num));
+      const updatedComment = await res.comment.save();
+      res.send(updatedComment);
+    }
+  }
+  catch(error){
+      res.status(400).send({message: "Error updating vote status in comment", error});
+  }
+});
+
 // create new comment
 router.post('/', async (req, res) => {
   const comment = new Comment({

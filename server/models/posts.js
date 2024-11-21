@@ -10,7 +10,10 @@ const PostSchema = new Schema({
     postedBy: {type: String, required:true},
     postedDate:{type: Date, required:true, default: Date.now},
     commentIDs: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
-    views: {type: Number, required:true, default: 0}
+    views: {type: Number, required:true, default: 0},
+    upvotes: {type: Number, required:true},
+    userVoted: {type: Number, required:true, default: 0}, 
+    // for remembering the vote (-1 means down, 0 means no vote, 1 means up)
 })
 
 PostSchema.virtual('url').get(function() {

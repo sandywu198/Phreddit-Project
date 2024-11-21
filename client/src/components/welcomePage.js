@@ -3,6 +3,7 @@ import { communityClickedEmitter } from "./newCommunity.js";
 import { HomePage } from "./phreddit.js";
 import axios from 'axios';
 import EventEmitter from 'events';
+import Cookies from 'js-cookie';
 
 export const WelcomePageEmitter = new EventEmitter();
 
@@ -12,6 +13,7 @@ export function WelcomePage(){
   const [login, setLogin] = useState(false);
   const [guest, setGuest] = useState(false);
   const [logout, setLogout] = useState(false);
+  const [returning, setReturning] = useState(null);
   const [pageContent, setPageContent] = useState(
   <>
     <section className="logo-title">
@@ -30,10 +32,36 @@ export function WelcomePage(){
     setLogin(false);
     setGuest(false);
     setLogout(false);
+    setReturning(null);
   }
   useEffect(() => {
-    const handleLogout = (status) => {
+    const checkReturningUser = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/users/return-session', {withCredentials: true});
+        console.log("\n return response: ", response, "\n");
+        if(response){
+          if (response.data.isAuthenticated) {
+            console.log('User is authenticated:', response.data.user);
+            setReturning(response.data.user);
+          } else {
+            console.log('User is not authenticated');
+          }
+        }
+      } catch(error) {
+        console.error('Error checking for user authentication status:', error);
+      }
+    };
+    checkReturningUser();
+  }, []);
+  useEffect(() => {
+    const handleLogout = async(status) => {
       setLogout(status);
+      try {
+        const res = await axios.post('http://localhost:8000/users/logout', {}, {withCredentials: true});
+        console.log('Logout successful');
+      } catch (error) {
+        console.error('Logout failed:', error.response?.data || error.message);
+      }
     };
     WelcomePageEmitter.on('logout', handleLogout);
     return () => {
@@ -41,7 +69,13 @@ export function WelcomePage(){
     };
   }, []); 
   useEffect(() => {
-    if(logout){
+    if(returning){
+      const copy = returning;
+      resetAll();
+      console.log("\n returning copy: ", copy, "\n");
+      setPageContent(<HomePage userStatus={"login"} user={copy}/>)
+    }
+    else if(logout){
       console.log("\n logging out \n");
       resetAll();
       setPageContent(
@@ -66,9 +100,22 @@ export function WelcomePage(){
       resetAll()
       setPageContent(<HomePage userStatus={"guest"}/>)
     }
-  }, [register, login, guest, logout])
+  }, [register, login, guest, logout, returning])
   return (<>{pageContent}</>)
 }
+
+// function to creating cookie for user
+const loginCookie = async (username, password) => {
+  try {
+    const response = await axios.post('http://localhost:8000/users/login', 
+      {username, password,}, {withCredentials: true});
+    console.log('Logged in successfully!');
+    const session = Cookies.get('session_id');
+    console.log("\n this is session cookie: ", session, "\n");
+  } catch (error) {
+    console.error('Login failed:', error);
+  }
+};
 
 export const LoginUser = () => {
   const [loggedin, setLoggedin] = useState(false);
@@ -97,8 +144,11 @@ export const LoginUser = () => {
     //   return true;
     // };
     const validateUser = () => {
-      axios.post('http://localhost:8000/users/login', formInputs)
+      axios.post('http://localhost:8000/users/login', formInputs, {withCredentials:true})
       .then(res => {
+        console.log('Logged in successfully!');
+        // const session = Cookies.get('session_id');
+        console.log("\n this is session : ", res.data, "\n");
         setLoggedin(true);
         setUserObj(res.data.user);
       }).catch(err => {

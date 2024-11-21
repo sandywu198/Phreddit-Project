@@ -15,10 +15,10 @@ export function TopBanner(userStatus, user){
       <div className="banner">
         <section className="logo-title">
           <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
+          onClick={() => {WelcomePageEmitter.emit('logout', true)}}
           style={{cursor:"pointer"}}></img>
           <h3 className="Company_Name" id="phreddit-website-name"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
+          onClick={() => {WelcomePageEmitter.emit('logout', true)}}
           style={{cursor:"pointer"}}> Phreddit</h3>
         </section>
         <section className="search-container">
@@ -33,10 +33,10 @@ export function TopBanner(userStatus, user){
       <div className="banner">
         <section className="logo-title">
           <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
+          onClick={() => {WelcomePageEmitter.emit('logout', true)}}
           style={{cursor:"pointer"}}></img>
           <h3 className="Company_Name" id="phreddit-website-name"
-          onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}
+          onClick={() => {WelcomePageEmitter.emit('logout', true)}}
           style={{cursor:"pointer"}}> Phreddit</h3>
         </section>
         <section className="search-container">

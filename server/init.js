@@ -68,6 +68,7 @@ function createComment(commentObj) {
         commentedBy: commentObj.commentedBy,
         commentedDate: commentObj.commentedDate,
         commentIDs: commentObj.commentIDs,
+        upvotes: (commentObj.upvotes) ? commentObj.upvotes: 0,
     });
     return newCommentDoc.save();
 }
@@ -81,6 +82,7 @@ function createPost(postObj) {
         views: postObj.views,
         linkFlairID: postObj.linkFlairID,
         commentIDs: postObj.commentIDs,
+        upvotes: (postObj.upvotes) ? postObj.upvotes: 0,
     });
     return newPostDoc.save();
 }
@@ -121,9 +123,18 @@ async function initializeDB() {
         email: 'MarcoArelius@gmail.com',
         password: 'password',
     }
+    const user4 = {
+        firstName: 'truck',
+        lastName: 'nutz',
+        displayName:  'trucknutz69',
+        email: 'trucknutz69@gmail.com',
+        password: 'password',
+        reputation: 50,
+    }
     let userRef1 = await createUser(user1);
     let userRef2 = await createUser(user2);
     let userRef3 = await createUser(user3);
+    let userRef4 = await createUser(user4);
 
     // link flair objects
     const linkFlair1 = { // link flair 1
@@ -190,6 +201,7 @@ async function initializeDB() {
         commentIDs: [],
         commentedBy: 'bigfeet',
         commentedDate: new Date('September 09, 2024 017:03:00'),
+        upvotes: 3,
     }
     let commentRef5 = await createComment(comment5);
     
@@ -208,6 +220,7 @@ async function initializeDB() {
         commentIDs: [],
         commentedBy: 'rollo',
         commentedDate: new Date('August 23, 2024 09:31:00'),
+        upvotes: 1,
     };
     let commentRef3 = await createComment(comment3);
     
@@ -226,6 +239,7 @@ async function initializeDB() {
         commentIDs: [commentRef3],
         commentedBy: 'shemp',
         commentedDate: new Date('August 23, 2024 08:22:00'),
+        upvotes: 7,
     };
     let commentRef1 = await createComment(comment1);
     
@@ -239,6 +253,7 @@ async function initializeDB() {
         postedDate: new Date('August 23, 2024 01:19:00'),
         commentIDs: [commentRef1, commentRef2],
         views: 14,
+        upvotes: 5,
     };
     const post2 = { // post 2
         postID: 'p2',
@@ -249,6 +264,7 @@ async function initializeDB() {
         postedDate: new Date('September 9, 2024 14:24:00'),
         commentIDs: [commentRef4, commentRef5],
         views: 1023,
+        upvotes: 20,
     };
     const post3 = { // post 3
         postID: 'p3',

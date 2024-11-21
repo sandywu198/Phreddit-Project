@@ -8,6 +8,9 @@ const CommentSchema = new Schema({
     commentIDs: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     commentedBy: {type: String, required:true},
     commentedDate:{type: Date, required:true, default: Date.now},
+    upvotes: {type: Number, required:true},
+    userVoted: {type: Number, required:true, default: 0}, 
+    // for remembering the vote (-1 means down, 0 means no vote, 1 means up)
 })
 
 CommentSchema.virtual('url').get(function() {

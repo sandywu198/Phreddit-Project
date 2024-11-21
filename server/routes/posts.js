@@ -57,7 +57,8 @@ router.post('/', async (req, res) => {
         linkFlairID: req.body.linkFlairID,
         postedBy: req.body.postedBy,
         postedDate: Date.now(),
-        views: 0
+        views: 0,
+        upvotes: req.body.upvotes,
     });
     try {
         const newPost = await post.save();
@@ -132,6 +133,7 @@ router.put('/:id/comments', async (req, res) => {
 //     }
 // });
 
+// increment view by 1
 router.patch('/:id/view', getPost, async(req,res) =>{
     try{
         res.post.views += 1;
@@ -141,6 +143,31 @@ router.patch('/:id/view', getPost, async(req,res) =>{
     catch(error){
         res.status(400).send({message: "Error updating view count", error});
     }
+});
+
+// change the userVoted status
+router.patch('/:id/:num/voted', getPost, async(req,res) =>{
+  try{
+    if(Number(req.params.num) === -2){
+      res.post.userVoted = 0;
+      res.post.upvotes = (res.post.upvotes + 1);
+      const updatedPost = await res.post.save();
+      res.send(updatedPost);
+    } else if(Number(req.params.num) === 2){
+      res.post.userVoted = 0;
+      res.post.upvotes = (res.post.upvotes - 1);
+      const updatedPost = await res.post.save();
+      res.send(updatedPost);
+    } else{
+      res.post.userVoted = Number(req.params.num);
+      res.post.upvotes = (res.post.upvotes + Number(req.params.num));
+      const updatedPost = await res.post.save();
+      res.send(updatedPost);
+    }
+  }
+  catch(error){
+      res.status(400).send({message: "Error updating vote status in post", error});
+  }
 });
 
 // Middleware to get a post by ID

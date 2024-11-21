@@ -292,26 +292,29 @@ export const CreatePostComponent = ({user, post}) => {
               postedDate: new Date(),
               views: 0,
               commentIDs: [],
+              upvotes: 0,
           };
           console.log('New post created:', newPost);
           console.log("New Post Community ID:", formData.community);
-          const response = await axios.post('http://localhost:8000/posts', newPost);
-          console.log('New post created:', response.data);
-          console.log("POSTID @ NEWPOSTS", response.data._id);
-          axios.get(`http://localhost:8000/communities/communityName/${formData.community}`)
-          .then(res => {
-            console.log("\n", "res here: ", res, "\n");
-            axios.put(`http://localhost:8000/communities/${res.data.id}/add-post`, { postID: response.data._id
-            }).then(res1 => {
-                console.log('Community updated:', res1.data);
-                communityClickedEmitter.emit("communityClicked", -1, "");
-            }).catch(error => console.log("\n error updating community with post \n"))
+          axios.get("http://localhost:8000/communities")
+          .then(communitiesRes => {
+            formData.community = communitiesRes.data.filter(c => c.name === formData.community)[0].id;
+            console.log("\n after change: ", formData.community, "\n");
+            axios.post('http://localhost:8000/posts', newPost, {withCredentials: true})
+                .then(response => {
+                    console.log('New post created:', response.data);
+                console.log("POSTID @ NEWPOSTS", response.data._id);
+                axios.put(`http://localhost:8000/communities/${formData.community}`, {
+                    postID: response.data._id}).then(communityResponse => {
+                        console.log('Community updated:', communityResponse.data);
+                    communityClickedEmitter.emit("communityClicked", -1, "");    
+                    }).catch(error => {
+
+                    })
+                }).catch(error => {})
+            }).catch(error => {
+            console.log("\n error with community\n");
           })
-          .catch(error => console.log("\n error getting community id by name \n"))
-        //   const communityID = await axios.get(`http://localhost:8000/communities/communityName/${formData.community}`);
-        //   const communityResponse = await axios.put(`http://localhost:8000/communities/${communityID.id}`, {
-        //     postID: response.data._id
-        // });
       } catch (error) {
           console.error('Error creating post:', error.response ? error.response.data : error.message);
       }
