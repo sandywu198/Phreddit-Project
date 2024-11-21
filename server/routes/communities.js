@@ -2,21 +2,77 @@ const express = require('express');
 const router = express.Router();
 const Community = require('../models/communities');
 console.log('Community routes loaded');
+
 // Get all communities
 router.get('/', async (req, res) => {
     try{
         const communities = await Community.find();
-        res.send(communities);
+        res.status(200).send(communities);
     }
     catch(error){
         res.status(500).send({message: "Error retrieving communities", error});
     }
 });
 
+// Get community members
+router.get('/:id/members', getCommunity, async(req, res) => {
+    res.status(200).send(res.community.members)
+});
+
 // Get a specific community by ID
 router.get('/:id', getCommunity, (req, res) => {
-    res.send(res.community);
+    res.status(200).send(res.community);
 });
+
+
+// add a member to the community
+router.put('/:id/add-mem', async(req, res) =>{
+    try{
+        const communityId = req.params.id;
+        const memDisplayName = req.body.member;
+        console.log("MEMBER DISPLAYNAME:", memDisplayName);
+        if(!memDisplayName){
+            return res.status(404).send({ error: 'Member Display Name is required' });
+        }
+        const updateMember = await Community.findByIdAndUpdate(
+            {_id:communityId},
+            {$addToSet: {members: memDisplayName}},
+            {new:true}
+        );
+        if (!updateMember) {
+            return res.status(404).send({ error: 'Community not found' });
+        }
+        res.status(200).send(updateMember);
+    }
+    catch(error){
+        res.status(400).send({ message: "Error adding member to community", error: error.message });
+    }
+});
+
+// Delete a member from the community
+router.patch('/:id/delete-mem', async(req, res) => {
+    try{
+        const communityId = req.params.id;
+        const memDisplayName = req.body.member;
+        console.log("MEMBER DISPLAYNAME:", memDisplayName);
+        if(!memDisplayName){
+            console.log("MEMBER DISPLAYNAME:", memDisplayName);
+            return res.status(404).send({ error: 'Member Display Name is required' });
+        }
+        const updateMember = await Community.findByIdAndUpdate(
+            {_id:communityId},
+            {$pull: {members: memDisplayName}},
+            {new:true}
+        );
+        if (!updateMember) {
+            return res.status(404).send({ error: 'Community not found' });
+        }
+        res.status(200).send(updateMember);
+    }
+    catch(error){
+        res.status(500).send({message: `Error removing member '${memDisplayName}'`})
+    }
+})
 
 // Get a specific community by name
 router.get('/:name/community-name', async (req, res) => {
@@ -79,8 +135,8 @@ router.delete('/:id/community-id', getCommunity, async (req, res) => {
 });
 
 // Add post to community
-router.put('/:id', async (req, res) => {
-    console.log('PUT request received for community update');
+router.put('/:id/add-post', async (req, res) => {
+    // console.log('PUT request received for community update');
     try {
         const communityId = req.params.id;
         const postID = req.body.postID;
@@ -95,6 +151,15 @@ router.put('/:id', async (req, res) => {
         console.error('Error in PUT route:', error);
         res.status(400).send({ message: "Error updating community", error: error.message });
     }
+    // try {
+    //     const postID = req.body.postID;
+    //     res.community.postIDs.push(postID);
+    //     const updatedCommunity = await res.community.save();
+    //     res.status(200).json(updatedCommunity);
+    // } catch (error) {
+    //     console.error('Error adding post to community:', error);
+    //     res.status(400).json({ message: "Error updating community", error: error.message });
+    // }
 });
 
 // Delete post from community
@@ -153,9 +218,9 @@ router.put('/:id/edit-community', getCommunity, async (req, res) => {
 async function getCommunity(req, res, next) {
     try {
         const community = await Community.findById(req.params.id);
-        // if (community == null) {
-        //     return res.status(404).send({ message: 'Community not found' });
-        // }
+        if (!community) {
+            return res.status(404).send({ error: 'Community not found' });
+        }
         res.community = community;
         next();
     } 
