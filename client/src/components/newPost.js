@@ -301,7 +301,7 @@ export const CreatePostComponent = ({user, post}) => {
           axios.get(`http://localhost:8000/communities/communityName/${formData.community}`)
           .then(res => {
             console.log("\n", "res here: ", res, "\n");
-            axios.put(`http://localhost:8000/communities/${res.data.id}`, { postID: response.data._id
+            axios.put(`http://localhost:8000/communities/${res.data.id}/add-post`, { postID: response.data._id
             }).then(res1 => {
                 console.log('Community updated:', res1.data);
                 communityClickedEmitter.emit("communityClicked", -1, "");

@@ -1,5 +1,5 @@
 // import Model from '../models/model.js';
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useMemo} from "react";
 import {displayTime, postThreadDFS} from "./postThreading.js";
 import EventEmitter from "events";
 import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.js";
@@ -526,15 +526,21 @@ export function GetCommunitiesAndLoad(user, userStatus){
               axios.get("http://localhost:8000/comments").then(commentsRes => {
                 setComments(commentsRes.data);
                 console.log("COMMUNITIES id", communitiesRes.data[communityIndex]);
-                if(curUser){
-                  setIsMember(communitiesRes.data[communityIndex].members.includes(curUser.displayName));
-                  console.log("BIG FOOT", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
-                }
+                console.log("BIG FOOT", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                const isMember = communitiesRes.data[communityIndex].members.includes(curUser.displayName);
+                // if(curUser){
+                //   setIsMember(communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                //   console.log("BIG FOOT", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                // }
+                setIsMember(isMember);
                 const joinCommunity = async () => {
                   try{
-                    await axios.put(`http://localhost:8000/communities/${communitiesRes.data[communityIndex].id}`, 
+                    console.log("Community ID", communitiesRes.data[communityIndex].id);
+                    console.log("COMMUNITY NAME: ", communitiesRes.data[communityIndex]);
+                    console.log("BIG FOOT JOIN", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                    await axios.put(`http://localhost:8000/communities/${communitiesRes.data[communityIndex]._id}/add-mem`, 
                       {
-                        members: curUser.displayName,
+                        member: curUser.displayName,
                       }
                     );
                     setIsMember(true);
@@ -545,7 +551,14 @@ export function GetCommunitiesAndLoad(user, userStatus){
                 }
                 const leaveCommunity = async () =>{
                   try{
-                    await axios.delete(`http://localhost:8000/communities/${communitiesRes.data[communityIndex].id}`, curUser.displayName);
+                    console.log("Community ID", communitiesRes.data[communityIndex].id);
+                    console.log("COMMUNITY NAME: ", communitiesRes.data[communityIndex]);
+                    console.log("BIG FOOT LEAVE", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                    await axios.patch(`http://localhost:8000/communities/${communitiesRes.data[communityIndex]._id}/delete-mem`, 
+                      {
+                      member: curUser.displayName,
+                      }
+                    );
                     setIsMember(false);
                   }
                   catch(error){
@@ -566,10 +579,10 @@ export function GetCommunitiesAndLoad(user, userStatus){
                 : " Members")}</h4>
                     {curUser && (
                       <button
-                        onClick={isMember ? joinCommunity : leaveCommunity}
-                        className={isMember ? "join-button" : "leave-button"}
+                        onClick={isMember ? leaveCommunity : joinCommunity}
+                        className={isMember ? "leave-button" : "join-button"}
                       >
-                        {isMember ? "Join" : "Leave"}
+                        {isMember ? "Leave" : "Join"}
                       </button>
                     )}
                     <hr id = "delimeter"/>

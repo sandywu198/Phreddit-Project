@@ -23,15 +23,19 @@ router.get('/:id', getCommunity, (req, res) => {
 router.get('/:id/members', getCommunity, async(req, res) => {
     res.status(200).send(res.community.members)
 });
-s
+
 // add a member to the community
-router.put(':id', async(req, res) =>{
+router.put('/:id/add-mem', async(req, res) =>{
     try{
         const communityId = req.params.id;
-        const memDisplayName = req.params.member;
+        const memDisplayName = req.body.member;
+        console.log("MEMBER DISPLAYNAME:", memDisplayName);
+        if(!memDisplayName){
+            return res.status(404).send({ error: 'Member Display Name is required' });
+        }
         const updateMember = await Community.findByIdAndUpdate(
             {_id:communityId},
-            {$push: {members: memDisplayName}},
+            {$addToSet: {members: memDisplayName}},
             {new:true}
         );
         if (!updateMember) {
@@ -45,17 +49,24 @@ router.put(':id', async(req, res) =>{
 });
 
 // Delete a member from the community
-router.patch(':id', getCommunity, async(req, res) => {
+router.patch('/:id/delete-mem', async(req, res) => {
     try{
-        const memberDel = req.params.member;
-        const memberIndex = res.community.members.indexOf(memberDel);
-        if(memberIndex === -1){
-            return res.status(404).send({ message: `Member '${memberDel}' not found in the community.` });
+        const communityId = req.params.id;
+        const memDisplayName = req.body.member;
+        console.log("MEMBER DISPLAYNAME:", memDisplayName);
+        if(!memDisplayName){
+            console.log("MEMBER DISPLAYNAME:", memDisplayName);
+            return res.status(404).send({ error: 'Member Display Name is required' });
         }
-        res.community.members.splice(memberIndex, 1);
-        res.community.memberCount = res.community.members.length;
-        await res.community.save();
-        res.status(200).send({message: `Member '${memberDel}' has been removed`});
+        const updateMember = await Community.findByIdAndUpdate(
+            {_id:communityId},
+            {$pull: {members: memDisplayName}},
+            {new:true}
+        );
+        if (!updateMember) {
+            return res.status(404).send({ error: 'Community not found' });
+        }
+        res.status(200).send(updateMember);
     }
     catch(error){
         res.status(500).send({message: `Error removing member '${memberDel}'`})
@@ -119,21 +130,30 @@ router.delete('/:id/community-id', getCommunity, async (req, res) => {
 });
 
 // Add post to community
-router.put('/:id/', async (req, res) => {
-    console.log('PUT request received for community update');
+router.put('/:id/add-post', getCommunity, async (req, res) => {
+    // console.log('PUT request received for community update');
+    // try {
+    //     const communityId = req.params.id;
+    //     const postID = req.body.postID;
+    //     console.log('Community ID:', req.params.id);
+    //     const community = await Community.findOneAndUpdate(
+    //         { _id: communityId },
+    //         { $push: { postIDs: postID } },
+    //         { new: true }
+    //       );
+    //     res.status(200).send(community);
+    // } catch (error) {
+    //     console.error('Error in PUT route:', error);
+    //     res.status(400).send({ message: "Error updating community", error: error.message });
+    // }
     try {
-        const communityId = req.params.id;
         const postID = req.body.postID;
-        console.log('Community ID:', req.params.id);
-        const community = await Community.findOneAndUpdate(
-            { _id: communityId },
-            { $push: { postIDs: postID } },
-            { new: true }
-          );
-        res.status(200).send(community);
+        res.community.postIDs.push(postID);
+        const updatedCommunity = await res.community.save();
+        res.status(200).json(updatedCommunity);
     } catch (error) {
-        console.error('Error in PUT route:', error);
-        res.status(400).send({ message: "Error updating community", error: error.message });
+        console.error('Error adding post to community:', error);
+        res.status(400).json({ message: "Error updating community", error: error.message });
     }
 });
 
