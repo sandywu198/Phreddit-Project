@@ -3,6 +3,7 @@ import {displayTime, PostThreadNode, postThreadDFS} from "./postThreading.js";
 import {communityClickedEmitter} from "./newCommunity.js";
 import {NavBarEmitter} from "./navBar.js";
 import axios from 'axios';
+import EventEmitter from "events";
 
 export const DisplayPosts = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments, user}) => {
   const postsArrayFinal = useRef([]);
@@ -942,6 +943,144 @@ console.log("\npostsArray in creating posts: ", postsArray, " \n");
 //   )
 // }
 
+export const voteClickedEmitter = new EventEmitter();
+
+// voteStatus should be an integer -1 (downvote), 0 (no vote), or 1 (upvote)
+export function VotePostOrComment(){
+  useEffect(() => {
+    const handleVote = (user, post, comment, voteStatus) => {
+      console.log("\n here in handleVote \n");
+      console.log("\n user: ", user, " post: ", post, " comment: ", comment, " voteStatus: ", voteStatus, "\n");
+      if(user.reputation < 50){
+        window.alert("Your reputation is too low to vote!");
+        return;
+      }
+      if(comment){
+        if(comment.commentedBy === user.displayName){
+          window.alert("You cannot vote on your own comment!");
+          return;
+        }
+        if(comment.userVoted === 0){
+          axios.patch(`http://localhost:8000/comments/${comment.id}/${voteStatus}/voted`)
+            .then(response => {
+              console.log('\n Comment vote changed incremented:', response.data);
+              axios.get(`http://localhost:8000/users`)
+              .then(usersRes => {
+                const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                axios.patch(`http://localhost:8000/users/${commenter.id}/${voteStatus}/reputation`)
+                .then(response => {
+                  console.log('\nUser reputation changed:', response.data);
+                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                })
+                .catch(error => {
+                  console.error('Error:', error.response ? error.response.data : error.message);
+                });
+              })
+              .catch(error => {
+                console.error('Error:', error.response ? error.response.data : error.message);
+              });
+            })
+            .catch(error => {
+              console.error('Error:', error.response ? error.response.data : error.message);
+            });
+        } else if(comment.userVoted === -1){
+          // already downvoted, clicking downvote again voids the vote
+          if(voteStatus === -1){
+            axios.patch(`http://localhost:8000/comments/${comment.id}/${-2}/voted`)
+            .then(response => {
+              console.log('Comment vote changed incremented:', response.data);
+              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+            })
+            .catch(error => {
+              console.error('Error:', error.response ? error.response.data : error.message);
+            });
+          }
+          if(voteStatus === 1){
+            window.alert("You cannot transition from downvote to upvote! Undo the downvote and click upvote instead.");
+          }
+        } else if(comment.userVoted === 1){
+          // already upvoted, clicking upvote again voids the vote
+          if(voteStatus === 1){
+            axios.patch(`http://localhost:8000/comments/${comment.id}/${2}/voted`)
+            .then(response => {
+              console.log('Comment vote changed incremented:', response.data);
+              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+            })
+            .catch(error => {
+              console.error('Error:', error.response ? error.response.data : error.message);
+            });
+          }
+          if(voteStatus === -1){
+            window.alert("You cannot transition from upvote to downvote! Undo the upvote and click downvote instead.");
+          }
+        }
+      } else if(post){
+        if(post.postedBy === user.displayName){
+          window.alert("You cannot vote on your own post!");
+          return;
+        } 
+        if(post.userVoted === 0){
+          axios.patch(`http://localhost:8000/posts/${post.id}/${voteStatus}/voted`)
+            .then(response => {
+              console.log('Post vote changed incremented:', response.data);
+              axios.get(`http://localhost:8000/users`)
+              .then(usersRes => {
+                const commenter = usersRes.data.filter(u1 => u1.displayName === post.postedBy)[0];
+                axios.patch(`http://localhost:8000/users/${commenter.id}/${voteStatus}/reputation`)
+                .then(response => {
+                  console.log('\nUser reputation changed:', response.data);
+                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                })
+                .catch(error => {
+                  console.error('Error:', error.response ? error.response.data : error.message);
+                });
+              })
+            })
+            .catch(error => {
+              console.error('Error:', error.response ? error.response.data : error.message);
+            });
+        } else if(post.userVoted === -1){
+          // already downvoted, clicking downvote again voids the vote
+          if(voteStatus === -1){
+            axios.patch(`http://localhost:8000/posts/${post.id}/${-2}/voted`)
+            .then(response => {
+              console.log('Post vote changed incremented:', response.data);
+              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+            })
+            .catch(error => {
+              console.error('Error:', error.response ? error.response.data : error.message);
+            });
+          }
+          if(voteStatus === 1){
+            window.alert("You cannot transition from downvote to upvote! Undo the downvote and click upvote instead.");
+          }
+        } else if(post.userVoted === 1){
+          // already upvoted, clicking upvote again voids the vote
+          if(voteStatus === 1){
+            axios.patch(`http://localhost:8000/posts/${post.id}/${2}/voted`)
+            .then(response => {
+              console.log('Post vote changed incremented:', response.data);
+              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+            })
+            .catch(error => {
+              console.error('Error:', error.response ? error.response.data : error.message);
+            });
+          }
+          if(voteStatus === -1){
+            window.alert("You cannot transition from upvote to downvote! Undo the upvote and click downvote instead.");
+          }
+        }
+      } else{
+        console.error("\n voting neither post or comment \n ");
+      }
+    };
+    voteClickedEmitter.on("voteClicked", handleVote);
+    return () => {
+      voteClickedEmitter.off("voteClicked", handleVote);
+    };
+  }, []);
+}
+
 export function SinglePost({post, postIndex, specificCommunity, user}) {
   const [linkFlair, setLinkFlair] = useState(null);
   const [content, setContent] = useState(null);
@@ -972,7 +1111,8 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
               {linkflairContent && <p className="link-flair">{linkflairContent.content}</p>}
               <p>{post.content.substring(0,80)}{(post.content.length > 80)? "..." : ""}</p>
               <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
-               ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"}`}
+               ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"} | 
+               ${post.upvotes} Upvote${post.upvotes === 1 ? "" : "s"}`}
               </p>
               <hr id="delimeter" />
             </section>
@@ -1028,7 +1168,8 @@ export function SinglePost2({post, postIndex, specificCommunity, user}) {
               {linkflairContent && <p className="link-flair">{linkflairContent.content}</p>}
               <p>{post.content.substring(0,80)}{(post.content.length > 80)? "..." : ""}</p>
               <p>{`${post.views} View${post.views === 1 ? "" : "s"} | 
-               ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"}`}
+               ${post.commentCount} Comment${post.commentCount === 1 ? "" : "s"} | 
+               ${post.upvotes} Upvote${post.upvotes === 1 ? "" : "s"}`}
               </p>
               <hr id="delimeter" />
             </section>

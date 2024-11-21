@@ -292,6 +292,7 @@ export const CreatePostComponent = ({user, post}) => {
               postedDate: new Date(),
               views: 0,
               commentIDs: [],
+              upvotes: 0,
           };
           console.log('New post created:', newPost);
           console.log("New Post Community ID:", formData.community);
@@ -299,7 +300,7 @@ export const CreatePostComponent = ({user, post}) => {
           .then(communitiesRes => {
             formData.community = communitiesRes.data.filter(c => c.name === formData.community)[0].id;
             console.log("\n after change: ", formData.community, "\n");
-            axios.post('http://localhost:8000/posts', newPost)
+            axios.post('http://localhost:8000/posts', newPost, {withCredentials: true})
                 .then(response => {
                     console.log('New post created:', response.data);
                 console.log("POSTID @ NEWPOSTS", response.data._id);

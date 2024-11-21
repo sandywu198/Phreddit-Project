@@ -6,7 +6,7 @@ import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.
 import {AddNewCommentComponent} from "./newComment.js";
 import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
 import {CreateHomeButtonColorEmitter, CreateCommunityButtonColorEmitter, NavBarEmitter, CommunityNameButtonColorEmitter} from "./navBar.js";
-import {DisplayPosts, DisplayPosts1, GetPostThreadsArrayFunction, DisplayActivePosts, GetSortedThreadRoot} from "./postSortingFunctions.js";
+import {DisplayPosts, DisplayPosts1, GetPostThreadsArrayFunction, DisplayActivePosts, GetSortedThreadRoot, voteClickedEmitter, VotePostOrComment} from "./postSortingFunctions.js";
 import {WelcomePage} from "./welcomePage.js";
 import {NavBar} from "./navBar.js";
 import {TopBanner } from "./banner.js";
@@ -42,6 +42,7 @@ export function HomePage({userStatus, user}){
       <div className="text-under-header">
         <NavBar userStatus={userStatus} user={user}/> {/*  fetchData={fetchData} */}
         <PostHeader userStatus={userStatus} user={user}/>
+        <VotePostOrComment />
       </div>
     </>
   )
@@ -61,7 +62,7 @@ export const SortedPostListing = ({communityIndex, postsFromSearch, communities,
       <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/> :
       ((postsFromSearch.length > 0) ?  <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user}/>:
       <DisplayPosts newToOld={true} specificCommunity={communities[communityIndex].name} postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/>));
-  }, [communityIndex, postsFromSearch, communities, posts, comments]); //[communityIndex, postListing, postsFromSearch]
+  }, [communityIndex, postsFromSearch, communities, posts, comments, user]); //[communityIndex, postListing, postsFromSearch]
   useEffect(() => {
     const getPostListing = (newestToOldest, active, communityIndex, postsFromSearch) => {
       console.log("\n button sort get posts\n");
@@ -110,7 +111,7 @@ export const SortedPostListing = ({communityIndex, postsFromSearch, communities,
     return () => {
       sortPostEmitter.off("sortPosts", getPostListing);
     };
-  }, [communities, communityIndex, postsFromSearch, posts, comments]); // [communities, communityIndex, postsFromSearch]    
+  }, [communities, communityIndex, postsFromSearch, posts, comments, user]); // [communities, communityIndex, postsFromSearch]    
   console.log("\npostListing return: ", postListing, "\n");
   return (<div>{postListing}</div>);
 }
@@ -195,6 +196,11 @@ export const MakeCommentsListing = ({sortedNodeArray, post, user, userStatus}) =
     <div>
       <p>{node.postThreadNode.commentedBy + " | " + displayTime(node.postThreadNode.commentedDate)}</p>
       <p>{node.postThreadNode.content}</p>
+      <p>{node.postThreadNode.upvotes + " Upvote" + (node.postThreadNode.upvotes === 1 ? "" : "s")}</p>
+      {userStatus !== "guest" && <button id={`upvote-button-${nodeIndex}`} style={(node.postThreadNode.userVoted === 1) ? {color: "green"} : {}}
+      onClick={() => {console.log("\n upvote for comment clicked \n"); voteClickedEmitter.emit('voteClicked', user, post, node.postThreadNode, 1)}}>Upvote</button>}
+      {userStatus !== "guest" && <button id={`downvote-button-${nodeIndex}`} style={(node.postThreadNode.userVoted === -1) ? {color: "red"} : {}}
+      onClick={() => {console.log("\n downvote for comment clicked \n"); voteClickedEmitter.emit('voteClicked', user, post, node.postThreadNode, -1)}}>Downvote</button>}
       {userStatus !== "guest" && <button id={`reply-button-${nodeIndex}`}
       onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, false, node.postThreadNode, user)}}>Reply</button>}
     </div>}</li>;
@@ -498,7 +504,12 @@ export function GetCommunitiesAndLoad(user, userStatus){
                         <p className="post-heading" id="post-content">{post.content}</p>
                         <p className="post-heading" id="post-view-comment">{(post.views + 1) + " View" + 
                           (((post.views + 1) !== 1) ? "s" : "") + " | " + commentRepliesCount + 
-                          " Comment" + ((commentRepliesCount !== 1) ? "s" : "")}</p>
+                          " Comment" + ((commentRepliesCount !== 1) ? "s" : "") + 
+                          ` | ${post.upvotes} Upvote${post.upvotes === 1 ? "" : "s"}`}</p>
+                        {curUserStatus !== "guest" && <button className="post-heading" id="upvote-button" style={(post.userVoted === 1) ? {color: "green"} : {}}
+                        onClick={() => {console.log("\n upvote for post clicked \n"); voteClickedEmitter.emit('voteClicked', curUser, post, null, 1)}}>Upvote</button>}
+                        {curUserStatus !== "guest" && <button className="post-heading" id="downvote-button" style={(post.userVoted === -1) ? {color: "red"} : {}}
+                        onClick={() => {console.log("\n downvote for post clicked \n"); voteClickedEmitter.emit('voteClicked', curUser, post, null, -1)}}>Downvote</button>}
                         {curUserStatus !== "guest" && <button className="post-heading" id="add-comment"
                         onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, true, null, curUser, admin, comment)}}>Add Comment</button>}
                         <hr id = "delimeter"/>
@@ -580,7 +591,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
     };
     communityClickedEmitter.on("communityClicked", loadCommunity);
     return () => {communityClickedEmitter.off("communityClicked", loadCommunity);};
-  }, [comments, communities, linkFlairs, posts]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
+  }, [comments, communities, linkFlairs, posts, curUser, curUserStatus]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
   return (
     <> {pageHeader} </>
   );
