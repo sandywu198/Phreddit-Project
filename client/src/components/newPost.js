@@ -304,7 +304,7 @@ export const CreatePostComponent = ({user, post}) => {
                 .then(response => {
                     console.log('New post created:', response.data);
                 console.log("POSTID @ NEWPOSTS", response.data._id);
-                axios.put(`http://localhost:8000/communities/${formData.community}`, {
+                axios.put(`http://localhost:8000/communities/${formData.community}/add-post`, {
                     postID: response.data._id}).then(communityResponse => {
                         console.log('Community updated:', communityResponse.data);
                     communityClickedEmitter.emit("communityClicked", -1, "");    
@@ -331,5 +331,3 @@ export const CreatePostComponent = ({user, post}) => {
        </form>
    );
 };
-
-export default CreatePostComponent;

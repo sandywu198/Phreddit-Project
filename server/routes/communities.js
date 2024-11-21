@@ -14,15 +14,16 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get community members
+router.get('/:id/members', getCommunity, async(req, res) => {
+    res.status(200).send(res.community.members)
+});
+
 // Get a specific community by ID
 router.get('/:id', getCommunity, (req, res) => {
     res.status(200).send(res.community);
 });
 
-// Get community members
-router.get('/:id/members', getCommunity, async(req, res) => {
-    res.status(200).send(res.community.members)
-});
 
 // add a member to the community
 router.put('/:id/add-mem', async(req, res) =>{
@@ -69,7 +70,7 @@ router.patch('/:id/delete-mem', async(req, res) => {
         res.status(200).send(updateMember);
     }
     catch(error){
-        res.status(500).send({message: `Error removing member '${memberDel}'`})
+        res.status(500).send({message: `Error removing member '${memDisplayName}'`})
     }
 })
 
@@ -134,31 +135,31 @@ router.delete('/:id/community-id', getCommunity, async (req, res) => {
 });
 
 // Add post to community
-router.put('/:id/add-post', getCommunity, async (req, res) => {
+router.put('/:id/add-post', async (req, res) => {
     // console.log('PUT request received for community update');
-    // try {
-    //     const communityId = req.params.id;
-    //     const postID = req.body.postID;
-    //     console.log('Community ID:', req.params.id);
-    //     const community = await Community.findOneAndUpdate(
-    //         { _id: communityId },
-    //         { $push: { postIDs: postID } },
-    //         { new: true }
-    //       );
-    //     res.status(200).send(community);
-    // } catch (error) {
-    //     console.error('Error in PUT route:', error);
-    //     res.status(400).send({ message: "Error updating community", error: error.message });
-    // }
     try {
+        const communityId = req.params.id;
         const postID = req.body.postID;
-        res.community.postIDs.push(postID);
-        const updatedCommunity = await res.community.save();
-        res.status(200).json(updatedCommunity);
+        console.log('Community ID:', req.params.id);
+        const community = await Community.findOneAndUpdate(
+            { _id: communityId },
+            { $push: { postIDs: postID } },
+            { new: true }
+          );
+        res.status(200).send(community);
     } catch (error) {
-        console.error('Error adding post to community:', error);
-        res.status(400).json({ message: "Error updating community", error: error.message });
+        console.error('Error in PUT route:', error);
+        res.status(400).send({ message: "Error updating community", error: error.message });
     }
+    // try {
+    //     const postID = req.body.postID;
+    //     res.community.postIDs.push(postID);
+    //     const updatedCommunity = await res.community.save();
+    //     res.status(200).json(updatedCommunity);
+    // } catch (error) {
+    //     console.error('Error adding post to community:', error);
+    //     res.status(400).json({ message: "Error updating community", error: error.message });
+    // }
 });
 
 // Delete post from community
@@ -217,6 +218,9 @@ router.put('/:id/edit-community', getCommunity, async (req, res) => {
 async function getCommunity(req, res, next) {
     try {
         const community = await Community.findById(req.params.id);
+        if (!community) {
+            return res.status(404).send({ error: 'Community not found' });
+        }
         res.community = community;
         next();
     } 
