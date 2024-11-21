@@ -86,6 +86,8 @@ router.patch('/:id/:num/reputation', getUser, async(req,res) =>{
       res.user.reputation = res.user.reputation + 5;
     } else if(Number(req.params.num) === -1) {
       res.user.reputation = res.user.reputation - 10;
+    } else{
+      res.user.reputation = res.user.reputation + Number(req.params.num);
     }
     // res.user.userVoted = res.user.userVoted + 
     // ((Number(req.params.num) === 1) ? 5 : ((Number(req.params.num) === -1) ? -10 : 0));

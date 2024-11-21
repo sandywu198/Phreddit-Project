@@ -989,7 +989,21 @@ export function VotePostOrComment(){
             axios.patch(`http://localhost:8000/comments/${comment.id}/${-2}/voted`)
             .then(response => {
               console.log('Comment vote changed incremented:', response.data);
-              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+              axios.get(`http://localhost:8000/users`)
+              .then(usersRes => {
+                const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                axios.patch(`http://localhost:8000/users/${commenter.id}/${10}/reputation`)
+                .then(response => {
+                  console.log('\nUser reputation changed:', response.data);
+                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                })
+                .catch(error => {
+                  console.error('Error:', error.response ? error.response.data : error.message);
+                });
+              })
+              .catch(error => {
+                console.error('Error:', error.response ? error.response.data : error.message);
+              });
             })
             .catch(error => {
               console.error('Error:', error.response ? error.response.data : error.message);
@@ -1004,7 +1018,21 @@ export function VotePostOrComment(){
             axios.patch(`http://localhost:8000/comments/${comment.id}/${2}/voted`)
             .then(response => {
               console.log('Comment vote changed incremented:', response.data);
-              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+              axios.get(`http://localhost:8000/users`)
+              .then(usersRes => {
+                const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                axios.patch(`http://localhost:8000/users/${commenter.id}/${-5}/reputation`)
+                .then(response => {
+                  console.log('\nUser reputation changed:', response.data);
+                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                })
+                .catch(error => {
+                  console.error('Error:', error.response ? error.response.data : error.message);
+                });
+              })
+              .catch(error => {
+                console.error('Error:', error.response ? error.response.data : error.message);
+              });
             })
             .catch(error => {
               console.error('Error:', error.response ? error.response.data : error.message);
@@ -1045,7 +1073,21 @@ export function VotePostOrComment(){
             axios.patch(`http://localhost:8000/posts/${post.id}/${-2}/voted`)
             .then(response => {
               console.log('Post vote changed incremented:', response.data);
-              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+              axios.get(`http://localhost:8000/users`)
+              .then(usersRes => {
+                const poster = usersRes.data.filter(u1 => u1.displayName === post.postedBy)[0];
+                axios.patch(`http://localhost:8000/users/${poster.id}/${10}/reputation`)
+                .then(response => {
+                  console.log('\nUser reputation changed:', response.data);
+                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                })
+                .catch(error => {
+                  console.error('Error:', error.response ? error.response.data : error.message);
+                });
+              })
+              .catch(error => {
+                console.error('Error:', error.response ? error.response.data : error.message);
+              });
             })
             .catch(error => {
               console.error('Error:', error.response ? error.response.data : error.message);
@@ -1060,7 +1102,21 @@ export function VotePostOrComment(){
             axios.patch(`http://localhost:8000/posts/${post.id}/${2}/voted`)
             .then(response => {
               console.log('Post vote changed incremented:', response.data);
-              communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+              axios.get(`http://localhost:8000/users`)
+              .then(usersRes => {
+                const poster = usersRes.data.filter(u1 => u1.displayName === post.postedBy)[0];
+                axios.patch(`http://localhost:8000/users/${poster.id}/${-5}/reputation`)
+                .then(response => {
+                  console.log('\nUser reputation changed:', response.data);
+                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                })
+                .catch(error => {
+                  console.error('Error:', error.response ? error.response.data : error.message);
+                });
+              })
+              .catch(error => {
+                console.error('Error:', error.response ? error.response.data : error.message);
+              });
             })
             .catch(error => {
               console.error('Error:', error.response ? error.response.data : error.message);
