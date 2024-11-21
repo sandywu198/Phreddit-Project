@@ -77,6 +77,29 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// change the user reputation
+router.patch('/:id/:num/reputation', getUser, async(req,res) =>{
+  try{
+    console.log("\n res.user before: ", res.user, "\n");
+    console.log("\n req.params.num before: ", req.params.num, "\n");
+    if(Number(req.params.num) === 1){
+      res.user.reputation = res.user.reputation + 5;
+    } else if(Number(req.params.num) === -1) {
+      res.user.reputation = res.user.reputation - 10;
+    } else{
+      res.user.reputation = res.user.reputation + Number(req.params.num);
+    }
+    // res.user.userVoted = res.user.userVoted + 
+    // ((Number(req.params.num) === 1) ? 5 : ((Number(req.params.num) === -1) ? -10 : 0));
+    console.log("\n res.user after: ", res.user, "\n");
+    const updatedUser = await res.user.save();
+    res.send(updatedUser);
+  }
+  catch(error){
+      res.status(400).send({message: "Error updating user reputation", error});
+  }
+});
+
 // Check for returning user who didn't log out
 router.get('/return-session', async (req, res) => {
   try {
