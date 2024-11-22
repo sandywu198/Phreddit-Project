@@ -131,10 +131,50 @@ async function initializeDB() {
         password: 'password',
         reputation: 50,
     }
+    const user5 = {
+        firstName: 'out',
+        lastName: 'truth',
+        displayName:  'outtheretruth47',
+        email: 'outtheretruth47@gmail.com',
+        password: 'password',
+    }
+    const user6 = {
+        firstName: 'roll',
+        lastName: 'o',
+        displayName:  'rollo',
+        email: 'rollo@gmail.com',
+        password: 'password',
+    }
+    const user7 = {
+        firstName: 'sheep',
+        lastName: 'shemp',
+        displayName:  'shemp',
+        email: 'shemp@gmail.com',
+        password: 'password',
+    }
+    const user8 = {
+        firstName: 'cat',
+        lastName: 'lady',
+        displayName:  'catlady13',
+        email: 'catlady13@gmail.com',
+        password: 'password',
+    }
+    const user9 = {
+        firstName: 'as',
+        lastName: 'tyanax',
+        displayName:  'astyanax',
+        email: 'astyanax@gmail.com',
+        password: 'password',
+    }
     let userRef1 = await createUser(user1);
     let userRef2 = await createUser(user2);
     let userRef3 = await createUser(user3);
     let userRef4 = await createUser(user4);
+    let userRef5 = await createUser(user5);
+    let userRef6 = await createUser(user6);
+    let userRef7 = await createUser(user7);
+    let userRef8 = await createUser(user8);
+    let userRef9 = await createUser(user9);
 
     // link flair objects
     const linkFlair1 = { // link flair 1
