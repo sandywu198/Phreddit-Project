@@ -242,7 +242,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
   const [curUser, setCurUser] = useState(user);
   const [isMember,setIsMember] = useState(false);
   const [curUserStatus, setCurUserStatus] = useState(userStatus);
-  const [currentCommunityIndex, setCommunityIndex] = useState(null);
+  const [currentCommunityIndex, setCommunityIndex] = useState(-1);
   // var postThreadsArray; // = GetPostThreadsArray("All Posts", []);//<GetPostThreadsArray whichCommunityName="All Posts"  postsFromSearch={[]}/>;
   // console.log("\n creating postThreadsArray in loading view: ", postThreadsArray, "\n");
   useEffect (() => {
@@ -276,85 +276,87 @@ export function GetCommunitiesAndLoad(user, userStatus){
     fetchData();
   }, []);
   useEffect(() => {
-    async function fetchData(){
-      try{
-        const [postsRes, communitiesRes, commentsRes] = await Promise.all([
-          axios.get("http://localhost:8000/posts"),
-          axios.get("http://localhost:8000/communities"),
-          axios.get("http://localhost:8000/comments"),
-        ]);
-        console.log("Community ID", communitiesRes.data[currentCommunityIndex]);
-        const joinCommunity = async () => {
-          try{
-            console.log("Community ID", communitiesRes.data[currentCommunityIndex].id);
-            console.log("COMMUNITY NAME: ", communitiesRes.data[currentCommunityIndex]);
-            console.log("BIG FOOT JOIN", communitiesRes.data[currentCommunityIndex].members.includes(curUser.displayName));
-            await axios.put(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/add-mem`, 
-              {
+    if(currentCommunityIndex >= 0){
+      async function fetchData(){
+        try{
+          const [postsRes, communitiesRes, commentsRes] = await Promise.all([
+            axios.get("http://localhost:8000/posts"),
+            axios.get("http://localhost:8000/communities"),
+            axios.get("http://localhost:8000/comments"),
+          ]);
+          console.log("Community ID", communitiesRes.data[currentCommunityIndex]);
+          const joinCommunity = async () => {
+            try{
+              console.log("Community ID", communitiesRes.data[currentCommunityIndex].id);
+              console.log("COMMUNITY NAME: ", communitiesRes.data[currentCommunityIndex]);
+              console.log("BIG FOOT JOIN", communitiesRes.data[currentCommunityIndex].members.includes(curUser.displayName));
+              await axios.put(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/add-mem`, 
+                {
+                  member: curUser.displayName,
+                }
+              );
+              setIsMember(true);
+              setCommunities(prevCommunities => {
+                const updatedCommunities = [...prevCommunities];
+                updatedCommunities[currentCommunityIndex].members.push(curUser.displayName);
+                return updatedCommunities;
+              });
+            }
+            catch(error){
+              console.error("Error joining community", error.message);
+            }
+          }
+          const leaveCommunity = async () =>{
+            try{
+              await axios.patch(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/delete-mem`, 
+                {
                 member: curUser.displayName,
-              }
-            );
-            setIsMember(true);
-            setCommunities(prevCommunities => {
-              const updatedCommunities = [...prevCommunities];
-              updatedCommunities[currentCommunityIndex].members.push(curUser.displayName);
-              return updatedCommunities;
-            });
+                }
+              );
+              setIsMember(false);
+              setCommunities(prevCommunities => {
+                const updatedCommunities = [...prevCommunities];
+                updatedCommunities[currentCommunityIndex].members = updatedCommunities[currentCommunityIndex].members.filter(member => member !== curUser.displayName);
+                return updatedCommunities;
+              });
+            }
+            catch(error){
+              console.error("Error leaving community", error.message);
+            }
           }
-          catch(error){
-            console.error("Error joining community", error.message);
-          }
-        }
-        const leaveCommunity = async () =>{
-          try{
-            await axios.patch(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/delete-mem`, 
-              {
-              member: curUser.displayName,
-              }
-            );
-            setIsMember(false);
-            setCommunities(prevCommunities => {
-              const updatedCommunities = [...prevCommunities];
-              updatedCommunities[currentCommunityIndex].members = updatedCommunities[currentCommunityIndex].members.filter(member => member !== curUser.displayName);
-              return updatedCommunities;
-            });
-          }
-          catch(error){
-            console.error("Error leaving community", error.message);
-          }
-        }
-        updatePageHeader(
-          <div className="community-information" style={{display:"block"}}>
-            <div id="community-name-sorting-buttons-line">
-              <h3 className="post-heading" id="community-name">{communitiesRes.data[currentCommunityIndex].name}</h3>
-              <PageNameSortingButtons communityIndex={currentCommunityIndex} postsFromSearch={[]}/>
+          updatePageHeader(
+            <div className="community-information" style={{display:"block"}}>
+              <div id="community-name-sorting-buttons-line">
+                <h3 className="post-heading" id="community-name">{communitiesRes.data[currentCommunityIndex].name}</h3>
+                <PageNameSortingButtons communityIndex={currentCommunityIndex} postsFromSearch={[]}/>
+              </div>
+              <h4 className="community-heading" id="community-description">{communitiesRes.data[currentCommunityIndex].description}</h4>
+              <h4 className="community-heading" id="community-age">{"Created " + displayTime(communitiesRes.data[currentCommunityIndex].startDate)}</h4>
+              <h4 className="community-heading" id="community-post-count">{communitiesRes.data[currentCommunityIndex].postIDs.length + ((communitiesRes.data[currentCommunityIndex].postIDs.length === 1) ? " Post | " 
+          : " Posts | ") + communitiesRes.data[currentCommunityIndex].members.length + ((communitiesRes.data[currentCommunityIndex].members.length === 1) ? " Member" 
+          : " Members")}</h4>
+              {curUser && (
+                <button
+                  onClick={isMember ? leaveCommunity : joinCommunity}
+                  className={isMember ? "leave-button" : "join-button"}
+                >
+                  {isMember ? "Leave" : "Join"}
+                </button>
+              )}
+              <hr id = "delimeter"/>
+              {/* {console.log("\n check communityIndex:", communityIndex, "\n")} */}
+              <SortedPostListing communityIndex={currentCommunityIndex} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data} user={curUser}/>
+              {sortPostEmitter.emit("sortPosts", true, false, currentCommunityIndex, [])}
             </div>
-            <h4 className="community-heading" id="community-description">{communitiesRes.data[currentCommunityIndex].description}</h4>
-            <h4 className="community-heading" id="community-age">{"Created " + displayTime(communitiesRes.data[currentCommunityIndex].startDate)}</h4>
-            <h4 className="community-heading" id="community-post-count">{communitiesRes.data[currentCommunityIndex].postIDs.length + ((communitiesRes.data[currentCommunityIndex].postIDs.length === 1) ? " Post | " 
-        : " Posts | ") + communitiesRes.data[currentCommunityIndex].members.length + ((communitiesRes.data[currentCommunityIndex].members.length === 1) ? " Member" 
-        : " Members")}</h4>
-            {curUser && (
-              <button
-                onClick={isMember ? leaveCommunity : joinCommunity}
-                className={isMember ? "leave-button" : "join-button"}
-              >
-                {isMember ? "Leave" : "Join"}
-              </button>
-            )}
-            <hr id = "delimeter"/>
-            {/* {console.log("\n check communityIndex:", communityIndex, "\n")} */}
-            <SortedPostListing communityIndex={currentCommunityIndex} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data} user={curUser}/>
-            {sortPostEmitter.emit("sortPosts", true, false, currentCommunityIndex, [])}
-          </div>
-        )
+          )
+        }
+        catch(error){
+          console.error("Error fetching data", error);
+        }
       }
-      catch(error){
-        console.error("Error fetching data", error);
-      }
+      fetchData();
     }
-    fetchData();
-  }, [isMember]);
+  }, [isMember, currentCommunityIndex]);
   useEffect(() => {
     const loadCommunity = (communityIndex, searchString, post, replyToPost, 
       commentRepliedTo, user, admin, comment, community) => {
