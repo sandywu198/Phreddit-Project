@@ -27,9 +27,9 @@ app.use(session({
 
 app.use(express.json());
 
-mongoose.connect('mongodb://127.0.0.1:27017/phreddit')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect('mongodb://127.0.0.1:27017/phreddit');
+  // .then(() => console.log('Connected to MongoDB'))
+  // .catch(err => console.error('MongoDB connection error:', err));
 
 const communityRoutes = require('./routes/communities');
 const postRoutes = require('./routes/posts');
@@ -46,8 +46,9 @@ app.get('/', (req, res) => {
     res.send('Welcome to the Phreddit API! Use /communities to get the list of communities.');
 });
 
-app.listen(8000, () => {
-    console.log('Server running at http://localhost:8000');
+const port = 8000;
+const server = app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
 
 process.on('SIGINT', async () => {
@@ -55,6 +56,8 @@ process.on('SIGINT', async () => {
     console.log('Server closed. Database instance disconnected.');
     process.exit(0);
 });
+
+module.exports = server;
 
 // app.get("/communities", async (req, res) => {
 //     try{
