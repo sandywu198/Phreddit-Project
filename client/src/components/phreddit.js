@@ -628,15 +628,15 @@ export function GetCommunitiesAndLoad(user, userStatus){
             axios.get("http://localhost:8000/comments").then(commentsRes => {
               setComments(commentsRes.data);
               console.log("COMMUNITIES id", communitiesRes.data[communityIndex]);
-              console.log("BIG FOOT", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+              console.log("BIG FOOT", curUser && communitiesRes.data[communityIndex].members.includes(curUser.displayName));
               console.log("isMember: ", isMember);
-              const isUserMember = communitiesRes.data[communityIndex].members.includes(curUser.displayName);
+              const isUserMember = curUser ? communitiesRes.data[communityIndex].members.includes(curUser.displayName) : false;
               setIsMember(isUserMember);
               const joinCommunity = async () => {
                 try{
                   console.log("Community ID", communitiesRes.data[communityIndex].id);
                   console.log("COMMUNITY NAME: ", communitiesRes.data[communityIndex]);
-                  console.log("BIG FOOT JOIN", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                  console.log("BIG FOOT JOIN", curUser && communitiesRes.data[communityIndex].members.includes(curUser.displayName));
                   await axios.put(`http://localhost:8000/communities/${communitiesRes.data[communityIndex]._id}/add-mem`, 
                     {
                       member: curUser.displayName,

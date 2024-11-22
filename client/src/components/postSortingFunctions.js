@@ -967,6 +967,7 @@ export function VotePostOrComment(){
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
                 const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                console.log("\n usersRes: ", usersRes.data, " commenter: ", commenter, "\n");
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${voteStatus}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
@@ -1021,6 +1022,7 @@ export function VotePostOrComment(){
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
                 const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                console.log("\n usersRes.data: ", usersRes.data, " commenter: ", commenter, " comment: ", comment, "\n");
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${-5}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
