@@ -708,7 +708,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
     };
     communityClickedEmitter.on("communityClicked", loadCommunity);
     return () => {communityClickedEmitter.off("communityClicked", loadCommunity);};
-  }, [comments, communities, linkFlairs, posts, curUser, curUserStatus]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
+  }, [comments, communities, linkFlairs, posts, curUser, curUserStatus, currentCommunityIndex]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
   return (
     <> {pageHeader} </>
   );
