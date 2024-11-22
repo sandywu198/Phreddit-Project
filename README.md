@@ -8,9 +8,12 @@ Clearly explain the steps required to install and configure necessary packages,
 for both the server and the client, and the sequence of steps required to get
 your application running.
 
-Libraries to install:
+Once the current directory is the entire project folder, install the following packages:
 
 npm install
+
+
+In the server side, install the following packages:
 
 npm install bcrypt
 
@@ -21,6 +24,9 @@ npm install js-cookie
 npm install jsonwebtoken
 
 npm install express-session
+
+npm install jest
+
 
 
 In the sections below, list and describe each contribution briefly.
