@@ -185,31 +185,6 @@ export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, com
 
 // testing, version underneath was previous version
 export function DisplayActivePosts({specificCommunity, postsFromSearch, communities, posts, comments, user}){
-  // const [sortedPosts, setSortedPosts] = useState([]);
-  // const [communities, setCommunities] = useState([]);
-  // useEffect(() => {
-  //   var printPostThreadsArray = GetPostThreadsArray("All Posts", postsFromSearch);
-  //   console.log("\n experiment printPostThreadsArray: ", printPostThreadsArray, "\n");
-  // })
-  // useEffect(() => {
-  //   // let printPostThreadsArray;
-  //   // console.log("postsFROMSEARCH SIZING", postsFromSearch.length);
-  //   // if (postsFromSearch.length > 0) {
-  //   //   console.log("HOPE SO");
-  //   //   printPostThreadsArray = useGetPostThreadsArray("All Posts", postsFromSearch);
-  //   //   console.log("GETTTT POSTSS1", printPostThreadsArray);
-  //   // } else if (specificCommunity !== "All Posts") {
-  //   //   console.log("COMMUNITY", specificCommunity);
-  //   //   printPostThreadsArray = useGetPostThreadsArray(specificCommunity, []);
-  //   //   console.log("GETTTT POSTSS2", printPostThreadsArray);
-  //   // } else {
-  //   //   console.log("ALLLLLL POSTS");
-  //   //   printPostThreadsArray = useGetPostThreadsArray("All Posts", []);
-  //   //   console.log("GETTTT POSTSS3", printPostThreadsArray);
-  //   // }
-   
-  // },[specificCommunity, postsFromSearch, communities, posts, comments]);
-  // var sortedPosts = [];
   var sortedPosts = [];
   const communityArg = (postsFromSearch.length > 0) ? "All Posts" : ((specificCommunity !== "All Posts") ? specificCommunity: "All Posts");
   const searchPostsArg = (postsFromSearch.length > 0) ?  postsFromSearch : ((specificCommunity !== "All Posts") ? []: []);
@@ -407,30 +382,21 @@ export function CreatePostsInHTML(postsArray, specificCommunity, communities, po
   );
 }
 
-export function CreatePostsInHTML2(postsArray, specificCommunity) {
-  // const CommentsRepliesCountMap = Object.fromEntries(postThreadsArray.map((post, postIndex) => [postIndex, countPerPosts[postIndex]]));
-  // const createdPosts = [];
-  // console.log("\npostsArray in creating: ", postsArray, "\n");
-  // console.log("\npostsArray.length in creating: ", postsArray.length, "\n"); 
-  // for(let postsArrayIndex = 0; postsArrayIndex < postsArray.length; postsArrayIndex++){
-  //   console.log("\n postThreadsArray[postsArrayIndex] here: ", postThreadsArray[postsArrayIndex], "\n");
-  //   createdPosts.push(SinglePost(postsArray[postsArrayIndex], postsArrayIndex, specificCommunity, CommentsRepliesCountMap));
-  // }
-  // console.log("\ncreatedPosts: ", createdPosts, "\n");
-  return (
-    <div>
-      {console.log("\n postsArray in creating return: ", postsArray, "\n")}
-      {postsArray.map((post, index) => (
-        <SinglePost 
-          key={post.url}  // Using url as the key since it's unique according to the UML
-          post={post}
-          postIndex={index}
-          specificCommunity={specificCommunity}
-        />
-      ))}
-    </div>
-  );
-}
+// export function CreatePostsInHTML2(postsArray, specificCommunity) {
+//   return (
+//     <div>
+//       {console.log("\n postsArray in creating return: ", postsArray, "\n")}
+//       {postsArray.map((post, index) => (
+//         <SinglePost 
+//           key={post.url}  // Using url as the key since it's unique according to the UML
+//           post={post}
+//           postIndex={index}
+//           specificCommunity={specificCommunity}
+//         />
+//       ))}
+//     </div>
+//   );
+// }
 
 // export function CreatePostsInHTML(postsArray, specificCommunity){
 //   const [commentsCountMap, setCommentsCountMap] = useState(new Map());
@@ -626,57 +592,57 @@ export function GetCommentThreadsArrayFunction(communities, posts, comments,
   return printCommentThreadsArray;
 }
 
-export function GetPostThreadsArrayFunction2(whichCommunityName, postsFromSearch) {
-  async function fetchData(){
-    try{
-      const [postsRes, communitiesRes, commentsRes] = await Promise.all([
-        axios.get("http://localhost:8000/posts"),
-        axios.get("http://localhost:8000/communities"),
-        axios.get("http://localhost:8000/comments"),
-      ]);
-      var printPostThreadsArray = [];
-        if (communitiesRes.data && postsRes.data && commentsRes.data) {
-          console.log("\n communities: ", communitiesRes.data, "\n");
-          console.log("\n posts: ", postsRes.data, "\n");
-          console.log("\n comments: ", commentsRes.data, "\n");
-          const commentMap = new Map((commentsRes.data).map(comment => [comment.id, comment]));
-          console.log("\n commentMap: ", commentMap, "\n");
-          let filteredPosts = postsRes.data;
-          if (whichCommunityName !== "All Posts") {
-            var community;
-            for(let c in communitiesRes.data){
-              // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
-              if((communitiesRes.data)[c].name === whichCommunityName){
-                community = (communitiesRes.data)[c];
-                // console.log("\n community: ", community, "\n");
-              } 
-            }
-            // console.log("\n community found: ", community, "\n");
-            if(community){
-              filteredPosts = (postsRes.data).filter(post => community.postIDs.includes(post.id));
-            }
-          }
-          console.log("\n filteredPosts: ", filteredPosts, "\n");
-          if (postsFromSearch.length > 0) {
-            filteredPosts = postsFromSearch;
-          }
-          const threadRoots = filteredPosts.map(post => MakePostThreads(post, post.commentIDs, commentMap));
-          console.log("\n threadRoots: ", threadRoots, "\n");
-          printPostThreadsArray = threadRoots.map(root => {
-            const arrayOfNodes = [];
-            postThreadDFS(root, 0, arrayOfNodes);
-            return arrayOfNodes;
-          });
-          console.log("\n printPostThreadsArray: ", printPostThreadsArray, "\n");
-        }
-        return printPostThreadsArray;
-    }
-    catch(error){
-      console.error("Error fetching data", error);
-    }
-  }
-  fetchData();
-}
+// export function GetPostThreadsArrayFunction2(whichCommunityName, postsFromSearch) {
+//   async function fetchData(){
+//     try{
+//       const [postsRes, communitiesRes, commentsRes] = await Promise.all([
+//         axios.get("http://localhost:8000/posts"),
+//         axios.get("http://localhost:8000/communities"),
+//         axios.get("http://localhost:8000/comments"),
+//       ]);
+//       var printPostThreadsArray = [];
+//         if (communitiesRes.data && postsRes.data && commentsRes.data) {
+//           console.log("\n communities: ", communitiesRes.data, "\n");
+//           console.log("\n posts: ", postsRes.data, "\n");
+//           console.log("\n comments: ", commentsRes.data, "\n");
+//           const commentMap = new Map((commentsRes.data).map(comment => [comment.id, comment]));
+//           console.log("\n commentMap: ", commentMap, "\n");
+//           let filteredPosts = postsRes.data;
+//           if (whichCommunityName !== "All Posts") {
+//             var community;
+//             for(let c in communitiesRes.data){
+//               // console.log("\n c.postIDs.includes(post.id): ", communities[c].postIDs.includes(post.id), "\n");
+//               if((communitiesRes.data)[c].name === whichCommunityName){
+//                 community = (communitiesRes.data)[c];
+//                 // console.log("\n community: ", community, "\n");
+//               } 
+//             }
+//             // console.log("\n community found: ", community, "\n");
+//             if(community){
+//               filteredPosts = (postsRes.data).filter(post => community.postIDs.includes(post.id));
+//             }
+//           }
+//           console.log("\n filteredPosts: ", filteredPosts, "\n");
+//           if (postsFromSearch.length > 0) {
+//             filteredPosts = postsFromSearch;
+//           }
+//           const threadRoots = filteredPosts.map(post => MakePostThreads(post, post.commentIDs, commentMap));
+//           console.log("\n threadRoots: ", threadRoots, "\n");
+//           printPostThreadsArray = threadRoots.map(root => {
+//             const arrayOfNodes = [];
+//             postThreadDFS(root, 0, arrayOfNodes);
+//             return arrayOfNodes;
+//           });
+//           console.log("\n printPostThreadsArray: ", printPostThreadsArray, "\n");
+//         }
+//         return printPostThreadsArray;
+//     }
+//     catch(error){
+//       console.error("Error fetching data", error);
+//     }
+//   }
+//   fetchData();
+// }
 
   // custom hook version
   export function useGetPostThreadsArray(whichCommunityName, postsFromSearch){

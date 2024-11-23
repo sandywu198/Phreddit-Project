@@ -52,7 +52,7 @@ export function HomePage({userStatus, user}){
 export const sortPostEmitter = new EventEmitter();
 sortPostEmitter.setMaxListeners(25);
 
-export const SortedPostListing = ({communityIndex, postsFromSearch, communities, posts, comments, user}) => {
+export const SortedPostListing = ({communityIndex, postsFromSearch, communities, userCommunityPosts, otherCommunityPosts, posts, comments, user}) => {
   // console.log("\n model in sorting: ", model, " communityIndex: ", communityIndex, " postsFromSearch: ", postsFromSearch, "\n")
   // postsFromSearch = new Set(postsFromSearch);
   const [postListing, updatePostListing] = useState(null);
@@ -94,13 +94,49 @@ export const SortedPostListing = ({communityIndex, postsFromSearch, communities,
           }
         } else {
           if (active) {
-            updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={new Set()} communities={communities} posts={posts} comments={comments} user={user}/> // DisplayActivePosts("All Posts", new Set());
+            if(user){
+              updatedPostListing = <div>
+              <h3>Posts from Your Communities</h3>
+              <hr></hr>
+              <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={new Set()} communities={communities} posts={userCommunityPosts} comments={comments} user={user}/> 
+              <h3>Posts from Other Communities</h3>
+              <hr></hr>
+              <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={new Set()} communities={communities} posts={otherCommunityPosts} comments={comments} user={user}/> 
+            </div>// DisplayActivePosts("All Posts", new Set());
+            }
+            else{
+              updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={new Set()} communities={communities} posts={posts} comments={comments} user={user}/> 
+            }
           } else if (newestToOldest) {
             console.log("\n new for all posts \n");
-            updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/>;
+            if(user){
+              updatedPostListing = <div> 
+                <h3>Posts from Your Communities</h3>
+                <hr></hr>
+                <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={userCommunityPosts} comments={comments} user={user}/>
+                <h3>Posts from Other Communities</h3>
+                <hr></hr>
+                <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={otherCommunityPosts} comments={comments} user={user}/>
+              </div>
+            }
+            else{
+              updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/>;
+            }
           } else {
             console.log("\n old for all posts \n");
-            updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/>;
+            if(user){
+              updatedPostListing = <div>
+                <h3>Posts from Your Communities</h3>
+                <hr></hr>
+                <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={userCommunityPosts} comments={comments} user={user}/>
+                <h3>Posts from Other Communities</h3>
+                <hr></hr>
+                <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={otherCommunityPosts} comments={comments} user={user}/>
+              </div>
+            }
+            else{
+              updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/>
+            }
           }
         }
         updatePostListing(updatedPostListing);
@@ -175,7 +211,7 @@ export function HandleSearchLogic({searchString, communityIndex, printPostThread
     <hr id="delimeter" />
     <section id="posts-listing-section">
       {/* <SortedPostListing model={model} communityIndex={communityIndex} postsFromSearch={postsFromSearch} /> */}
-      <SortedPostListing communityIndex={communityIndex} postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments}/>
+      <SortedPostListing communityIndex={communityIndex} postsFromSearch={postsFromSearch} communities={communities} userCommunityPosts = {[]} otherCommunityPosts = {[]} posts={posts} comments={comments}/>
     </section>
   </div>)
   }
@@ -242,7 +278,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
   const [curUser, setCurUser] = useState(user);
   const [isMember,setIsMember] = useState(false);
   const [curUserStatus, setCurUserStatus] = useState(userStatus);
-  const [currentCommunityIndex, setCommunityIndex] = useState(null);
+  const [currentCommunityIndex, setCommunityIndex] = useState(-1);
   // var postThreadsArray; // = GetPostThreadsArray("All Posts", []);//<GetPostThreadsArray whichCommunityName="All Posts"  postsFromSearch={[]}/>;
   // console.log("\n creating postThreadsArray in loading view: ", postThreadsArray, "\n");
   useEffect (() => {
@@ -253,6 +289,24 @@ export function GetCommunitiesAndLoad(user, userStatus){
           axios.get("http://localhost:8000/communities"),
           axios.get("http://localhost:8000/comments"),
         ]);
+        var userCommunityPosts;
+        var otherCommunityPosts;
+        if(curUser){
+          const posts = postsRes.data;
+          const communities = communitiesRes.data;
+          const userCommunities = communities.filter(community => community.members.includes(curUser.displayName));
+          const userCommunityIds = userCommunities.map(community => community.id);
+          const postToCommunityMap = {};
+          communities.forEach(community => {
+            community.postIDs.forEach(postId => {
+              postToCommunityMap[postId] = community.id;
+            });
+          });
+          userCommunityPosts = posts.filter(post => userCommunityIds.includes(postToCommunityMap[post.id])
+          );
+          otherCommunityPosts = posts.filter(post => !userCommunityIds.includes(postToCommunityMap[post.id])
+          );
+        }
         updatePageHeader(
           <section id="hide-for-creating-community">
             <div className="community-information" style={{display:"block"}}>
@@ -264,7 +318,10 @@ export function GetCommunitiesAndLoad(user, userStatus){
                 + ((postsRes.data.length === 1) ? "" : "s")}</h4>
                 <hr id = "delimeter"/>
                 {/* <SortedPostListing model={model} communityIndex={-1} postsFromSearch={[]}/> */}
-                <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data}/>
+                {curUser ? 
+                <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} userCommunityPosts = {userCommunityPosts} otherCommunityPosts = {otherCommunityPosts} posts={postsRes.data} comments={commentsRes.data} user = {curUser}/>
+                : <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} userCommunityPosts = {[]} otherCommunityPosts = {[]} posts={postsRes.data} comments={commentsRes.data} user = {curUser}/>
+                }
             </div>
           </section>
         );
@@ -276,93 +333,92 @@ export function GetCommunitiesAndLoad(user, userStatus){
     fetchData();
   }, []);
   useEffect(() => {
-    async function fetchData(){
-      try{
-        const [postsRes, communitiesRes, commentsRes] = await Promise.all([
-          axios.get("http://localhost:8000/posts"),
-          axios.get("http://localhost:8000/communities"),
-          axios.get("http://localhost:8000/comments"),
-        ]);
-        console.log("COMMUNITY CURRENT INDEX IN USEEFFECT", currentCommunityIndex);
-        const joinCommunity = async () => {
-          try{
-            console.log("Community ID", communitiesRes.data[currentCommunityIndex].id);
-            console.log("COMMUNITY NAME: ", communitiesRes.data[currentCommunityIndex]);
-            console.log("BIG FOOT JOIN", communitiesRes.data[currentCommunityIndex].members.includes(curUser.displayName));
-            await axios.put(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/add-mem`, 
-              {
+    if(currentCommunityIndex >= 0){
+      async function fetchData(){
+        try{
+          const [postsRes, communitiesRes, commentsRes] = await Promise.all([
+            axios.get("http://localhost:8000/posts"),
+            axios.get("http://localhost:8000/communities"),
+            axios.get("http://localhost:8000/comments"),
+          ]);
+          console.log("Community ID", communitiesRes.data[currentCommunityIndex]);
+          const joinCommunity = async () => {
+            try{
+              console.log("Community ID", communitiesRes.data[currentCommunityIndex].id);
+              console.log("COMMUNITY NAME: ", communitiesRes.data[currentCommunityIndex]);
+              console.log("BIG FOOT JOIN", communitiesRes.data[currentCommunityIndex].members.includes(curUser.displayName));
+              await axios.put(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/add-mem`, 
+                {
+                  member: curUser.displayName,
+                }
+              );
+              setIsMember(true);
+              setCommunities(prevCommunities => {
+                const updatedCommunities = [...prevCommunities];
+                updatedCommunities[currentCommunityIndex].members.push(curUser.displayName);
+                return updatedCommunities;
+              });
+            }
+            catch(error){
+              console.error("Error joining community", error.message);
+            }
+          }
+          const leaveCommunity = async () =>{
+            try{
+              await axios.patch(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/delete-mem`, 
+                {
                 member: curUser.displayName,
-              }
-            );
-            setIsMember(true);
-            setCommunities(prevCommunities => {
-              const updatedCommunities = [...prevCommunities];
-              updatedCommunities[currentCommunityIndex].members.push(curUser.displayName);
-              return updatedCommunities;
-            });
+                }
+              );
+              setIsMember(false);
+              setCommunities(prevCommunities => {
+                const updatedCommunities = [...prevCommunities];
+                updatedCommunities[currentCommunityIndex].members = updatedCommunities[currentCommunityIndex].members.filter(member => member !== curUser.displayName);
+                return updatedCommunities;
+              });
+            }
+            catch(error){
+              console.error("Error leaving community", error.message);
+            }
           }
-          catch(error){
-            console.error("Error joining community", error.message);
-          }
-        }
-        const leaveCommunity = async () =>{
-          try{
-            console.log("Community ID", communitiesRes.data[currentCommunityIndex].id);
-            console.log("COMMUNITY NAME: ", communitiesRes.data[currentCommunityIndex]);
-            console.log("BIG FOOT LEAVE", communitiesRes.data[currentCommunityIndex].members.includes(curUser.displayName));
-            await axios.patch(`http://localhost:8000/communities/${communitiesRes.data[currentCommunityIndex]._id}/delete-mem`, 
-              {
-              member: curUser.displayName,
-              }
-            );
-            setIsMember(false);
-            setCommunities(prevCommunities => {
-              const updatedCommunities = [...prevCommunities];
-              updatedCommunities[currentCommunityIndex].members = updatedCommunities[currentCommunityIndex].members.filter(member => member !== curUser.displayName);
-              return updatedCommunities;
-            });
-          }
-          catch(error){
-            console.error("Error leaving community", error.message);
-          }
-        }
-        updatePageHeader(
-          <div className="community-information" style={{display:"block"}}>
-            <div id="community-name-sorting-buttons-line">
-              <h3 className="post-heading" id="community-name">{communitiesRes.data[currentCommunityIndex].name}</h3>
-              <PageNameSortingButtons communityIndex={currentCommunityIndex} postsFromSearch={[]}/>
+          updatePageHeader(
+            <div className="community-information" style={{display:"block"}}>
+              <div id="community-name-sorting-buttons-line">
+                <h3 className="post-heading" id="community-name">{communitiesRes.data[currentCommunityIndex].name}</h3>
+                <PageNameSortingButtons communityIndex={currentCommunityIndex} postsFromSearch={[]}/>
+              </div>
+              <h4 className="community-heading" id="community-description">{communitiesRes.data[currentCommunityIndex].description}</h4>
+              <h4 className="community-heading" id="community-age">{"Created " + displayTime(communitiesRes.data[currentCommunityIndex].startDate)}</h4>
+              <h4 className="community-heading" id="community-post-count">{communitiesRes.data[currentCommunityIndex].postIDs.length + ((communitiesRes.data[currentCommunityIndex].postIDs.length === 1) ? " Post | " 
+          : " Posts | ") + communitiesRes.data[currentCommunityIndex].members.length + ((communitiesRes.data[currentCommunityIndex].members.length === 1) ? " Member" : " Members")}</h4>
+              {curUser && (
+                <button
+                  onClick={isMember ? leaveCommunity : joinCommunity}
+                  className={isMember ? "leave-button" : "join-button"}
+                >
+                  {isMember ? "Leave" : "Join"}
+                </button>
+              )}
+              <hr id = "delimeter"/>
+              {/* {console.log("\n check communityIndex:", communityIndex, "\n")} */}
+              <SortedPostListing communityIndex={currentCommunityIndex} postsFromSearch={[]} communities={communitiesRes.data} userCommunityPosts = {[]} otherCommunityPosts = {[]} posts={postsRes.data} comments={commentsRes.data} user={curUser}/>
+              {sortPostEmitter.emit("sortPosts", true, false, currentCommunityIndex, [])}
             </div>
-            <h4 className="community-heading" id="community-description">{communitiesRes.data[currentCommunityIndex].description}</h4>
-            <h4 className="community-heading" id="community-age">{"Created " + displayTime(communitiesRes.data[currentCommunityIndex].startDate)}</h4>
-            <h4 className="community-heading" id="community-post-count">{communitiesRes.data[currentCommunityIndex].postIDs.length + ((communitiesRes.data[currentCommunityIndex].postIDs.length === 1) ? " Post | " 
-        : " Posts | ") + communitiesRes.data[currentCommunityIndex].members.length + ((communitiesRes.data[currentCommunityIndex].members.length === 1) ? " Member" 
-        : " Members")}</h4>
-            {curUser && (
-              <button
-                onClick={isMember ? leaveCommunity : joinCommunity}
-                className={isMember ? "leave-button" : "join-button"}
-              >
-                {isMember ? "Leave" : "Join"}
-              </button>
-            )}
-            <hr id = "delimeter"/>
-            {/* {console.log("\n check communityIndex:", communityIndex, "\n")} */}
-            <SortedPostListing communityIndex={currentCommunityIndex} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data} user={curUser}/>
-            {sortPostEmitter.emit("sortPosts", true, false, currentCommunityIndex, [])}
-          </div>
-        )
+          )
+        }
+        catch(error){
+          console.error("Error fetching data", error);
+        }
       }
-      catch(error){
-        console.error("Error fetching data", error);
-      }
+      fetchData();
     }
-    fetchData();
   }, [isMember, currentCommunityIndex]);
   useEffect(() => {
     const loadCommunity = (communityIndex, searchString, post, replyToPost, 
       commentRepliedTo, user, admin, comment, community) => {
       setCommunityIndex(communityIndex);
       console.log("COMMUNITY INDEX AFTER SET", currentCommunityIndex);
+      console.log("COMMUNITY INDEX ACUTAL", communityIndex);
       // if communityIndex === -1, it's the All Posts View
       if(communityIndex === -1){
         CreatePostButtonColorEmitter.emit('clickedColor', false)
@@ -376,6 +432,24 @@ export function GetCommunitiesAndLoad(user, userStatus){
               axios.get("http://localhost:8000/communities"),
               axios.get("http://localhost:8000/comments"),
             ]);
+            var userCommunityPosts;
+            var otherCommunityPosts;
+            if(curUser){
+              const posts = postsRes.data;
+              const communities = communitiesRes.data;
+              const userCommunities = communities.filter(community => community.members.includes(curUser.displayName));
+              const userCommunityIds = userCommunities.map(community => community.id);
+              const postToCommunityMap = {};
+              communities.forEach(community => {
+                community.postIDs.forEach(postId => {
+                  postToCommunityMap[postId] = community.id;
+                });
+              });
+              userCommunityPosts = posts.filter(post => userCommunityIds.includes(postToCommunityMap[post.id])
+              );
+              otherCommunityPosts = posts.filter(post => !userCommunityIds.includes(postToCommunityMap[post.id])
+              );
+            }
             updatePageHeader(
               <section id="hide-for-creating-community">
                 <div className="community-information" style={{display:"block"}}>
@@ -387,11 +461,13 @@ export function GetCommunitiesAndLoad(user, userStatus){
                     + ((postsRes.data.length === 1) ? "" : "s")}</h4>
                     <hr id = "delimeter"/>
                     {/* <SortedPostListing model={model} communityIndex={-1} postsFromSearch={[]}/> */}
-                    <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data} user={user}/>
+                    {curUser ? 
+                    <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} userCommunityPosts = {userCommunityPosts} otherCommunityPosts = {otherCommunityPosts} posts={postsRes.data} comments={commentsRes.data} user = {curUser}/>
+                    : <SortedPostListing communityIndex={-1} postsFromSearch={[]} communities={communitiesRes.data} userCommunityPosts = {[]} otherCommunityPosts = {[]} posts={postsRes.data} comments={commentsRes.data} user = {curUser}/>
+                    }
                 </div>
               </section>
             );
-            NavBarEmitter.emit('updateNavBar')
           }
           catch(error){
             console.error("Error fetching data", error);
@@ -621,280 +697,100 @@ export function GetCommunitiesAndLoad(user, userStatus){
           // console.log("\n clicking CommunityNameButtonColorEmitter now! \n");
           CommunityNameButtonColorEmitter.emit('clickedColor', true, communityIndex)
           // console.log("\n done CommunityNameButtonColorEmitter now! \n");
-        axios.get("http://localhost:8000/posts").then(postsRes => {
-          setPosts(postsRes.data);
-          axios.get("http://localhost:8000/communities").then(communitiesRes => {
-            setCommunities(communitiesRes.data);
-            axios.get("http://localhost:8000/comments").then(commentsRes => {
-              setComments(commentsRes.data);
-              console.log("COMMUNITIES id", communitiesRes.data[communityIndex]);
-              console.log("BIG FOOT", curUser && communitiesRes.data[communityIndex].members.includes(curUser.displayName));
-              console.log("isMember: ", isMember);
-              const isUserMember = curUser ? communitiesRes.data[communityIndex].members.includes(curUser.displayName) : false;
-              setIsMember(isUserMember);
-              const joinCommunity = async () => {
-                try{
-                  console.log("Community ID", communitiesRes.data[communityIndex].id);
-                  console.log("COMMUNITY NAME: ", communitiesRes.data[communityIndex]);
-                  console.log("BIG FOOT JOIN", curUser && communitiesRes.data[communityIndex].members.includes(curUser.displayName));
-                  await axios.put(`http://localhost:8000/communities/${communitiesRes.data[communityIndex]._id}/add-mem`, 
-                    {
+          axios.get("http://localhost:8000/posts").then(postsRes => {
+            setPosts(postsRes.data);
+            axios.get("http://localhost:8000/communities").then(communitiesRes => {
+              setCommunities(communitiesRes.data);
+              axios.get("http://localhost:8000/comments").then(commentsRes => {
+                setComments(commentsRes.data);
+                console.log("COMMUNITIES id", communitiesRes.data[communityIndex]);
+
+                if(curUser){
+                  console.log("BIG FOOT", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                  console.log("isMember: ", isMember);
+                  const isUserMember = communitiesRes.data[communityIndex].members.includes(curUser.displayName);
+                  setIsMember(isUserMember);
+                }
+                const joinCommunity = async () => {
+                  try{
+                    console.log("Community ID", communitiesRes.data[communityIndex].id);
+                    console.log("COMMUNITY NAME: ", communitiesRes.data[communityIndex]);
+                    console.log("BIG FOOT JOIN", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                    await axios.put(`http://localhost:8000/communities/${communitiesRes.data[communityIndex]._id}/add-mem`, 
+                      {
+                        member: curUser.displayName,
+                      }
+                    );
+                    setIsMember(true);
+                    setCommunities(prevCommunities => {
+                      const updatedCommunities = [...prevCommunities];
+                      updatedCommunities[communityIndex].members.push(curUser.displayName);
+                      return updatedCommunities;
+                    });
+                  }
+                  catch(error){
+                    console.error("Error joining community", error.message);
+                  }
+                }
+                const leaveCommunity = async () =>{
+                  try{
+                    console.log("Community ID", communitiesRes.data[communityIndex].id);
+                    console.log("COMMUNITY NAME: ", communitiesRes.data[communityIndex]);
+                    console.log("BIG FOOT LEAVE", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
+                    await axios.patch(`http://localhost:8000/communities/${communitiesRes.data[communityIndex]._id}/delete-mem`, 
+                      {
                       member: curUser.displayName,
-                    }
-                  );
-                  setIsMember(true);
-                  setCommunities(prevCommunities => {
-                    const updatedCommunities = [...prevCommunities];
-                    updatedCommunities[communityIndex].members.push(curUser.displayName);
-                    return updatedCommunities;
-                  });
+                      }
+                    );
+                    setIsMember(false);
+                    setCommunities(prevCommunities => {
+                      const updatedCommunities = [...prevCommunities];
+                      updatedCommunities[communityIndex].members = updatedCommunities[communityIndex].members.filter(member => member !== curUser.displayName);
+                      return updatedCommunities;
+                    });
+                  }
+                  catch(error){
+                    console.error("Error leaving community", error.message);
+                  }
                 }
-                catch(error){
-                  console.error("Error joining community", error.message);
-                }
-              }
-              const leaveCommunity = async () =>{
-                try{
-                  console.log("Community ID", communitiesRes.data[communityIndex].id);
-                  console.log("COMMUNITY NAME: ", communitiesRes.data[communityIndex]);
-                  console.log("BIG FOOT LEAVE", communitiesRes.data[communityIndex].members.includes(curUser.displayName));
-                  await axios.patch(`http://localhost:8000/communities/${communitiesRes.data[communityIndex]._id}/delete-mem`, 
-                    {
-                    member: curUser.displayName,
-                    }
-                  );
-                  setIsMember(false);
-                  setCommunities(prevCommunities => {
-                    const updatedCommunities = [...prevCommunities];
-                    updatedCommunities[communityIndex].members = updatedCommunities[communityIndex].members.filter(member => member !== curUser.displayName);
-                    return updatedCommunities;
-                  });
-                }
-                catch(error){
-                  console.error("Error leaving community", error.message);
-                }
-              }
-              updatePageHeader(
-                <div className="community-information" style={{display:"block"}}>
-                  <div id="community-name-sorting-buttons-line">
-                    <h3 className="post-heading" id="community-name">{communitiesRes.data[communityIndex].name}</h3>
-                    <PageNameSortingButtons communityIndex={communityIndex} postsFromSearch={[]}/>
+                updatePageHeader(
+                  <div className="community-information" style={{display:"block"}}>
+                    <div id="community-name-sorting-buttons-line">
+                      <h3 className="post-heading" id="community-name">{communitiesRes.data[communityIndex].name}</h3>
+                      <PageNameSortingButtons communityIndex={communityIndex} postsFromSearch={[]}/>
+                    </div>
+                    <h4 className="community-heading" id="community-description">{communitiesRes.data[communityIndex].description}</h4>
+                    <h4 className="community-heading" id="community-age">{"Created " + displayTime(communitiesRes.data[communityIndex].startDate)}</h4>
+                    <h4 className="community-heading" id="community-post-count">{communitiesRes.data[communityIndex].postIDs.length + ((communitiesRes.data[communityIndex].postIDs.length === 1) ? " Post | " 
+                : " Posts | ") + communitiesRes.data[communityIndex].members.length + ((communitiesRes.data[communityIndex].members.length === 1) ? " Member" 
+                : " Members")}</h4>
+                    {curUser && (
+                      <button
+                        onClick={isMember ? leaveCommunity : joinCommunity}
+                        className={isMember ? "leave-button" : "join-button"}
+                      >
+                        {isMember ? "Leave" : "Join"}
+                      </button>
+                    )}
+                    <hr id = "delimeter"/>
+                    {/* {console.log("\n check communityIndex:", communityIndex, "\n")} */}
+                    <SortedPostListing communityIndex={communityIndex} postsFromSearch={[]} communities={communitiesRes.data} userCommunityPosts = {[]} otherCommunityPosts = {[]} posts={postsRes.data} comments={commentsRes.data} user={curUser}/>
+                    {sortPostEmitter.emit("sortPosts", true, false, communityIndex, [])}
                   </div>
-                  <h4 className="community-heading" id="community-description">{communitiesRes.data[communityIndex].description}</h4>
-                  <h4 className="community-heading" id="community-age">{"Created " + displayTime(communitiesRes.data[communityIndex].startDate)}</h4>
-                  <h4 className="community-heading" id="community-post-count">{communitiesRes.data[communityIndex].postIDs.length + ((communitiesRes.data[communityIndex].postIDs.length === 1) ? " Post | " 
-              : " Posts | ") + communitiesRes.data[communityIndex].members.length + ((communitiesRes.data[communityIndex].members.length === 1) ? " Member" 
-              : " Members")}</h4>
-                  {curUser && (
-                    <button
-                      onClick={isMember ? leaveCommunity : joinCommunity}
-                      className={isMember ? "leave-button" : "join-button"}
-                    >
-                      {isMember ? "Leave" : "Join"}
-                    </button>
-                  )}
-                  <hr id = "delimeter"/>
-                  {/* {console.log("\n check communityIndex:", communityIndex, "\n")} */}
-                  <SortedPostListing communityIndex={communityIndex} postsFromSearch={[]} communities={communitiesRes.data} posts={postsRes.data} comments={commentsRes.data} user={curUser}/>
-                  {sortPostEmitter.emit("sortPosts", true, false, communityIndex, [])}
-                </div>
-              )
-              NavBarEmitter.emit('updateNavBar')
+                )
+                NavBarEmitter.emit('updateNavBar')
+              })
             })
           })
-        })
       }
     };
     communityClickedEmitter.on("communityClicked", loadCommunity);
     return () => {communityClickedEmitter.off("communityClicked", loadCommunity);};
-  }, [comments, communities, linkFlairs, posts, curUser, curUserStatus]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
+  }, [comments, communities, linkFlairs, posts, curUser, curUserStatus, currentCommunityIndex]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
   return (
     <> {pageHeader} </>
   );
 }
-
-// export function PostView({ post }) {
-//   const [posts, setPosts] = useState([]);
-//   const [communities, setCommunities] = useState([]);
-//   const [linkFlairs, setLinkFlairs] = useState([]);
-//   const [comments, setComments] = useState([]);
-//   // const [postThreadsArray, setPostThreadsArray] = useState([]);
-//   const [postResultArray, setPostResultArray] = useState(null);
-//   const [sortedNodeArray, setSortedNodeArray] = useState(null);
-//   var postThreadsArray = GetPostThreadsArray("All Posts", []);
-//   useEffect(() => {
-//     axios.get("http://localhost:8000/posts").then((res) => {
-//       setPosts(res.data);
-//       if(res.data !== null){
-//         // increment the post views by one
-//         for(let postIndex = 0; postIndex < res.data.length; postIndex++){
-//           if(res.data[postIndex].id === post.id){
-//             axios.patch(`http://localhost:8000/posts/${post.id}/view`)
-//             .then(response => {
-//               console.log('View count incremented:', response.data);
-//               // res.data[postIndex].views += 1;
-//             })
-//             .catch(error => {
-//               console.error('Error:', error.response ? error.response.data : error.message);
-//             });
-//           }
-//         }
-//       }
-//     });
-//     Promise.all([
-//       axios.get("http://localhost:8000/communities"),
-//       axios.get("http://localhost:8000/linkFlairs")
-//     ]).then(([communitiesRes, linkFlairsRes]) => {
-//       var communityName, communityDate;
-//       setCommunities(communitiesRes.data);
-//       setLinkFlairs(linkFlairsRes.data);
-//       if(communitiesRes.data !== null){
-//         console.log("\n this is post in loading: ", post, "\n");
-//         for(let comIndex = 0; comIndex < communitiesRes.data.length; comIndex++){
-//           if(communitiesRes.data[comIndex].postIDs.includes(post.id)){
-//             communityName = communitiesRes.data[comIndex].name;
-//             communityDate = communitiesRes.data[comIndex].startDate;
-//             break;
-//           }
-//         }
-//       }
-//       if(linkFlairsRes.data !== null){
-//         var linkflairContent = '';
-//         // get the linkflair content            
-//         for(let index = 0; index < linkFlairsRes.data.length; index++){
-//           if(linkFlairsRes.data[index].id === post.linkFlairID){
-//             linkflairContent = linkFlairsRes.data[index].content;
-//             break;
-//           }
-//         }
-//       }
-//     })
-//     .catch((error) => {
-//       console.error('Error fetching communities or link flairs:', error);
-//     });
-//     // Fetch comments and construct the thread
-//     axios.get("http://localhost:8000/comments").then((res) => {
-//       const commentsData = res.data;
-//       setComments(commentsData);
-//       // Process the threads array based on comments and post data
-//       const commentIDstoDatesMap = new Map();
-//       commentsData.forEach((comment) => {
-//         commentIDstoDatesMap.set(comment.id, comment.commentedDate);
-//       });
-//       const postResultArray = GetSortedThreadRoot(post, post.commentIDs, commentIDstoDatesMap);
-//       setPostResultArray(postResultArray);
-//     });
-
-//   }, [post.id]); // Only refetch if post.id changes
-
-//   // This logic depends on your thread structure and `GetSortedThreadRoot` function
-//   useEffect(() => {
-//     if (postResultArray) {
-//       const arrayOfNodes = [];
-//       postThreadDFS(postResultArray[0], 0, arrayOfNodes);
-//       setPostThreadsArray(arrayOfNodes);
-
-//       // Now, order the comments from newest to oldest
-//       const sortedNodes = arrayOfNodes.slice(1); // Exclude the post from the comments
-//       setSortedNodeArray(sortedNodes);
-//     }
-//   }, [postResultArray]);
-
-// }
-
-// // for opening post view 
-// export function PostView(){
-//   var postThreadsArray = GetPostThreadsArray("All Posts", []);
-//   axios.get("http://localhost:8000/posts").then(res => {
-//     setPosts(res.data);
-//     if(res.data !== null){
-//       // increment the post views by one
-//     for(let postIndex = 0; postIndex < res.data.length; postIndex++){
-//       if(res.data[postIndex].id === post.id){
-//         axios.patch(`http://localhost:8000/posts/${post.id}/view`)
-//         .then(response => {
-//           console.log('View count incremented:', response.data);
-//           // res.data[postIndex].views += 1;
-//         })
-//         .catch(error => {
-//           console.error('Error:', error.response ? error.response.data : error.message);
-//         });
-//       }
-//     }
-//     // figure out which community this post is from
-//     var communityName = '';
-//     var communityDate = '';
-//     axios.get("http://localhost:8000/communities").then(res => {
-//       setCommunities(res.data);
-//       if(res.data !== null){
-//         console.log("\n this is post in loading: ", post, "\n");
-//         for(let comIndex = 0; comIndex < res.data.length; comIndex++){
-//           if(res.data[comIndex].postIDs.includes(post.id)){
-//             communityName = res.data[comIndex].name;
-//             communityDate = res.data[comIndex].startDate;
-//             break;
-//           }
-//         }
-//         axios.get("http://localhost:8000/linkFlairs").then(res => {
-//           setLinkFlairs(res.data);
-//           if(res.data !== null){
-//             var linkflairContent = '';
-//             // get the linkflair content
-//             for(let index = 0; index < res.data.length; index++){
-//               if(res.data[index].id === post.linkFlairID){
-//                 linkflairContent = res.data[index].content;
-//                 break;
-//               }
-//             }
-//             // would get post threads array here but hook error so moved up
-//             var commentRepliesCount = 0;
-//             console.log("\n post view postThreadsArray: ", postThreadsArray, "\n");
-//             for(let postIndex = 0; postIndex < postThreadsArray.length; postIndex++){
-//               if(postThreadsArray[postIndex][0].postThreadNode.id === post.id){
-//                 console.log("\ncommentRepliesCount: ", commentRepliesCount, "\n");
-//                 commentRepliesCount = postThreadsArray[postIndex].length - 1;
-//               }
-//             } 
-//             axios.get("http://localhost:8000/comments").then(res => {
-//               setComments(res.data);
-//               if(res.data !== null){
-//                 console.log("\n this res.data should be comments: ", res.data, "\n");
-//                 // make a mapping of commentIDs to commentedDates
-//                 var commentIDstoDates = new Map();
-//                 for(let commentsIndex = 0; commentsIndex < res.data.length; commentsIndex++){
-//                   commentIDstoDates.set(res.data[commentsIndex].id, res.data[commentsIndex]);
-//                 }
-//                 // get the thread as a flattened array in order of post and comments 
-//                 // var postResultArray = makePostThreads(post, post.commentIDs, commentIDstoDates);
-//                 var commentIDstoDatesMap = new Map();
-//                 for(let commentsIndex = 0; commentsIndex < res.data.length; commentsIndex++){
-//                   commentIDstoDatesMap.set(res.data[commentsIndex].id, res.data[commentsIndex].commentedDate);
-//                 }
-//                 console.log("\n commentIDstoDates: ", commentIDstoDates, " commentIDstoDatesMap: ", commentIDstoDatesMap, "\n");
-//                 var postResultArray = GetSortedThreadRoot(post, post.commentIDs, commentIDstoDates, commentIDstoDatesMap);
-//                 console.log("\npostResultArray: ", postResultArray, "\n");
-//                 // if there are comments, display them
-//                 // if there aren't comments, getSortedThreadRoot will return null for postResultArray
-//                 if(postResultArray !== null){
-//                   var rootNode = postResultArray[0];
-//                   var arrayOfNodes = [];
-//                   postThreadDFS(rootNode, 0, arrayOfNodes);
-//                   console.log("\narrayOfNodes: ", arrayOfNodes, "\n");
-//                   // now order the comments from newest to oldest
-//                   // need only the comments, so take out the post
-//                   var sortedNodeArray = arrayOfNodes.slice(1);
-//                   console.log("\n sortedNodeArray: ", sortedNodeArray, "\n");
-//                   return sortedNodeArray;
-//                 }
-//                 }
-//             });
-//             }
-//         });
-//         }
-//     });
-//   }
-//   });
-// }
 
 export function PostHeader({userStatus, user}){
   return(
