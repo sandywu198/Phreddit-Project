@@ -70,9 +70,9 @@ export const CommunityListDropdown = ({ post, user, onInputChange }) => {
   };
   return (
       <div className="list-dropdown">
-          <label htmlFor="community-dropdown">Choose Community</label>
+          <label htmlFor="community-dropdown">Choose Community: </label>
           {console.log("\n selectedCommunity: ", selectedCommunity, "\n")}
-          <select id="community-dropdown" value={selectedCommunity} onChange={handleChange} required> 
+          <select className="list-dropdown" id="community-dropdown-options" value={selectedCommunity} onChange={handleChange} required> 
               <option value="">Select a community</option>
               {communities.map((community) => (
                   <option key={community.name} value={community.name}>{community.name}</option>
@@ -90,7 +90,7 @@ export const PostTitleComponent = ({ post, onInputChange }) => {
     };
     return (
         <div className="form-div">
-            <label htmlFor="new-post-title">Post Title:</label>
+            <label htmlFor="new-post-title">Post Title: </label>
             <input 
                 type="text" 
                 id="new-post-title" 
@@ -111,7 +111,7 @@ export const PostContentComponent = ({post, onInputChange }) => {
     };
     return (
         <div className="form-div">
-            <label htmlFor="new-post-content">Post Content:</label>
+            <label htmlFor="new-post-content">Post Content: </label>
             <textarea 
                 id="new-post-content" 
                 value={content} 
@@ -131,7 +131,7 @@ export const NewLinkFlair = ({ post, onInputChange }) => {
     };
     return (
         <div className="form-div">
-            <label htmlFor="new-link-flair-input">New Link Flair:</label>
+            <label htmlFor="new-link-flair-input">New Link Flair: </label>
             <input 
                 type="text" 
                 id="new-link-flair-input" 
@@ -166,8 +166,8 @@ export const LinkFlairDropdown = ({ post, onInputChange }) => {
     };
     return (
         <div className="list-dropdown">
-            <label htmlFor="link-flair-dropdown">Choose Link Flair</label>
-            <select id="link-flair-dropdown" value={selectedFlair} onChange={handleChange}>
+            <label htmlFor="link-flair-dropdown">Choose Link Flair: </label>
+            <select className="list-dropdown" id="link-flair-dropdown-options" value={selectedFlair} onChange={handleChange}>
                 <option value="">Select a flair</option>
                 {linkFlairs.map((flair) => (
                     <option key={flair._id} value={flair._id}>{flair.content}</option>
@@ -326,8 +326,8 @@ export const CreatePostComponent = ({user, post}) => {
            <PostContentComponent post={post} onInputChange={(value) => handleInputChange('content', value)} />
            <LinkFlairDropdown post={post}  onInputChange={(value) => handleInputChange('linkFlairID', value)} />
            <NewLinkFlair post={post} onInputChange={(input) => handleInputChange('newLinkFlair', input)} />
-           <button type="button" onClick={() => handleSubmit()}>Create Post</button>
-           {post && <button type="button" onClick={() => {deletePost(post)}}>Delete</button>}
+           <button type="button" id="submit-new-post-button" onClick={() => handleSubmit()}>Create Post</button>
+           {post && <button type="button" id="delete-new-post-button" onClick={() => {deletePost(post)}}>Delete Post</button>}
        </form>
    );
 };
