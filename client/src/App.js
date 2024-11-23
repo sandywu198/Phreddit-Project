@@ -1,7 +1,7 @@
 // ************** THIS IS YOUR APP'S ENTRY POINT. CHANGE THIS FILE AS NEEDED. **************
 // ************** DEFINE YOUR REACT COMPONENTS in ./components directory **************
 import './stylesheets/App.css';
-import {MetaData, TopBanner, PostHeader} from './components/phreddit.js'
+import {MetaData} from './components/phreddit.js'
 // import {PostPageView, PageNameSortingButtons} from './components/page views.js'
 // import Model from '../src/models/model.js';
 import React from "react";

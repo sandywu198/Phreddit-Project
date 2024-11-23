@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { communityClickedEmitter } from "./newCommunity.js";
 import { HomePage } from "./phreddit.js";
 import axios from 'axios';
 import EventEmitter from 'events';
-import Cookies from 'js-cookie';
 
 export const WelcomePageEmitter = new EventEmitter();
 
@@ -58,7 +56,7 @@ export function WelcomePage(){
       setLogout(status);
       try {
         const res = await axios.post('http://localhost:8000/users/logout', {}, {withCredentials: true});
-        console.log('Logout successful');
+        console.log('Logout successful ', res);
       } catch (error) {
         console.error('Logout failed:', error.response?.data || error.message);
       }
@@ -105,17 +103,17 @@ export function WelcomePage(){
 }
 
 // function to creating cookie for user
-const loginCookie = async (username, password) => {
-  try {
-    const response = await axios.post('http://localhost:8000/users/login', 
-      {username, password,}, {withCredentials: true});
-    console.log('Logged in successfully!');
-    const session = Cookies.get('session_id');
-    console.log("\n this is session cookie: ", session, "\n");
-  } catch (error) {
-    console.error('Login failed:', error);
-  }
-};
+// const loginCookie = async (username, password) => {
+//   try {
+//     const response = await axios.post('http://localhost:8000/users/login', 
+//       {username, password,}, {withCredentials: true});
+//     console.log('Logged in successfully!');
+//     const session = Cookies.get('session_id');
+//     console.log("\n this is session cookie: ", session, "\n");
+//   } catch (error) {
+//     console.error('Login failed:', error);
+//   }
+// };
 
 export const LoginUser = () => {
   const [loggedin, setLoggedin] = useState(false);
