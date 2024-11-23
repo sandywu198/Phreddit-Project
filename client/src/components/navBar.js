@@ -171,6 +171,7 @@ export function GetCommunities({refreshCount, user, userStatus}) {
   const [communities, setCommunities] = useState([]);
   const [curUser, setCurUser] = useState(user);
   const [curUserStatus, setCurUserStatus] = useState(userStatus);
+  console.log("\n",setCurUser," ", setCurUserStatus, "\n");
   const getCommunities = async () => {
     try{
       const [communitiesRes] = await Promise.all([

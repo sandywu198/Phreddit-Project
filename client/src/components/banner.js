@@ -1,10 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {displayTime, postThreadDFS} from "./postThreading.js";
 import EventEmitter from "events";
-import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.js";
-import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
+import {communityClickedEmitter} from "./newCommunity.js";
+import {CreatePostButton} from "./newPost.js";
 import {WelcomePageEmitter} from "./welcomePage.js";
-import axios from 'axios';
 
 // component for the top horizontal banner
 export function TopBanner(userStatus, user){

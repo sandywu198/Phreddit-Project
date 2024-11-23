@@ -1,9 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {displayTime, postThreadDFS} from "./postThreading.js";
+import {displayTime} from "./postThreading.js";
 import EventEmitter from "events";
-import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.js";
-import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
-import {WelcomePage} from "./welcomePage.js";
+import {communityClickedEmitter} from "./newCommunity.js";
 import {NavBarEmitter} from "./navBar.js";
 import {CreatePostsInHTML, GetPostThreadsArrayFunction, GetCommentThreadsArrayFunction} from "./postSortingFunctions.js";
 import axios from 'axios';
@@ -63,7 +61,7 @@ export function UserProfileSortingButtons({user, admin}){
             onClick={() => {UserProfileSortingEmitter.emit("sort", "comments")}}>Comments</button>
         </div>
         )
-    }, [user]) 
+    }, [user, admin]) 
     return(
         <>{buttons}</>
     );
@@ -145,7 +143,7 @@ export function SingleUser({user, admin}) {
         const confirmDelete = window.confirm('Are you sure you want to delete this user?');
         if(confirmDelete){
             try{
-                console.log("\n deleting user\n");
+                console.log("\n deleting user ", setCurUser,"\n");
                 axios.get("http://localhost:8000/posts").then(postsRes => {
                     axios.get("http://localhost:8000/communities").then(communitiesRes => {
                       axios.get("http://localhost:8000/comments").then(commentsRes => {
@@ -293,12 +291,12 @@ export function SingleUser({user, admin}) {
 }
 
 export function SingleCommunity({communities, community, user, admin}) {
-    var index = -1;
-    for(let i = 0; i < communities.length; i++){
-        if(communities[i].name === community.name){
-            index = i;
-        }
-    }
+    // var index = -1;
+    // for(let i = 0; i < communities.length; i++){
+    //     if(communities[i].name === community.name){
+    //         index = i;
+    //     }
+    // }
     return(
       <section className="post-Section" onClick={() => {
         communityClickedEmitter.emit("communityClicked", -3, "", null, false, null, user, admin, null, community);
@@ -314,10 +312,11 @@ export function SingleCommunity({communities, community, user, admin}) {
 
 export function SingleComment({posts, communities, comments, comment, user, admin}) {
     const [postThreads, setPostThreads] = useState(GetPostThreadsArrayFunction(communities, posts, comments, "All Posts", []));
-    console.log("\n postThreads: ", postThreads, "\n");
+    console.log("\n postThreads: ", postThreads, "", setPostThreads, "\n");
     console.log("\n SingleComment here", postThreads.filter(thread => thread.some(node => node.postThreadNode.id === comment.id)), "\n");
     console.log("\n 2: ", postThreads.filter(thread => thread.some(node => node.postThreadNode.id === comment.id))[0][0], "\n");
     const [postTitle, setPostTitle] = useState(postThreads.filter(thread => thread.some(node => node.postThreadNode.id === comment.id))[0][0].postThreadNode.title);
+    console.log("\n setPostTitle: ", setPostTitle, "\n");
     return(
       <section className="post-Section" onClick={() => {
         communityClickedEmitter.emit("communityClicked", -7, "", null, false, null, user, admin, comment, true);
