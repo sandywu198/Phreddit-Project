@@ -38,12 +38,25 @@ function App() {
   // useEffect(() => {
   //   fetchData();
   // }, []);
+  const AppContent = () => {
+    try {
+      // throw new Error('Simulated error');
+      return (
+        <div className="body">
+          <MetaData />
+          {WelcomePage()}
+        </div>
+      );
+    } catch (error) {
+      console.error('Caught an error:', error);
+      return (<h1>An error has occurred. Please refresh or restart the frontend and backend.</h1>);
+    }
+  };
   return (
     // <ModelStateContext.Provider value={{model}}>
-      <div className="body">
-        <MetaData />
-        {WelcomePage()}
-      </div>
+    <div>
+      {AppContent()}
+    </div>
     // </ModelStateContext.Provider>
   );
 }
