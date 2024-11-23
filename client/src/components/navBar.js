@@ -89,11 +89,12 @@ export function NavBar({userStatus, user}) {
         {console.log("\n NavBar curUserStatus 2: ", curUserStatus, " ", (curUserStatus === "login"), "\n")}
         {(curUserStatus === "login") ? <CreateCommunityButton user={user} userStatus={curUserStatus}/> : <button id="community-button"> Create Community </button>}
         {/* {(curUserStatus === "guest") ? <button id="community-button">Create Community</button>: <CreateCommunityButton user={curUser} userStatus={curUserStatus}/>} */}
-        <GetCommunities refreshCount={refreshCount}/>
+        <GetCommunities refreshCount={refreshCount} user={curUser} userStatus={curUserStatus}/>
       </div>
     </div>
   );
   console.log("\n NavBar curUserStatus: ", curUserStatus, " ", (curUserStatus === "login"), "\n")
+  console.log(setCurUser, setCurUserStatus);
   useEffect(() => {
     const changeNavBar = () => {
       console.log("\n curUser: ", curUser, "\n");
@@ -108,14 +109,14 @@ export function NavBar({userStatus, user}) {
             {console.log("\n NavBar curUserStatus 2: ", curUserStatus, " ", (curUserStatus === "login"), "\n")}
             {(curUserStatus === "login") ? <CreateCommunityButton user={curUser} userStatus={curUserStatus}/> : <button id="community-button">Create Community</button>}
             {/* {(curUserStatus === "guest") ? <button id="community-button">Create Community</button>: <CreateCommunityButton user={curUser} userStatus={curUserStatus}/>} */}
-            <GetCommunities refreshCount={refreshCount}/>
+            <GetCommunities refreshCount={refreshCount} user={curUser} userStatus={curUserStatus}/>
           </div>
         </div>
       );
     };
     NavBarEmitter.on('updateNavBar', changeNavBar);
     return () => NavBarEmitter.off('updateNavBar', changeNavBar);
-  }, [refreshCount, userStatus, user]);
+  }, [refreshCount, userStatus, user, curUser, curUserStatus]);
   return (<section>{curNavBar}</section>);
 }
 
@@ -165,9 +166,11 @@ export const CommunityNameButton = ({communityIndex, communityName}) =>{
 };
 
 // Get Communities
-export function GetCommunities({refreshCount}) {
+export function GetCommunities({refreshCount, user, userStatus}) {
   const [communityList, setCommunityList] = useState([]);
   const [communities, setCommunities] = useState([]);
+  const [curUser, setCurUser] = useState(user);
+  const [curUserStatus, setCurUserStatus] = useState(userStatus);
   const getCommunities = async () => {
     try{
       const [communitiesRes] = await Promise.all([
@@ -187,16 +190,32 @@ export function GetCommunities({refreshCount}) {
     console.log("\n GetCommunities communities b4: ", communities, "\n");
     if(communities !== null){
       console.log("\n GetCommunities communities after: ", communities, "\n");
-      const uniqueCommunityNames = Array.from(new Set(communities.map((community) => community.name)));
+      var uniqueCommunityNames;
+      if(curUserStatus === "guest"){
+        uniqueCommunityNames = Array.from(new Set(communities.map((community) => community.name)));
+      } else{
+        console.log("\n navbar: curUser ", curUser, " curUserStatus: ", curUserStatus, "\n");
+        const joinedCommunities = Array.from(new Set(communities.filter((community) => community.members.includes(curUser.displayName)).map((community) => community.name)));
+        console.log("\n joinedCommunities: ", joinedCommunities, "\n");
+        const notJoinedCommunities = Array.from(new Set(communities.filter((community) => !community.members.includes(curUser.displayName)).map((community) => community.name)));
+        console.log("\n notJoinedCommunities: ", notJoinedCommunities, "\n");
+        uniqueCommunityNames = [...joinedCommunities, "break", ...notJoinedCommunities];
+      }
+      uniqueCommunityNames = uniqueCommunityNames.map(c => {
+        return {name: c, index: communities.findIndex(community => community.name === c)};
+      });
+      console.log("\n navbar uniqueCommunityNames: ", uniqueCommunityNames, "\n");
       setCommunityList(uniqueCommunityNames);
     }
-  }, [communities, refreshCount]);
+  }, [communities, refreshCount, curUser, curUserStatus]);
   console.log("\n communityList: ", communityList, "\n");
   return (
     <ul id="community-list">
-      {communityList.map((communityName, communityIndex) => (
-        <li key={communityIndex} id={communityIndex}>
-          <CommunityNameButton communityIndex={communityIndex} communityName={communityName} />
+      {console.log("\n return communityList: ", communityList, "\n")}
+      {communityList.map(c => (
+        <li key={c.index} id={c.index}>
+          {c.index !== -1 && <CommunityNameButton communityIndex={c.index} communityName={c.name}/>}
+          {c.index === -1 && <hr id="nav-delimeter"/>}
         </li>
       ))}
     </ul>
