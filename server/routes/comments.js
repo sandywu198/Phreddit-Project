@@ -87,11 +87,15 @@ router.post('/', async (req, res) => {
   const comment = new Comment({
     content: req.body.content,
     commentedBy: req.body.commentedBy,
-    commentedDate: Date.now()
+    commentedDate: Date.now(),
+    upvotes: 0,
+    userVoted:0,
   });
+  console.log("\n comment: ", comment, "\n");
   try {
     const newComment = await comment.save();
-    res.status(201).send(newComment);
+    console.log("\n comment saved ok: ", comment, "\n");
+    res.send(newComment);
   } 
   catch (error) {
     res.status(400).send({message: "Error creating new comment", error});
@@ -111,9 +115,9 @@ router.put('/:id/replies', async (req, res) => {
       { new: true }
     );
     if (!updatedComment) {
-      return res.status(404).send({ error: 'Post not found' });
+      return res.status(404).send({ error: 'Comment not found' });
     }
-    console.log('Post updated with new comment');
+    console.log('Comment updated with new comment');
     res.status(200).send(updatedComment);
   } 
   catch (error) {

@@ -48,7 +48,7 @@ export const CreatePostButton = () =>{
     );
 };  
 
-export const CommunityListDropdown = ({ post, user, onInputChange }) => {
+export const CommunityListDropdown = ({post, user, onInputChange}) => {
   const [communities, setCommunities] = useState([]);
   const [selectedCommunity, setSelectedCommunity] = useState((post) ? post.communityName : "");
   useEffect(() => {
@@ -61,7 +61,7 @@ export const CommunityListDropdown = ({ post, user, onInputChange }) => {
             setCommunities([...userCommunities, ...otherCommunities]);
             })
           .catch(error => console.error("Error fetching communities:", error));
-  }, []);
+  }, [user.displayName]);
   const handleChange = (event) => {
       const communityId = event.target.value;
       console.log('Selected community ID:', communityId);
@@ -143,7 +143,7 @@ export const NewLinkFlair = ({ post, onInputChange }) => {
     );
 };
 
-export const LinkFlairDropdown = ({ post, onInputChange }) => {
+export const LinkFlairDropdown = ({post, onInputChange}) => {
     const [linkFlairs, setLinkFlairs] = useState([]);
     const [selectedFlair, setSelectedFlair] = useState("");
     useEffect(() => {
@@ -159,7 +159,7 @@ export const LinkFlairDropdown = ({ post, onInputChange }) => {
                 }
             })
             .catch(error => console.error("Error fetching link flairs:", error));
-    }, []);
+    }, [post]);
     const handleChange = (event) => {
         setSelectedFlair(event.target.value);
         onInputChange(event.target.value);
@@ -180,7 +180,7 @@ export const LinkFlairDropdown = ({ post, onInputChange }) => {
 export const CreatePostComponent = ({user, post}) => {
     console.log("\n CreatePostComponent post: ", post,"\n");
     const [curPost, setCurPost] = useState(post);
-    console.log("\n CreatePostComponent curPost: ", curPost,"\n");
+    console.log("\n CreatePostComponent curPost: ", curPost," ", setCurPost, "\n");
     const [formData, setFormData] = useState({
         community: (curPost) ? curPost.communityName: '',
         title: (curPost) ? curPost.title: '',

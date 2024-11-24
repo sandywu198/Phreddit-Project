@@ -1123,7 +1123,7 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
       const [communitiesRes] = await Promise.all([
         axios.get("http://localhost:8000/communities"), 
       ]);
-      // console.log("\n", communities, "\n");
+      console.log("\n", linkFlair, "\n");
       // console.log("\n communities in single post: ", communities, "\n");
       // var community;
       for(let c in communitiesRes.data){
@@ -1180,7 +1180,7 @@ export function SinglePost2({post, postIndex, specificCommunity, user}) {
       const [communitiesRes] = await Promise.all([
         axios.get("http://localhost:8000/communities"), 
       ]);
-      // console.log("\n", communities, "\n");
+      console.log("\n", linkFlair, "\n");
       // console.log("\n communities in single post: ", communities, "\n");
       // var community;
       for(let c in communitiesRes.data){

@@ -4,10 +4,9 @@ import {displayTime, postThreadDFS} from "./postThreading.js";
 import EventEmitter from "events";
 import {communityClickedEmitter, CreateCommunityComponent} from "./newCommunity.js";
 import {AddNewCommentComponent} from "./newComment.js";
-import {CreatePostComponent, CreatePostButtonColorEmitter, CreatePostButton} from "./newPost.js";
+import {CreatePostComponent, CreatePostButtonColorEmitter} from "./newPost.js";
 import {CreateHomeButtonColorEmitter, CreateCommunityButtonColorEmitter, NavBarEmitter, CommunityNameButtonColorEmitter} from "./navBar.js";
 import {DisplayPosts, DisplayPosts1, GetPostThreadsArrayFunction, DisplayActivePosts, GetSortedThreadRoot, voteClickedEmitter, VotePostOrComment} from "./postSortingFunctions.js";
-import {WelcomePage} from "./welcomePage.js";
 import {NavBar} from "./navBar.js";
 import {TopBanner } from "./banner.js";
 import {UserProfile} from "./userProfile.js";
@@ -184,7 +183,7 @@ export const SortedPostListing = ({communityIndex, postsFromSearch, communities,
     return () => {
       sortPostEmitter.off("sortPosts", getPostListing);
     };
-  }, [communities, communityIndex, postsFromSearch, posts, comments, user]); // [communities, communityIndex, postsFromSearch]    
+  }, [communities, communityIndex, postsFromSearch, posts, comments, user, otherCommunityPosts, userCommunityPosts]); // [communities, communityIndex, postsFromSearch]    
   console.log("\npostListing return: ", postListing, "\n");
   return (<div>{postListing}</div>);
 }
@@ -268,7 +267,7 @@ export function HandleSearchLogic({searchString, communityIndex, printPostThread
     </section>
   </div>)
   }
-  }, [searchString, communityIndex, printPostThreadsArray, communities, posts, comments])
+  }, [searchString, communityIndex, printPostThreadsArray, communities, posts, comments, user])
   return(<>{result}</>)
 };
 
@@ -332,6 +331,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
   const [isMember,setIsMember] = useState(false);
   const [curUserStatus, setCurUserStatus] = useState(userStatus);
   const [currentCommunityIndex, setCommunityIndex] = useState(-1);
+  console.log("\n", setCurUser, " ", setCurUserStatus, "\n");
   // var postThreadsArray; // = GetPostThreadsArray("All Posts", []);//<GetPostThreadsArray whichCommunityName="All Posts"  postsFromSearch={[]}/>;
   // console.log("\n creating postThreadsArray in loading view: ", postThreadsArray, "\n");
   useEffect (() => {
@@ -384,7 +384,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
       }
     }
     fetchData();
-  }, []);
+  }, [curUser]);
   useEffect(() => {
     if(currentCommunityIndex >= 0){
       async function fetchData(){
@@ -411,6 +411,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
                 updatedCommunities[currentCommunityIndex].members.push(curUser.displayName);
                 return updatedCommunities;
               });
+              NavBarEmitter.emit('updateNavBar');
             }
             catch(error){
               console.error("Error joining community", error.message);
@@ -429,6 +430,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
                 updatedCommunities[currentCommunityIndex].members = updatedCommunities[currentCommunityIndex].members.filter(member => member !== curUser.displayName);
                 return updatedCommunities;
               });
+              NavBarEmitter.emit('updateNavBar');
             }
             catch(error){
               console.error("Error leaving community", error.message);
@@ -458,6 +460,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
               {sortPostEmitter.emit("sortPosts", true, false, currentCommunityIndex, [])}
             </div>
           )
+          NavBarEmitter.emit('updateNavBar');
         }
         catch(error){
           console.error("Error fetching data", error);
@@ -465,7 +468,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
       }
       fetchData();
     }
-  }, [isMember, currentCommunityIndex]);
+  }, [isMember, currentCommunityIndex, curUser]);
   useEffect(() => {
     const loadCommunity = (communityIndex, searchString, post, replyToPost, 
       commentRepliedTo, user, admin, comment, community) => {
@@ -780,6 +783,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
                       updatedCommunities[communityIndex].members.push(curUser.displayName);
                       return updatedCommunities;
                     });
+                    NavBarEmitter.emit('updateNavBar');
                   }
                   catch(error){
                     console.error("Error joining community", error.message);
@@ -801,6 +805,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
                       updatedCommunities[communityIndex].members = updatedCommunities[communityIndex].members.filter(member => member !== curUser.displayName);
                       return updatedCommunities;
                     });
+                    NavBarEmitter.emit('updateNavBar');
                   }
                   catch(error){
                     console.error("Error leaving community", error.message);
@@ -839,7 +844,7 @@ export function GetCommunitiesAndLoad(user, userStatus){
     };
     communityClickedEmitter.on("communityClicked", loadCommunity);
     return () => {communityClickedEmitter.off("communityClicked", loadCommunity);};
-  }, [comments, communities, linkFlairs, posts, curUser, curUserStatus, currentCommunityIndex]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
+  }, [comments, communities, linkFlairs, posts, curUser, curUserStatus, currentCommunityIndex, isMember]); // removed model from dependency array and replaced with model data values [comments, communities, linkFlairs, posts]
   return (
     <> {pageHeader} </>
   );

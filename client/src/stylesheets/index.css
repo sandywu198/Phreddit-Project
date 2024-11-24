@@ -352,3 +352,8 @@ form#new-community-form, form#new-post-page-stuff, form#new-comment-page-stuff{
   font-size: 1.2vw;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
+
+.nav-delimeter{
+  border: none;        
+  height: 5vw; 
+}
