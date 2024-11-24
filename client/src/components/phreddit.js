@@ -278,6 +278,14 @@ export const MakeCommentsListing = ({sortedNodeArray, post, user, userStatus}) =
   const result = [];
   const stack = [{substack: result}];
   console.log("\n sortedNodeArray in listComments: ", sortedNodeArray, "\n");
+  const handleVote = (node, voteStatus) => {
+    console.log("\n Voting for comment ", node.id, " with status ", voteStatus);
+    if (userStatus === "guest") {
+      window.alert("Please log in to vote.");
+      return;
+    }
+    voteClickedEmitter.emit('voteClicked', user, post, node, voteStatus);
+  };
   sortedNodeArray.forEach((node, nodeIndex) =>{
     console.log("\n node: ", node, "\n");
     const curThreadLevel = node.threadLevel;
@@ -286,10 +294,12 @@ export const MakeCommentsListing = ({sortedNodeArray, post, user, userStatus}) =
       <p>{node.postThreadNode.commentedBy + " | " + displayTime(node.postThreadNode.commentedDate)}</p>
       <p>{node.postThreadNode.content}</p>
       <p>{node.postThreadNode.upvotes + " Upvote" + (node.postThreadNode.upvotes === 1 ? "" : "s")}</p>
-      {userStatus !== "guest" && <button id={`upvote-button-${nodeIndex}`} style={(node.postThreadNode.userVoted === 1) ? {color: "green"} : {}}
-      onClick={() => {console.log("\n upvote for comment clicked \n"); voteClickedEmitter.emit('voteClicked', user, post, node.postThreadNode, 1)}}>Upvote</button>}
-      {userStatus !== "guest" && <button id={`downvote-button-${nodeIndex}`} style={(node.postThreadNode.userVoted === -1) ? {color: "red"} : {}}
-      onClick={() => {console.log("\n downvote for comment clicked \n"); voteClickedEmitter.emit('voteClicked', user, post, node.postThreadNode, -1)}}>Downvote</button>}
+      {userStatus !== "guest" && (<>
+        <button id={`upvote-button-${nodeIndex}`} style={node.postThreadNode.userVoted === 1 ? {color: "green"} : {}} 
+        onClick={() => handleVote(node.postThreadNode, 1)}>Upvote</button>
+        <button id={`downvote-button-${nodeIndex}`}style={node.postThreadNode.userVoted === -1 ? {color: "red"} : {}}
+          onClick={() => handleVote(node.postThreadNode, -1)}>Downvote</button>
+      </>)}
       {userStatus !== "guest" && <button id={`reply-button-${nodeIndex}`}
       onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, false, node.postThreadNode, user)}}>Reply</button>}
     </div>}</li>;
@@ -599,7 +609,14 @@ export function GetCommunitiesAndLoad(user, userStatus){
               axios.patch(`http://localhost:8000/posts/${post.id}/view`)
               .then(response => {
                 console.log('View count incremented:', response.data);
-                // res.data[postIndex].views += 1;
+                axios.get(`http://localhost:8000/posts/${post.id}`).then(updatedPostRes => {
+                  const updatedPost = updatedPostRes.data;
+                  setPosts(posts => 
+                    posts.map(p => (p.id === updatedPost.id ? updatedPost : p))
+                  );
+                }).catch(error => {
+                  console.error('Error fetching updated post:', error);
+                });
               })
               .catch(error => {
                 console.error('Error:', error.response ? error.response.data : error.message);
@@ -696,8 +713,8 @@ export function GetCommunitiesAndLoad(user, userStatus){
                           <p className="post-heading" id="post-link-flair" >{linkflairContent}</p>
                         )}
                         <p className="post-heading" id="post-content">{post.content}</p>
-                        <p className="post-heading" id="post-view-comment">{(post.views + 1) + " View" + 
-                          (((post.views + 1) !== 1) ? "s" : "") + " | " + commentRepliesCount + 
+                        <p className="post-heading" id="post-view-comment">{(post.views) + " View" + 
+                          (((post.views) !== 1) ? "s" : "") + " | " + commentRepliesCount + 
                           " Comment" + ((commentRepliesCount !== 1) ? "s" : "") + 
                           ` | ${post.upvotes} Upvote${post.upvotes === 1 ? "" : "s"}`}</p>
                         {curUserStatus !== "guest" && <button className="post-heading" id="upvote-button" style={(post.userVoted === 1) ? {color: "green"} : {}}
