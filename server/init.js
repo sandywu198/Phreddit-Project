@@ -311,7 +311,7 @@ async function initializeDB() {
         title: "Remember when this was a CS channel?",
         content: 'Does anyone else remember when they didn\'t have chatGPT?',
         linkFlairID: linkFlairRef2,
-        postedBy: 'admin',
+        postedBy: adminArgs[0],
         postedDate: new Date('November 9, 2024 4:24:00'),
         commentIDs: [commentRef8],
         views: 12345,
@@ -321,7 +321,7 @@ async function initializeDB() {
         title: "Admin post",
         content: 'Title',
         linkFlairID: linkFlairRef2,
-        postedBy: 'admin',
+        postedBy: adminArgs[0],
         postedDate: new Date('November 19, 2024 4:24:00'),
         commentIDs: [],
         views: 0,
@@ -349,8 +349,8 @@ async function initializeDB() {
         description: 'A practical application of the principles of justice.',
         postIDs: [postRef1],
         startDate: new Date('August 10, 2014 04:18:00'),
-        members: ['rollo', 'shemp', 'catlady13', 'astyanax', 'trucknutz69', 'admin'],
-        createdBy: 'admin',
+        members: ['rollo', 'shemp', 'catlady13', 'astyanax', 'trucknutz69', adminArgs[0]],
+        createdBy: adminArgs[0],
         memberCount: 4,
     };
     const community2 = { // community object 2
@@ -359,7 +359,7 @@ async function initializeDB() {
         description: 'A fantastical reimagining of our past and present.',
         postIDs: [postRef2, postRef3],
         startDate: new Date('May 4, 2017 08:32:00'),
-        members: ['MarcoArelius', 'astyanax', 'outtheretruth47', 'bigfeet', 'admin'],
+        members: ['MarcoArelius', 'astyanax', 'outtheretruth47', 'bigfeet', adminArgs[0]],
         createdBy: 'bigfeet',
         memberCount: 4,
     };
@@ -369,8 +369,8 @@ async function initializeDB() {
         description: 'Exclusive space for admin only.',
         postIDs: [postRef4],
         startDate: new Date('May 4, 2022 08:32:00'),
-        members: ['admin'],
-        createdBy: 'admin',
+        members: [adminArgs[0]],
+        createdBy: adminArgs[0],
         memberCount: 1,
     };
     const community4 = { // community object 4
@@ -379,7 +379,7 @@ async function initializeDB() {
         description: 'MarcoArelius Space',
         postIDs: [postRef5],
         startDate: new Date('June 4, 2022 08:32:00'),
-        members: ['MarcoArelius', 'admin'],
+        members: ['MarcoArelius', adminArgs[0]],
         createdBy: 'MarcoArelius',
         memberCount: 2,
     };

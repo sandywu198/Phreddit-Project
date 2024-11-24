@@ -932,7 +932,7 @@ export function VotePostOrComment(){
               console.log('\n Comment vote changed incremented:', response.data);
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
-                const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                const commenter = usersRes.data.find(u1 => u1.displayName === comment.commentedBy);
                 console.log("\n usersRes: ", usersRes.data, " commenter: ", commenter, "\n");
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${voteStatus}/reputation`)
                 .then(response => {
@@ -958,7 +958,8 @@ export function VotePostOrComment(){
               console.log('Comment vote changed incremented:', response.data);
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
-                const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                const commenter = usersRes.data.find(u1 => u1.displayName === comment.commentedBy);
+                console.log("\n usersRes.data: ", usersRes.data, " commenter: ", commenter, " comment: ", comment, "\n");
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${10}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
@@ -987,7 +988,7 @@ export function VotePostOrComment(){
               console.log('Comment vote changed incremented:', response.data);
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
-                const commenter = usersRes.data.filter(u1 => u1.displayName === comment.commentedBy)[0];
+                const commenter = usersRes.data.find(u1 => u1.displayName === comment.commentedBy);
                 console.log("\n usersRes.data: ", usersRes.data, " commenter: ", commenter, " comment: ", comment, "\n");
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${-5}/reputation`)
                 .then(response => {
@@ -1021,8 +1022,11 @@ export function VotePostOrComment(){
               console.log('Post vote changed incremented:', response.data);
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
-                const commenter = usersRes.data.filter(u1 => u1.displayName === post.postedBy)[0];
-                axios.patch(`http://localhost:8000/users/${commenter.id}/${voteStatus}/reputation`)
+                console.log("\nUsers Response Data:", usersRes.data);
+                console.log("\nLooking for poster:", post.postedBy);
+                const poster = usersRes.data.find(u1 => u1.displayName === post.postedBy);
+                console.log("\n usersRes.data: ", usersRes.data, " poster: ", poster, " post: ", post, "\n");
+                axios.patch(`http://localhost:8000/users/${poster.id}/${voteStatus}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
                   communityClickedEmitter.emit("communityClicked", -6, "", post, false);
@@ -1043,7 +1047,10 @@ export function VotePostOrComment(){
               console.log('Post vote changed incremented:', response.data);
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
-                const poster = usersRes.data.filter(u1 => u1.displayName === post.postedBy)[0];
+                console.log("\nUsers Response Data:", usersRes.data);
+                console.log("\nLooking for poster:", post.postedBy);
+                const poster = usersRes.data.find(u1 => u1.displayName === post.postedBy);
+                console.log("\n usersRes.data: ", usersRes.data, " poster: ", poster, " post: ", post, "\n");
                 axios.patch(`http://localhost:8000/users/${poster.id}/${10}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
@@ -1072,7 +1079,10 @@ export function VotePostOrComment(){
               console.log('Post vote changed incremented:', response.data);
               axios.get(`http://localhost:8000/users`)
               .then(usersRes => {
-                const poster = usersRes.data.filter(u1 => u1.displayName === post.postedBy)[0];
+                console.log("\nUsers Response Data:", usersRes.data);
+                console.log("\nLooking for poster:", post.postedBy);
+                const poster = usersRes.data.find(u1 => u1.displayName === post.postedBy);
+                console.log("\n usersRes.data: ", usersRes.data, " poster: ", poster, " post: ", post, "\n");
                 axios.patch(`http://localhost:8000/users/${poster.id}/${-5}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
