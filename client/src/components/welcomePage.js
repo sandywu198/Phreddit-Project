@@ -13,17 +13,17 @@ export function WelcomePage(){
   const [logout, setLogout] = useState(false);
   const [returning, setReturning] = useState(null);
   const [pageContent, setPageContent] = useState(
-  <>
-    <section className="logo-title">
-      <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
+  <div className="Welcome-body">
+    <section className="welcome-logo-title">
+      <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Welcome-Page-Phreddit_logo"
       style={{cursor:"pointer"}}></img>        {/* // onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}} */}
-      <h3 className="Company_Name" id="phreddit-website-name"
+      <h3 id="Welcome-phreddit-website-name"
       style={{cursor:"pointer"}}> Phreddit</h3> {/* //onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}  */}
     </section>
-    <button type="button" id="register-new-user" onClick={() => {setRegister(true)}}> Register </button>
-    <button type="button" id="login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
-    <button type="button" id="guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
-  </>
+    <button type="button" className="welcome-button" id="welcome-register-new-user" onClick={() => {setRegister(true)}}> Register </button>
+    <button type="button" className="welcome-button" id="welcome-login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
+    <button type="button" className="welcome-button" id="welcome-guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
+  </div>
   );
   function resetAll() {
     setRegister(false);
@@ -77,17 +77,17 @@ export function WelcomePage(){
       console.log("\n logging out \n");
       resetAll();
       setPageContent(
-      <>
-        <section className="logo-title">
-          <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Phreddit_logo"
+      <div className="Welcome-body">
+        <section className="welcome-logo-title">
+          <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Welcome-Page-Phreddit_logo"
           style={{cursor:"pointer"}}></img>        {/* // onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}} */}
-          <h3 className="Company_Name" id="phreddit-website-name"
+          <h3 className="Welcome_Company_Name" id="phreddit-website-name"
           style={{cursor:"pointer"}}> Phreddit</h3> {/* //onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}  */}
         </section>
-        <button type="button" id="register-new-user" onClick={() => {setRegister(true)}}> Register </button>
-        <button type="button" id="login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
-        <button type="button" id="guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
-      </>)
+        <button type="button" className="welcome-button" id="welcome-register-new-user" onClick={() => {setRegister(true)}}> Register </button>
+        <button type="button" className="welcome-button" id="welcome-login-user" onClick={() => {setLogin(true)}}> Login </button>        {/* //  onClick={} */}
+        <button type="button" className="welcome-button" id="welcome-guest-user" onClick={() => {setGuest(true)}}> Continue as Guest </button>       {/* //  onClick={} */}
+      </div>)
     } else if(register){
       resetAll();
       setPageContent(<RegisterUser />)
@@ -154,10 +154,11 @@ export const LoginUser = () => {
       }) 
     };
     return (loggedin ? <HomePage userStatus={"login"} user={userObj}/> : 
-      (<form id="user-login-page-stuff">
-        <div className="form-div">
-            <label htmlFor="login-email">Email (Account Name): </label>
-            <input type="text" 
+      (<div className="Welcome-body">
+      <form id="user-login-page-stuff">
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="login-email">Email (Account Name): </label>
+            <input className="welcome-input" type="text" 
             name="email"
             placeholder="Write your email here..." 
             id="login-email"
@@ -166,9 +167,9 @@ export const LoginUser = () => {
             minLength={2} 
             required></input>
         </div>
-        <div className="form-div">
-            <label htmlFor="login-password">Password: </label>
-            <input type="password" 
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="login-password">Password: </label>
+            <input className="welcome-input" type="password" 
             name="password"
             placeholder="Write your password here..." 
             id="login-password"
@@ -177,10 +178,11 @@ export const LoginUser = () => {
             minLength={1} 
             required></input>
         </div>
-        <button type="button" id="user-login-button" onClick={validateUser}>
+        <button type="button" className="welcome-button" id="welcome-user-login-button" onClick={validateUser}>
           Login
         </button>
-      </form>)
+      </form>
+      </div>)
     );
 }
 
@@ -221,10 +223,11 @@ export const RegisterUser = () => {
       }) 
     };
     return ( registered ? <WelcomePage /> :
-      (<form id="new-user-register-page-stuff">
-        <div className="form-div">
-            <label htmlFor="register-new-first-name">First Name: </label>
-            <input type="text" 
+      (<div className="Welcome-body">
+        <form id="new-user-register-page-stuff">
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="register-new-first-name">First Name: </label>
+            <input className="welcome-input" type="text" 
             name="firstName"
             placeholder="Write your first name here..." 
             id="register-new-first-name"
@@ -233,9 +236,9 @@ export const RegisterUser = () => {
             minLength={1} 
             required></input>
         </div>
-        <div className="form-div">
-            <label htmlFor="register-new-last-name">Last Name: </label>
-            <input type="text" 
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="register-new-last-name">Last Name: </label>
+            <input className="welcome-input" type="text" 
             name="lastName"
             placeholder="Write your last name here..." 
             id="register-new-last-name"
@@ -244,9 +247,9 @@ export const RegisterUser = () => {
             minLength={1} 
             required></input>
         </div>
-        <div className="form-div">
-            <label htmlFor="register-new-email">Email (Account Name): </label>
-            <input type="text" 
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="register-new-email">Email (Account Name): </label>
+            <input className="welcome-input" type="text" 
             name="email"
             placeholder="Write your email here..." 
             id="register-new-email"
@@ -255,9 +258,9 @@ export const RegisterUser = () => {
             minLength={2} 
             required></input>
         </div>
-        <div className="form-div">
-            <label htmlFor="register-new-display-name">Display Name: </label>
-            <input type="text" 
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="register-new-display-name">Display Name: </label>
+            <input className="welcome-input" type="text" 
             name="displayName"
             placeholder="Write your display name here..." 
             id="register-new-display-name"
@@ -266,9 +269,9 @@ export const RegisterUser = () => {
             minLength={1} 
             required></input>
         </div>
-        <div className="form-div">
-            <label htmlFor="register-new-password">Password: </label>
-            <input type="password" 
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="register-new-password">Password: </label>
+            <input className="welcome-input" type="password" 
             name="password"
             placeholder="Write your password here..." 
             id="register-new-password"
@@ -277,9 +280,9 @@ export const RegisterUser = () => {
             minLength={2} 
             required></input>
         </div>
-        <div className="form-div">
-            <label htmlFor="register-new-confirm-password">Confirm Password: </label>
-            <input type="password" 
+        <div className="welcome-form-div">
+            <label id="welcome-label" htmlFor="register-new-confirm-password">Confirm Password: </label>
+            <input className="welcome-input" type="password" 
             name="confirmPassword"
             placeholder="Confirm your password..." 
             id="register-new-confirm-password"
@@ -288,9 +291,10 @@ export const RegisterUser = () => {
             minLength={2}  
             required></input>
         </div>
-        <button type="button" id="new-user-submit-button" onClick={submitUser}>
+        <button type="button" className="welcome-button" id="welcome-new-user-submit-button" onClick={submitUser}>
           Sign Up
         </button>
-      </form>)
+      </form>
+      </div>)
     );
 };

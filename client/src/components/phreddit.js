@@ -36,7 +36,7 @@ export function MetaData(){
 export function HomePage({userStatus, user}){
   console.log("\n userStatus: ", userStatus, "\n");
   return(
-    <>
+    <div className = "main-body">
       {TopBanner(userStatus, user)}
       <hr id = "delimeter"></hr>
       <div className="text-under-header">
@@ -44,7 +44,7 @@ export function HomePage({userStatus, user}){
         <PostHeader userStatus={userStatus} user={user}/>
         <VotePostOrComment />
       </div>
-    </>
+    </div>
   )
 }
 
@@ -896,5 +896,3 @@ export function PageNameSortingButtons({communityIndex, postsFromSearch}){
   return(<>{buttons}</>);
 }
 
-
-  
