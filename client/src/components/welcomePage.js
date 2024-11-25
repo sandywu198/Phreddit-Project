@@ -81,7 +81,7 @@ export function WelcomePage(){
         <section className="welcome-logo-title">
           <img src = "image\Official Phreddit Logo.png" alt="Phreddit Logo" id="Welcome-Page-Phreddit_logo"
           style={{cursor:"pointer"}}></img>        {/* // onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}} */}
-          <h3 className="Welcome_Company_Name" id="phreddit-website-name"
+          <h3 id="Welcome-phreddit-website-name"
           style={{cursor:"pointer"}}> Phreddit</h3> {/* //onClick={() => {communityClickedEmitter.emit("communityClicked", -1, "", null, false)}}  */}
         </section>
         <button type="button" className="welcome-button" id="welcome-register-new-user" onClick={() => {setRegister(true)}}> Register </button>
