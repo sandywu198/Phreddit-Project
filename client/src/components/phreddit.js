@@ -740,6 +740,152 @@ export function GetCommunitiesAndLoad(user, userStatus){
           });
         }
         });
+      } 
+      // if communityIndex === -9, it's post view after upvote
+      else if(communityIndex === -9){
+        CreatePostButtonColorEmitter.emit('clickedColor', false)
+        CreateCommunityButtonColorEmitter.emit('clickedColor', false)
+        CreateHomeButtonColorEmitter.emit('clickedColor', true)
+        CommunityNameButtonColorEmitter.emit('clickedColor', false, communityIndex)
+        axios.get("http://localhost:8000/posts").then(postsRes => {
+          setPosts(postsRes.data);
+          if(postsRes.data !== null){
+          // for(let postIndex = 0; postIndex < postsRes.data.length; postIndex++){
+          //   if(postsRes.data[postIndex].id === post.id){
+          //     axios.patch(`http://localhost:8000/posts/${post.id}/view`)
+          //     .then(response => {
+          //       console.log('View count incremented:', response.data);
+          //       axios.get(`http://localhost:8000/posts/${post.id}`).then(updatedPostRes => {
+          //         const updatedPost = updatedPostRes.data;
+          //         setPosts(posts => 
+          //           posts.map(p => (p.id === updatedPost.id ? updatedPost : p))
+          //         );
+          //       }).catch(error => {
+          //         console.error('Error fetching updated post:', error);
+          //       });
+          //     })
+          //     .catch(error => {
+          //       console.error('Error:', error.response ? error.response.data : error.message);
+          //     });
+          //   }
+          // }
+          // figure out which community this post is from
+          var communityName = '';
+          var communityDate = '';
+          axios.get("http://localhost:8000/communities").then(communitiesRes => {
+            setCommunities(communitiesRes.data);
+            if(communitiesRes.data !== null){
+              console.log("\n this is post in loading: ", post, "\n");
+              for(let comIndex = 0; comIndex < communitiesRes.data.length; comIndex++){
+                if(communitiesRes.data[comIndex].postIDs.includes(post.id)){
+                  communityName = communitiesRes.data[comIndex].name;
+                  communityDate = communitiesRes.data[comIndex].startDate;
+                  break;
+                }
+              }
+              axios.get("http://localhost:8000/comments").then(res => {
+                setComments(res.data);
+                // console.log("\n phreddit comments: ", res.data, "\n");
+              var postThreadsArray = GetPostThreadsArrayFunction(communitiesRes.data, postsRes.data, res.data, communityName, []);
+              console.log("\n postThreadsArray after in phreddit: ", postThreadsArray, "\n");
+              axios.get("http://localhost:8000/linkFlairs").then(res => {
+                // console.log("\n phreddit linkflairs: ", res.data, " \n");
+                setLinkFlairs(res.data);
+                if(res.data !== null){
+                  var linkflairContent = '';
+                  // get the linkflair content
+                  for(let index = 0; index < res.data.length; index++){
+                    if(res.data[index].id === post.linkFlairID){
+                      linkflairContent = res.data[index].content;
+                      break;
+                    }
+                  }
+                  // console.log("\n got linkflairContent: ", linkflairContent, "\n");
+                  // would get post threads array here but hook error so moved up
+                  var commentRepliesCount = post.commentIDs.length;
+                  console.log("\n post view postThreadsArray: ", postThreadsArray, "\n");
+                  for(let postIndex = 0; postIndex < postThreadsArray.length; postIndex++){
+                    console.log("\n postThreadsArray[postIndex][0]: ", postThreadsArray[postIndex][0], " post.id: ", post.id, "\n");
+                    if(postThreadsArray[postIndex][0].postThreadNode.id === post.id){
+                      commentRepliesCount = postThreadsArray[postIndex].length - 1;
+                      console.log("\ncommentRepliesCount: ", commentRepliesCount, "\n");
+                    }
+                  } 
+                  axios.get("http://localhost:8000/comments").then(res => {
+                    setComments(res.data);
+                    if(res.data !== null){
+                      // console.log("\n this res.data should be comments: ", res.data, "\n");
+                      // make a mapping of commentIDs to commentedDates
+                      var commentIDstoDates = new Map();
+                      for(let commentsIndex = 0; commentsIndex < res.data.length; commentsIndex++){
+                        commentIDstoDates.set(res.data[commentsIndex].id, res.data[commentsIndex]);
+                      }
+                      // get the thread as a flattened array in order of post and comments 
+                      // var postResultArray = makePostThreads(post, post.commentIDs, commentIDstoDates);
+                      var commentIDstoDatesMap = new Map();
+                      for(let commentsIndex = 0; commentsIndex < res.data.length; commentsIndex++){
+                        commentIDstoDatesMap.set(res.data[commentsIndex].id, new Date(res.data[commentsIndex].commentedDate));
+                      }
+                      // console.log("\n commentIDstoDates: ", commentIDstoDates, " commentIDstoDatesMap: ", commentIDstoDatesMap, "\n");
+                      // console.log("\n here post: ", post, "\n");
+                      // get the most updated version of post
+                      for(let q = 0; q < postsRes.data.length; q++){
+                        // console.log("\n postsRes.data[q]: ", postsRes.data[q], " post.id ", post.id, "\n");
+                        if(postsRes.data[q].id === post.id){
+                          post = postsRes.data[q];
+                        }
+                      }
+                      // console.log("\n now post: ", post, "\n");
+                      var postResultArray = GetSortedThreadRoot(post, post.commentIDs, commentIDstoDates, commentIDstoDatesMap);
+                      // console.log("\npostResultArray: ", postResultArray, "\n");
+                      // if there are comments, display them
+                      // if there aren't comments, getSortedThreadRoot will return null for postResultArray
+                      if(postResultArray !== null){
+                        var rootNode = postResultArray[0];
+                        var arrayOfNodes = [];
+                        postThreadDFS(rootNode, 0, arrayOfNodes);
+                        // console.log("\narrayOfNodes: ", arrayOfNodes, "\n");
+                        // now order the comments from newest to oldest
+                        // need only the comments, so take out the post
+                        var sortedNodeArray = arrayOfNodes.slice(1);
+                        // console.log("\n sortedNodeArray: ", sortedNodeArray, "\n");
+                      } 
+                      updatePageHeader(
+                      <section id="post-page-view">
+                        <h3 className="post-heading" id="post-timestamp">{communityName + " | " + displayTime(communityDate)}</h3>
+                        <p className="post-heading" id="post-user">{post.postedBy}</p>
+                        <h3 className="post-heading" id="post-title">{post.title}</h3>
+                        {post.linkFlairID && (
+                          <p className="post-heading" id="post-link-flair" >{linkflairContent}</p>
+                        )}
+                        <p className="post-heading" id="post-content">{post.content}</p>
+                        <p className="post-heading" id="post-view-comment">{(post.views) + " View" + 
+                          (((post.views) !== 1) ? "s" : "") + " | " + commentRepliesCount + 
+                          " Comment" + ((commentRepliesCount !== 1) ? "s" : "") + 
+                          ` | ${post.upvotes} Upvote${post.upvotes === 1 ? "" : "s"}`}</p>
+                        {curUserStatus !== "guest" && <button className="post-heading" id="upvote-button" style={(post.userVoted === 1) ? {color: "green"} : {}}
+                        onClick={() => {console.log("\n upvote for post clicked \n"); voteClickedEmitter.emit('voteClicked', curUser, post, null, 1)}}>Upvote</button>}
+                        {curUserStatus !== "guest" && <button className="post-heading" id="downvote-button" style={(post.userVoted === -1) ? {color: "red"} : {}}
+                        onClick={() => {console.log("\n downvote for post clicked \n"); voteClickedEmitter.emit('voteClicked', curUser, post, null, -1)}}>Downvote</button>}
+                        {curUserStatus !== "guest" && <button className="post-heading" id="add-comment"
+                        onClick={() => {communityClickedEmitter.emit('communityClicked', -7, "", post, true, null, curUser, admin, comment)}}>Add Comment</button>}
+                        <hr id = "delimeter"/>
+                        {/* display all the comments & replies */}
+                        <section id="posts-listing-section">
+                        {(postResultArray !== null) && <MakeCommentsListing sortedNodeArray={sortedNodeArray} post={post} user={curUser} userStatus={curUserStatus}/> }
+                        </section>
+                      </section>
+                      )
+                      NavBarEmitter.emit('updateNavBar')
+                      }
+                  });
+                  }
+              });
+              }
+          )}
+          });
+        }
+        });
       }
       // if communityIndex === -7, it's add new comment view
       else if(communityIndex === -7){
