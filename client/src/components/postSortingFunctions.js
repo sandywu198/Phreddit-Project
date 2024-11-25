@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect, useRef, useCallback} from "react";
 import {displayTime, PostThreadNode, postThreadDFS} from "./postThreading.js";
 import {communityClickedEmitter} from "./newCommunity.js";
 import {NavBarEmitter} from "./navBar.js";
@@ -1118,12 +1118,12 @@ export function VotePostOrComment(){
 export function SinglePost({post, postIndex, specificCommunity, user}) {
   const [linkFlair, setLinkFlair] = useState(null);
   const [content, setContent] = useState(null);
-  const fetchData = async (linkflairContent) => {
+  console.log("\n", linkFlair, "\n");
+  const fetchData = useCallback(async (linkflairContent) => {
     try{
       const [communitiesRes] = await Promise.all([
         axios.get("http://localhost:8000/communities"), 
       ]);
-      console.log("\n", linkFlair, "\n");
       // console.log("\n communities in single post: ", communities, "\n");
       // var community;
       for(let c in communitiesRes.data){
@@ -1157,7 +1157,7 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
     catch(error){
       console.error("Error fetching data:", error);
     }
-  };
+  }, [post, specificCommunity, user]);
   useEffect(() => {
     if (post.linkFlairID) {
       axios.get(`http://localhost:8000/linkflairs/${post.linkFlairID}`)
@@ -1166,7 +1166,7 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
     } else{
       fetchData(null);
     }
-  }, [post]);
+  }, [post, fetchData]);
   return(
     <>{content}</>
   )
@@ -1175,12 +1175,12 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
 export function SinglePost2({post, postIndex, specificCommunity, user}) {
   const [linkFlair, setLinkFlair] = useState(null);
   const [content, setContent] = useState(null);
-  const fetchData = async (linkflairContent) => {
+  console.log("\n", linkFlair, "\n");
+  const fetchData = useCallback(async (linkflairContent) => {
     try{
       const [communitiesRes] = await Promise.all([
         axios.get("http://localhost:8000/communities"), 
       ]);
-      console.log("\n", linkFlair, "\n");
       // console.log("\n communities in single post: ", communities, "\n");
       // var community;
       for(let c in communitiesRes.data){
@@ -1214,7 +1214,7 @@ export function SinglePost2({post, postIndex, specificCommunity, user}) {
     catch(error){
       console.error("Error fetching data:", error);
     }
-  };
+  }, [post, specificCommunity, user]);
   useEffect(() => {
     if (post.linkFlairID) {
       axios.get(`http://localhost:8000/linkflairs/${post.linkFlairID}`)
@@ -1223,7 +1223,7 @@ export function SinglePost2({post, postIndex, specificCommunity, user}) {
     } else{
       fetchData(null);
     }
-  }, [post]);
+  }, [post, fetchData]);
   return(
     <>{content}</>
   )
