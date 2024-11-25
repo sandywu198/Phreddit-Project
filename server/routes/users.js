@@ -106,18 +106,27 @@ router.get('/return-session', async (req, res) => {
     console.log("\n check returning: ", req.session, "\n");
     const token = req.session.token;
     if (!token) {
-      return res.status(400).send({message: 'No existing session found'});
+      return res.status(200).send({
+        isAuthenticated: false,
+        message: 'No active session found',
+      });
     }
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     const user = await User.findById(decoded.userId);
     console.log("\n user: ", user);
     if (!user) {
-      return res.status(401).send({message: 'Invalid session'});
+      return res.status(200).send({
+        isAuthenticated: false,
+        message: 'No user found for the session',
+      });
     }
     res.send({isAuthenticated: true, user: user});
   } catch (err) {
-    res.status(400).send({message: 'Session is not valid'});
+    res.status(200).send({
+      isAuthenticated: false,
+      message: 'Session is not valid',
+    });
   }
 });
 

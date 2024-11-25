@@ -121,18 +121,6 @@ router.put('/:id/comments', async (req, res) => {
   }
 });
 
-
-// // Get comment count for a post
-// router.get('/:id/comments/count', getPost, async (req, res) => {
-//     try {
-//         const count = res.post.commentIDs.length;
-//         res.send({ count });
-//     } 
-//     catch (error) {
-//         res.status(500).send({ message: "Error getting comment count", error });
-//     }
-// });
-
 // increment view by 1
 router.patch('/:id/view', getPost, async(req,res) =>{
     try{

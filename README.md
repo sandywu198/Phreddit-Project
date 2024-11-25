@@ -66,7 +66,7 @@ In the sections below, list and describe each contribution briefly.
 - Added join/leave community functionality
 - Implemented sorting separated by communities joined and communities not joined on main page
 - Implemented post sorting by membership in community for search results page
-- Cleaned up code
+- Fixed upvote and downvote for posts, and the login return session
 
 ## Team Member 2 (Ashley Wu) Contribution
 - Created Welcome page with register/login/guest options
