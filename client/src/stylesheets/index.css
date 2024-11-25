@@ -1,7 +1,12 @@
 head, body{
   font-family:Verdana, Geneva, Tahoma, sans-serif;
   margin: 0px;
-  overflow: hidden;
+  /* overflow-y: hidden; */
+}
+
+.main-body{
+  max-height: 100%;
+  overflow-y: hidden;
 }
 /* display banner content as horizontal with spacing between elements */
 .banner{
@@ -97,7 +102,7 @@ head, body{
   display: block;
   height:100%;
   border-right:0.5px solid black;
-  text-align: center;   
+  text-align: center; 
 }
 
 #home-webpage-link{
@@ -173,7 +178,7 @@ h3#community-head{
 .text-under-header{
   display:flex;
   flex-direction: row;
-  height: 100vh;
+  height: 91vh;
 }
 
 .main-homepage{
@@ -181,7 +186,7 @@ h3#community-head{
   flex: 1;
   display: flex;
   flex-direction:column;
-  height:92%;
+  max-height:100%;
   align-items:stretch;
 }
 
@@ -356,4 +361,108 @@ form#new-community-form, form#new-post-page-stuff, form#new-comment-page-stuff{
 .nav-delimeter{
   border: none;        
   height: 5vw; 
+}
+/* WElCOME PAGE CSS */
+.Welcome-body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  /* background-color: #f8f9fa; */
+  color: #343a40;
+  overflow-y:auto;
+  height: 100%;
+}
+
+.welcome-logo-title {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+#Welcome-Page-Phreddit_logo{
+  width: 150px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+#Welcome-phreddit-website-name {
+  font-weight: bold;
+  font-size: 2rem;
+  font-weight: bold;
+  color: orangered;
+  text-decoration: none;
+}
+
+#Welcome-phreddit-website-name:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.welcome-button{
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  margin: 0.5rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: black;
+  background-color: light-gray;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.welcome-button:hover{
+  background-color: orangered;
+  transform: translateY(-2px);
+}
+
+.welcome-button:active{
+  transform: translateY(0);
+}
+
+#user-login-page-stuff, #new-user-register-page-stuff{
+  width: 90%;
+  max-width: 400px;
+  margin: 2rem auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* overflow-y: auto; */
+}
+
+.welcome-form-div{
+  margin-bottom: 1.5rem;
+}
+
+#welcome-label{
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.welcome-input{
+  width: 90%;
+  padding: 0.8rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  color: #495057;
+  transition: border-color 0.3s ease;
+}
+
+.welcome-input:focus{
+  outline: none;
+  border-color: orangered;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.25);
+}
+
+#welcome-register-new-user,
+#welcome-login-user,
+#welcome-guest-user {
+  display: block;
+  margin: 1rem auto;
+  width: 90%;
+  max-width: 250px;
 }
