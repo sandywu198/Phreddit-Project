@@ -129,19 +129,13 @@ export const LoginUser = () => {
         [name]: value
       }));
     };
-    // const validateInputs = () => {
-    //   const { content, username } = formInputs;
-    //   if (content.length === 0 || content.length > 500) {
-    //     window.alert("The comment content must be between 1 and 500 characters.");
-    //     return false;
-    //   }
-    //   if (username.length === 0) {
-    //     window.alert("The username cannot be empty.");
-    //     return false;
-    //   }
-    //   return true;
-    // };
+    const [goBack, setGoBack] = useState(false);
     const validateUser = () => {
+      const { email, password } = formInputs;
+      if (!email.trim() || !password.trim()) {
+        window.alert('Both email and password fields are required.');
+        return;
+      }
       axios.post('http://localhost:8000/users/login', formInputs, {withCredentials:true})
       .then(res => {
         console.log('Logged in successfully!');
@@ -153,8 +147,17 @@ export const LoginUser = () => {
         window.alert(err.response.data.message);
       }) 
     };
+    if (goBack) {
+      return <WelcomePage />;
+    }
     return (loggedin ? <HomePage userStatus={"login"} user={userObj}/> : 
       (<div className="Welcome-body">
+        <button
+          type="button"
+          className="welcome-button"
+          id="back-to-welcome-page"
+          onClick={() => setGoBack(true)}
+        >Back</button>
       <form id="user-login-page-stuff">
         <div className="welcome-form-div">
             <label id="welcome-label" htmlFor="login-email">Email (Account Name): </label>
@@ -203,7 +206,30 @@ export const RegisterUser = () => {
         [name]: value
       }));
     };
+    const validateInputs = () => {
+      const {
+        firstName,
+        lastName,
+        displayName,
+        email,
+        password,
+        confirmPassword,
+      } = formInputs;
+      if (
+        !firstName.trim() ||
+        !lastName.trim() ||
+        !displayName.trim() ||
+        !email.trim() ||
+        !password.trim() ||
+        !confirmPassword.trim()
+      ) {
+        window.alert('All fields are required. Please fill in all fields.');
+        return false;
+      }
+      return true;  
+    }
     const submitUser = () => {
+      if (!validateInputs()) return;
       const user ={
         firstName: formInputs.firstName,
         lastName: formInputs.lastName,
@@ -222,8 +248,18 @@ export const RegisterUser = () => {
         window.alert(err.response?.data?.message);
       }) 
     };
+    const [goBack, setGoBack] = useState(false);
+    if (goBack) {
+      return <WelcomePage />;
+    }
     return ( registered ? <WelcomePage /> :
       (<div className="Welcome-body">
+        <button
+          type="button"
+          className="welcome-button"
+          id="back-to-welcome-page"
+          onClick={() => setGoBack(true)}
+        >Back</button>
         <form id="new-user-register-page-stuff">
         <div className="welcome-form-div">
             <label id="welcome-label" htmlFor="register-new-first-name">First Name: </label>
