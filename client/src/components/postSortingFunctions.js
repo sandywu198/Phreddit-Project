@@ -937,7 +937,7 @@ export function VotePostOrComment(){
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${voteStatus}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
-                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                  communityClickedEmitter.emit("communityClicked", -9, "", post, false);
                 })
                 .catch(error => {
                   console.error('Error:', error.response ? error.response.data : error.message);
@@ -963,7 +963,7 @@ export function VotePostOrComment(){
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${10}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
-                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                  communityClickedEmitter.emit("communityClicked", -9, "", post, false);
                 })
                 .catch(error => {
                   console.error('Error:', error.response ? error.response.data : error.message);
@@ -993,7 +993,7 @@ export function VotePostOrComment(){
                 axios.patch(`http://localhost:8000/users/${commenter.id}/${-5}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
-                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                  communityClickedEmitter.emit("communityClicked", -9, "", post, false);
                 })
                 .catch(error => {
                   console.error('Error:', error.response ? error.response.data : error.message);
@@ -1029,7 +1029,7 @@ export function VotePostOrComment(){
                 axios.patch(`http://localhost:8000/users/${poster.id}/${voteStatus}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
-                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                  communityClickedEmitter.emit("communityClicked", -9, "", post, false);
                 })
                 .catch(error => {
                   console.error('Error:', error.response ? error.response.data : error.message);
@@ -1054,7 +1054,7 @@ export function VotePostOrComment(){
                 axios.patch(`http://localhost:8000/users/${poster.id}/${10}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
-                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                  communityClickedEmitter.emit("communityClicked", -9, "", post, false);
                 })
                 .catch(error => {
                   console.error('Error:', error.response ? error.response.data : error.message);
@@ -1086,7 +1086,7 @@ export function VotePostOrComment(){
                 axios.patch(`http://localhost:8000/users/${poster.id}/${-5}/reputation`)
                 .then(response => {
                   console.log('\nUser reputation changed:', response.data);
-                  communityClickedEmitter.emit("communityClicked", -6, "", post, false);
+                  communityClickedEmitter.emit("communityClicked", -9, "", post, false);
                 })
                 .catch(error => {
                   console.error('Error:', error.response ? error.response.data : error.message);
@@ -1132,7 +1132,7 @@ export function SinglePost({post, postIndex, specificCommunity, user}) {
           console.log("\n set post community in single post: ", post, "\n");
           setContent(
             <section className="post-Section" onClick={() => {
-              communityClickedEmitter.emit("communityClicked", -6, "", post, false, null, user);
+              communityClickedEmitter.emit("communityClicked", -9, "", post, false, null, user);
               NavBarEmitter.emit("updateNavBar");
             }}>
               {console.log("\n here post in singlepost: ", post, "\n")}
