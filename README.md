@@ -59,6 +59,12 @@ Clearly explain the steps required to install and configure necessary packages, 
 - The posts page is `http://localhost:8000/posts`
 - The linkflairs page is `http://localhost:8000/linkflairs`
 
+## To Run Jest Tests
+
+1) Go into client or server directory
+2) `npm test`
+
+For the serve side tests, run `npm install mongodb-memory-server`
 
 
 In the sections below, list and describe each contribution briefly.
