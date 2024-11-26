@@ -24,7 +24,7 @@ export function TopBanner(userStatus, user){
           <SearchBoxComponent />
         </section>
         <button className="guest-banner-element" id="guest-profile-button">Guest</button>
-        <button className="guest-banner-element" id="guest-create-post-button">Create Post</button>
+        <button className="guest-banner-element" id="create-post">Create Post</button>
       </div>);
   } else if(userStatus === "login"){
     return (
