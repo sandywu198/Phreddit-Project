@@ -398,7 +398,7 @@ form#new-community-form, form#new-post-page-stuff, form#new-comment-page-stuff{
 }
 
 .welcome-button{
-  display: inline-block;
+  display: block;
   padding: 0.8rem 1.5rem;
   margin: 0.5rem;
   border: none;
@@ -406,7 +406,6 @@ form#new-community-form, form#new-post-page-stuff, form#new-comment-page-stuff{
   font-size: 1rem;
   font-weight: bold;
   color: black;
-  background-color: light-gray;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
@@ -421,6 +420,8 @@ form#new-community-form, form#new-post-page-stuff, form#new-comment-page-stuff{
 }
 
 #user-login-page-stuff, #new-user-register-page-stuff{
+  display:flex;
+  flex-direction: column;
   width: 90%;
   max-width: 400px;
   margin: 2rem auto;
