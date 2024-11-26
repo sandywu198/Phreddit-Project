@@ -604,25 +604,25 @@ export function GetCommunitiesAndLoad(user, userStatus){
           setPosts(postsRes.data);
           if(postsRes.data !== null){
             // increment the post views by one
-          for(let postIndex = 0; postIndex < postsRes.data.length; postIndex++){
-            if(postsRes.data[postIndex].id === post.id){
-              axios.patch(`http://localhost:8000/posts/${post.id}/view`)
-              .then(response => {
-                console.log('View count incremented:', response.data);
-                axios.get(`http://localhost:8000/posts/${post.id}`).then(updatedPostRes => {
-                  const updatedPost = updatedPostRes.data;
-                  setPosts(posts => 
-                    posts.map(p => (p.id === updatedPost.id ? updatedPost : p))
-                  );
-                }).catch(error => {
-                  console.error('Error fetching updated post:', error);
+            for(let postIndex = 0; postIndex < postsRes.data.length; postIndex++){
+              if(postsRes.data[postIndex].id === post.id){
+                axios.patch(`http://localhost:8000/posts/${postsRes.data[postIndex].id}/view`)
+                .then(response => {
+                  console.log('View count incremented:', response.data);
+                  axios.get(`http://localhost:8000/posts/${postsRes.data[postIndex].id}`).then(updatedPostRes => {
+                    const updatedPost = updatedPostRes.data;
+                    setPosts(posts => 
+                      posts.map(p => (p.id === updatedPost.id ? updatedPost : p))
+                    );
+                  }).catch(error => {
+                    console.error('Error fetching updated post:', error);
+                  });
+                })
+                .catch(error => {
+                  console.error('Error:', error.response ? error.response.data : error.message);
                 });
-              })
-              .catch(error => {
-                console.error('Error:', error.response ? error.response.data : error.message);
-              });
+              }
             }
-          }
           // figure out which community this post is from
           var communityName = '';
           var communityDate = '';

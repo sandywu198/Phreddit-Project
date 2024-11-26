@@ -60,6 +60,17 @@ Clearly explain the steps required to install and configure necessary packages, 
 - The linkflairs page is `http://localhost:8000/linkflairs`
 
 
+## To Run Jest Tests
+
+1) Open a Command Prompt/Powershell tab.
+2) Go to the client folder of the repository (i.e. use `cd file/path/client`).
+3) Run the command `npm test`. This will return the one `react.test.js` on the client side.
+4) Open another Command Prompt/Powershell tab.
+5) Go to the client folder of the repository (i.e. use `cd file/path/server`).
+6) Run `npm install mongodb-memory-server`.
+7) Run the command `npm test`. This will return the two Jest tests on the server side.
+
+
 
 In the sections below, list and describe each contribution briefly.
 

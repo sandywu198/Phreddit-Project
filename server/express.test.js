@@ -1,9 +1,9 @@
-const server = require('./server');
-const mongoose = require('mongoose');
+const server = require('./server.js');
+// const mongoose = require('mongoose');
 
 describe('Validate web server', () => {
   afterAll(async () => {
-    await mongoose.disconnect();
+    // await mongoose.disconnect();
     server.close();
   });
 
