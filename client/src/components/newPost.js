@@ -145,29 +145,33 @@ export const NewLinkFlair = ({ post, onInputChange }) => {
 
 export const LinkFlairDropdown = ({post, onInputChange}) => {
     const [linkFlairs, setLinkFlairs] = useState([]);
-    const [selectedFlair, setSelectedFlair] = useState("");
+    const [selectedFlair, setSelectedFlair] = useState(null);
     useEffect(() => {
             axios.get("http://localhost:8000/linkflairs")
             .then(res => {
                 setLinkFlairs(res.data);
                 console.log("\n post: ", post, "\n");
-                console.log("\n LinkFlairDropdown: ", res.data, "\n");
-                if(post){
-                    const lfObj = res.data.find(lf => lf.id === post.linkFlairID);
-                    console.log("\n LinkFlairDropdown: ", lfObj, "\n");
-                    setSelectedFlair((lfObj) ? lfObj.content: "");
-                }
+                console.log("\n linkFlairs res.data: ", res.data, "\n");
             })
             .catch(error => console.error("Error fetching link flairs:", error));
     }, [post]);
+    useEffect(() => {
+        if(post){
+            console.log("\n linkFlairs: ", linkFlairs, "\n");
+            const lfObj = linkFlairs.find(lf => lf.id === post.linkFlairID);
+            console.log("\n LinkFlairDropdown lfObj: ", lfObj, "\n");
+            setSelectedFlair((lfObj) ? lfObj.id: null);
+        }
+    }, [linkFlairs, post]);
     const handleChange = (event) => {
         setSelectedFlair(event.target.value);
         onInputChange(event.target.value);
     };
     return (
         <div className="list-dropdown">
+            {console.log("\n selectedFlair: ", selectedFlair, "\n")}
             <label htmlFor="link-flair-dropdown">Choose Link Flair: </label>
-            <select className="list-dropdown" id="link-flair-dropdown-options" value={selectedFlair} onChange={handleChange}>
+            <select className="list-dropdown" id="link-flair-dropdown-options" value={selectedFlair ? selectedFlair: ""} onChange={handleChange}>
                 <option value="">Select a flair</option>
                 {linkFlairs.map((flair) => (
                     <option key={flair._id} value={flair._id}>{flair.content}</option>
@@ -187,7 +191,12 @@ export const CreatePostComponent = ({user, post}) => {
         content: (curPost) ? curPost.content: '',
         linkFlairID: (curPost) ? curPost.linkFlairID: '',
         newLinkFlair: '',
-        postedBy: user.displayName,
+        postedBy: (curPost) ? curPost.postedBy: user.displayName,
+        postedDate: new Date(),
+        views:(curPost) ? curPost.views: 0,
+        commentIDs: (curPost) ? curPost.commentIDs: [],
+        upvotes: (curPost) ? curPost.upvotes: 0,
+        userVoted: (curPost) ? curPost.userVoted: 0,
     });
     console.log("New Post Community ID:", formData.community);
     const handleInputChange = useCallback((field, value) => {
@@ -285,14 +294,15 @@ export const CreatePostComponent = ({user, post}) => {
               linkFlairID = newFlairResponse.data._id; 
           }
           const newPost = {
-              title: formData.title,
-              content: formData.content,
-              linkFlairID: linkFlairID || null,
-              postedBy: formData.postedBy,
-              postedDate: new Date(),
-              views: 0,
-              commentIDs: [],
-              upvotes: 0,
+            title: formData.title,
+            content: formData.content,
+            linkFlairID: linkFlairID || null,
+            postedBy: formData.postedBy,
+            postedDate: formData.postedDate,
+            views: formData.views,
+            commentIDs: formData.commentIDs,
+            upvotes: formData.upvotes,
+            userVoted: formData.userVoted,
           };
           console.log('New post created:', newPost);
           console.log("New Post Community ID:", formData.community);
@@ -300,7 +310,8 @@ export const CreatePostComponent = ({user, post}) => {
           .then(communitiesRes => {
             formData.community = communitiesRes.data.filter(c => c.name === formData.community)[0].id;
             console.log("\n after change: ", formData.community, "\n");
-            axios.post('http://localhost:8000/posts', newPost, {withCredentials: true})
+            if(!curPost){
+                axios.post('http://localhost:8000/posts', newPost, {withCredentials: true})
                 .then(response => {
                     console.log('New post created:', response.data);
                 console.log("POSTID @ NEWPOSTS", response.data._id);
@@ -312,6 +323,16 @@ export const CreatePostComponent = ({user, post}) => {
 
                     })
                 }).catch(error => {})
+            } else{
+                axios.put(`http://localhost:8000/posts/${curPost.id}/update`, newPost)
+                .then((response) => {
+                    console.log("Updated post:", response.data);
+                    communityClickedEmitter.emit("communityClicked", -1, "");    
+                })
+                .catch((error) => {
+                    console.error("Error:", error.message);
+                });
+            }
             }).catch(error => {
             console.log("\n error with community\n");
           })
@@ -326,8 +347,9 @@ export const CreatePostComponent = ({user, post}) => {
            <PostContentComponent post={post} onInputChange={(value) => handleInputChange('content', value)} />
            <LinkFlairDropdown post={post}  onInputChange={(value) => handleInputChange('linkFlairID', value)} />
            <NewLinkFlair post={post} onInputChange={(input) => handleInputChange('newLinkFlair', input)} />
-           <button type="button" id="submit-new-post-button" onClick={() => handleSubmit()}>Create Post</button>
+           <button type="button" id="submit-new-post-button" onClick={() => handleSubmit()}>{curPost ? "Update Post": "Create Post"}</button>
            {post && <button type="button" id="delete-new-post-button" onClick={() => {deletePost(post)}}>Delete Post</button>}
        </form>
    );
 };
+// {curPost ? "Update Post": "Create Post"}

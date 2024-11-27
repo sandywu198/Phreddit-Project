@@ -127,7 +127,7 @@ export const AddNewCommentComponent = ({ post, replyToPost, commentRepliedTo, co
         ></textarea>
       </div>
       <button type="button" id="new-comment-submit-button" onClick={submitComment}>
-        Submit Comment
+        {comment ? "Update Comment" : "Submit Comment"}
       </button>
       {comment && <button type="button" id="new-comment-delete-button" onClick={deleteComment}>
         Delete Comment

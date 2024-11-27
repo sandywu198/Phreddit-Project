@@ -5,13 +5,13 @@ import {NavBarEmitter} from "./navBar.js";
 import axios from 'axios';
 import EventEmitter from "events";
 
-export const DisplayPosts = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments, user}) => {
+export const DisplayPosts = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments, user, usePostsFromSearch}) => {
   const postsArrayFinal = useRef([]);
   console.log("\n in display posts \n");
   if(posts.length > 0 && communities.length > 0){
     // console.log("\ncommunities in display: ", communities, "\n");
     // console.log("\nposts in display: ", posts, "\n");
-    let sortedPosts = (postsFromSearch.length > 0) ? [...postsFromSearch]: [...posts];
+    let sortedPosts = (usePostsFromSearch) ? [...postsFromSearch]: [...posts];
     sortedPosts.sort((a,b) => newToOld ? new Date(b.postedDate) - new Date(a.postedDate) : new Date(a.postedDate) - new Date(b.postedDate));
     console.log("\n new sortedPosts: ", sortedPosts, "\n");
     sortedPosts.forEach(post => {
@@ -43,19 +43,19 @@ export const DisplayPosts = ({newToOld, specificCommunity, postsFromSearch, comm
   console.log("\n DisplayPosts user: ", user, "\n");
   return (
     <section id = "posts-listing-section">
-      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments, user)}
+      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments, user, false)}
     </section>
   );
 }
 
 // make another function for sorting from old to newest so the page is re-rendered immediately
-export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments, user}) => {
+export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, communities, posts, comments, user, usePostsFromSearch}) => {
   const postsArrayFinal = useRef([]);
   console.log("\n in display 1 posts \n");
   if(posts.length > 0 && communities.length > 0){
     // console.log("\ncommunities in display: ", communities, "\n");
     // console.log("\nposts in display: ", posts, "\n");
-    let sortedPosts = (postsFromSearch.length > 0) ? [...postsFromSearch]: [...posts];
+    let sortedPosts = (usePostsFromSearch) ? [...postsFromSearch]: [...posts];
     sortedPosts.sort((a,b) => newToOld ? new Date(b.postedDate) - new Date(a.postedDate) : new Date(a.postedDate) - new Date(b.postedDate));
     sortedPosts.forEach(post => {
       // var community = communities.find(c => c.postIDs.includes(post.id));
@@ -86,7 +86,7 @@ export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, com
   console.log("\n DisplayPosts1 user: ", user, "\n");
   return (
     <section id = "posts-listing-section">
-      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments, user)}
+      {CreatePostsInHTML(postsArrayFinal.current, specificCommunity, communities, posts, comments, user, false)}
     </section>
   );
 }
@@ -184,10 +184,10 @@ export const DisplayPosts1 = ({newToOld, specificCommunity, postsFromSearch, com
 // }
 
 // testing, version underneath was previous version
-export function DisplayActivePosts({specificCommunity, postsFromSearch, communities, posts, comments, user}){
+export function DisplayActivePosts({specificCommunity, postsFromSearch, communities, posts, comments, user, usePostsFromSearch}){
   var sortedPosts = [];
-  const communityArg = (postsFromSearch.length > 0) ? "All Posts" : ((specificCommunity !== "All Posts") ? specificCommunity: "All Posts");
-  const searchPostsArg = (postsFromSearch.length > 0) ?  postsFromSearch : ((specificCommunity !== "All Posts") ? []: []);
+  const communityArg = (usePostsFromSearch) ? "All Posts" : ((specificCommunity !== "All Posts") ? specificCommunity: "All Posts");
+  const searchPostsArg = (usePostsFromSearch) ?  postsFromSearch : ((specificCommunity !== "All Posts") ? []: []);
   var printPostThreadsArray = GetPostThreadsArrayFunction(communities, posts, comments, communityArg, searchPostsArg);// useGetPostThreadsArray(communityArg, searchPostsArg);
   console.log("\n printPostThreadsArray in active b4: ", printPostThreadsArray, "\n");
   if(printPostThreadsArray && printPostThreadsArray.length > 0){
@@ -223,7 +223,7 @@ export function DisplayActivePosts({specificCommunity, postsFromSearch, communit
   return (
     <div>
       {/* {console.log("\n sortedPosts in return: ", sortedPosts, " specificCommunity: ", specificCommunity, "\n")} */}
-      {CreatePostsInHTML(sortedPosts, specificCommunity, communities, posts, comments, user)}
+      {CreatePostsInHTML(sortedPosts, specificCommunity, communities, posts, comments, user, false)}
     </div>
   )
 };
@@ -1228,6 +1228,7 @@ export function SinglePost2({post, postIndex, specificCommunity, user}) {
     <>{content}</>
   )
 }
+
 /* 
 sortedPosts.forEach(post => {
 // var community = communities.find(c => c.postIDs.includes(post.id));

@@ -18,6 +18,20 @@ router.get('/:id', getPost, (req, res) => {
     res.send(res.post);
 });
 
+// Update all fields of a post
+router.put('/:id/update', getPost, async (req, res) => {
+  try {
+      const updatedFields = req.body; 
+      for (const [key, value] of Object.entries(updatedFields)) {
+          res.post[key] = value;
+      }
+      const updatedPost = await res.post.save();
+      res.send(updatedPost);
+  } catch (error) {
+      res.status(400).send({ message: error.message });
+  }
+});
+
 // Delete post by id
 router.delete('/:id', getPost, async (req, res) => {
   try {
