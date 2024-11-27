@@ -64,6 +64,7 @@ router.patch('/:id/delete-mem', async(req, res) => {
             {$pull: {members: memDisplayName}},
             {new:true}
         );
+        console.log("\n updateMember: ", updateMember, "\n");
         if (!updateMember) {
             return res.status(404).send({ error: 'Community not found' });
         }
@@ -99,7 +100,7 @@ router.get('/community/:createdBy', async (req, res) => {
       const { createdBy } = req.params;
       const communities = await Community.find({ createdBy });
       if (communities.length === 0) {
-        return res.status(404).send({ message: 'No communities made by this user' });
+        return res.send({ message: 'No communities made by this user' });
       }
       res.send(communities);
     } catch (error) {
@@ -114,7 +115,7 @@ router.delete('/:createdBy', async (req, res) => {
       const { createdBy } = req.params;
       const result = await Community.deleteMany({ createdBy });
       if (result.deletedCount === 0) {
-        return res.status(404).send({ message: 'No communities to delete' });
+        return res.send({ message: 'No communities to delete' });
       }
       res.send({ message: `community was deleted` });
     } catch (error) {

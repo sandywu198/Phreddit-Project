@@ -193,7 +193,7 @@ export const CreateCommunityComponent = ({user, community}) => {
       </div>
       <div className="form-div">
         <button type="button" id="create-community-button" onClick={() => {createCommunity(user, community)}}>
-          Engender Community
+          {community ? "Update Community" : "Engender Community"}
         </button>
       </div>
       {community && 

@@ -51,7 +51,7 @@ export function HomePage({userStatus, user}){
 export const sortPostEmitter = new EventEmitter();
 sortPostEmitter.setMaxListeners(25);
 
-export const SortedPostListing = ({communityIndex, postsFromSearch, communities, userCommunityPosts, otherCommunityPosts, posts, comments, user}) => {
+export const SortedPostListing = ({communityIndex, postsFromSearch, communities, userCommunityPosts, otherCommunityPosts, posts, comments, user, usePostsFromSearch}) => {
   // console.log("\n model in sorting: ", model, " communityIndex: ", communityIndex, " postsFromSearch: ", postsFromSearch, "\n")
   // postsFromSearch = new Set(postsFromSearch);
   const [postListing, updatePostListing] = useState(null);
@@ -62,9 +62,9 @@ export const SortedPostListing = ({communityIndex, postsFromSearch, communities,
       <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/> :
       ((postsFromSearch.length > 0) ?  <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user}/>:
       <DisplayPosts newToOld={true} specificCommunity={communities[communityIndex].name} postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/>));
-  }, [communityIndex, postsFromSearch, communities, posts, comments, user]); //[communityIndex, postListing, postsFromSearch]
+  }, [communityIndex, postsFromSearch, communities, posts, comments, user, usePostsFromSearch]); //[communityIndex, postListing, postsFromSearch]
   useEffect(() => {
-    const getPostListing = (newestToOldest, active, communityIndex, postsFromSearch) => {
+    const getPostListing = (newestToOldest, active, communityIndex, postsFromSearch, usePostsFromSearch) => {
       console.log("\n button sort get posts\n");
       console.log("\n SortedPostListing getPostListing: ", " communities: ", communities, " posts ", posts, " comments: ", comments, "\n");
       if(communities !== null){
@@ -83,48 +83,49 @@ export const SortedPostListing = ({communityIndex, postsFromSearch, communities,
             console.log("\n old for community \n");
             updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity={communityName} postsFromSearch={[]} communities={communities} posts={posts} comments={comments} user={user}/>;
           }
-        } else if (postsFromSearch.length > 0) {
+        } else if (usePostsFromSearch) {
           if (active) {
             if(user){
               updatedPostListing = <div>
                 <h3>Posts from Your Communities</h3>
                 <hr></hr>
-                <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={userCommunityPosts} communities={communities} posts={posts} comments={comments} user={user}/>
+                <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={userCommunityPosts} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>
                 <h3>Posts from Other Communities</h3>
                 <hr></hr>
-                <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={otherCommunityPosts} communities={communities} posts={posts} comments={comments} user={user}/>
+                <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={otherCommunityPosts} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>
               </div>
             }
             else{
-              updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user}/> 
+              updatedPostListing = <DisplayActivePosts specificCommunity={"All Posts"} postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/> 
             }
           } else if (newestToOldest) {
             if(user){
+              console.log("\n userCommunityPosts: ", userCommunityPosts, " otherCommunityPosts: ", otherCommunityPosts, "\n");
               updatedPostListing = <div>
                 <h3>Posts from Your Communities</h3>
                 <hr></hr>
-                <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={userCommunityPosts} communities={communities} posts={posts} comments={comments} user={user}/>
+                <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={userCommunityPosts} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>
                 <h3>Posts from Other Communities</h3>
                 <hr></hr>
-                <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={otherCommunityPosts} communities={communities} posts={posts} comments={comments} user={user}/>
+                <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={otherCommunityPosts} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>
               </div>
             }
             else{
-              updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user}/>
+              updatedPostListing = <DisplayPosts newToOld={true} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>
             }
           } else {
             if(user){
               updatedPostListing = <div>
                 <h3>Posts from Your Communities</h3>
                 <hr></hr>
-                <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={userCommunityPosts} communities={communities} posts={posts} comments={comments} user={user}/>           
+                <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={userCommunityPosts} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>           
                 <h3>Posts from Other Communities</h3>
                 <hr></hr>
-                <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={otherCommunityPosts} communities={communities} posts={posts} comments={comments} user={user}/>      
+                <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={otherCommunityPosts} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>      
               </div>
             }
             else{
-              updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user}/>;
+              updatedPostListing = <DisplayPosts1 newToOld={false} specificCommunity="All Posts" postsFromSearch={postsFromSearch} communities={communities} posts={posts} comments={comments} user={user} usePostsFromSearch={true}/>;
             }
           }
         } else {
@@ -177,13 +178,13 @@ export const SortedPostListing = ({communityIndex, postsFromSearch, communities,
         updatePostListing(updatedPostListing);
       }
     }
-    getPostListing(true, false, communityIndex, postsFromSearch);
+    getPostListing(true, false, communityIndex, postsFromSearch, usePostsFromSearch);
     sortPostEmitter.on("sortPosts", getPostListing);
     
     return () => {
       sortPostEmitter.off("sortPosts", getPostListing);
     };
-  }, [communities, communityIndex, postsFromSearch, posts, comments, user, otherCommunityPosts, userCommunityPosts]); // [communities, communityIndex, postsFromSearch]    
+  }, [communities, communityIndex, postsFromSearch, posts, comments, user, otherCommunityPosts, userCommunityPosts, usePostsFromSearch]); // [communities, communityIndex, postsFromSearch]    
   console.log("\npostListing return: ", postListing, "\n");
   return (<div>{postListing}</div>);
 }
@@ -261,8 +262,8 @@ export function HandleSearchLogic({searchString, communityIndex, printPostThread
     <p id="post-number">{postNum}</p>
     <hr id="delimeter" />
     <section id="posts-listing-section">
-      {user ? <SortedPostListing communityIndex={communityIndex} postsFromSearch={postsFromSearch} communities={communities} userCommunityPosts = {userCommunityPosts} otherCommunityPosts = {otherCommunityPosts} posts={posts} comments={comments} user = {user}/>
-      : <SortedPostListing communityIndex={communityIndex} postsFromSearch={postsFromSearch} communities={communities} userCommunityPosts = {[]} otherCommunityPosts = {[]} posts={posts} comments={comments} user = {user}/>
+      {user ? <SortedPostListing communityIndex={communityIndex} postsFromSearch={postsFromSearch} communities={communities} userCommunityPosts = {userCommunityPosts} otherCommunityPosts = {otherCommunityPosts} posts={posts} comments={comments} user = {user} usePostsFromSearch={true}/>
+      : <SortedPostListing communityIndex={communityIndex} postsFromSearch={postsFromSearch} communities={communities} userCommunityPosts = {[]} otherCommunityPosts = {[]} posts={posts} comments={comments} user = {user} usePostsFromSearch={true}/>
       }
     </section>
   </div>)
