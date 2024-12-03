@@ -47,13 +47,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Get register
-router.get('/register', (req, res) => {
-  res.send({
-    message: 'This is the registration page or form handler.',
-  });
-});
-
 // Login user
 router.post('/login', async (req, res) => {
   try {
@@ -143,13 +136,6 @@ router.post('/logout', async (req, res) => {
     console.error(err);
     res.status(500).send({message: 'Server error'});
   }
-});
-
-// Get login 
-router.get('/login', (req, res) => {
-  res.send({
-    message: 'This is the login page or form handler.',
-  });
 });
 
 // Get all users

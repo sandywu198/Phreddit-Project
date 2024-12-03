@@ -75,24 +75,24 @@ router.patch('/:id/delete-mem', async(req, res) => {
     }
 })
 
-// Get a specific community by name
-router.get('/:name/community-name', async (req, res) => {
-    try {
-      const { name } = req.params;
-    //   console.log("\n name: ", name, "\n");
-    const community = await Community.findOne({ name: name });
-    console.log("Encoded name from URL:", name);
-    console.log("Decoded name:", decodeURIComponent(name));
-    console.log("\n community: ", community, "\n");
-      if (!community) {
-        return res.status(404).send({ message: 'No communities made by this user' });
-      }
-      res.send(community);
-    } catch (error) {
-      console.error('Error fetching communities:', error);
-      res.status(500).send({ message: error.message });
-    }
-});
+// // Get a specific community by name
+// router.get('/:name/community-name', async (req, res) => {
+//     try {
+//       const { name } = req.params;
+//     //   console.log("\n name: ", name, "\n");
+//     const community = await Community.findOne({ name: name });
+//     console.log("Encoded name from URL:", name);
+//     console.log("Decoded name:", decodeURIComponent(name));
+//     console.log("\n community: ", community, "\n");
+//       if (!community) {
+//         return res.status(404).send({ message: 'No communities made by this user' });
+//       }
+//       res.send(community);
+//     } catch (error) {
+//       console.error('Error fetching communities:', error);
+//       res.status(500).send({ message: error.message });
+//     }
+// });
 
 // Get communities by user
 router.get('/community/:createdBy', async (req, res) => {
@@ -152,15 +152,6 @@ router.put('/:id/add-post', async (req, res) => {
         console.error('Error in PUT route:', error);
         res.status(400).send({ message: "Error updating community", error: error.message });
     }
-    // try {
-    //     const postID = req.body.postID;
-    //     res.community.postIDs.push(postID);
-    //     const updatedCommunity = await res.community.save();
-    //     res.status(200).json(updatedCommunity);
-    // } catch (error) {
-    //     console.error('Error adding post to community:', error);
-    //     res.status(400).json({ message: "Error updating community", error: error.message });
-    // }
 });
 
 // Delete post from community
