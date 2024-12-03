@@ -65,7 +65,7 @@ Clearly explain the steps required to install and configure necessary packages, 
 1) Open a Command Prompt/Powershell tab.
 2) Go to the client folder of the repository (i.e. use `cd file/path/client`).
 3) Run the command `npm test`. This will return the one `react.test.js` on the client side.
-4) Go to all of the Command Prompt/Powershell tabs you have open for running the server or the MongDB database and run Ctrl + C to close the server and database. 
+4) Go to all of the Command Prompt/Powershell tabs you have open for running the server or the MongoDB database and run Ctrl + C to close the server and database. Ensure they are closed before proceeding. 
 4) Open another Command Prompt/Powershell tab.
 5) Go to the client folder of the repository (i.e. use `cd file/path/server`).
 6) Run `npm install mongodb-memory-server`.
