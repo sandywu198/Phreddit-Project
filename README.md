@@ -65,11 +65,12 @@ Clearly explain the steps required to install and configure necessary packages, 
 1) Open a Command Prompt/Powershell tab.
 2) Go to the client folder of the repository (i.e. use `cd file/path/client`).
 3) Run the command `npm test`. This will return the one `react.test.js` on the client side.
+4) Go to all of the Command Prompt/Powershell tabs you have open for running the server or the MongDB database and run Ctrl + C to close the server and database. 
 4) Open another Command Prompt/Powershell tab.
 5) Go to the client folder of the repository (i.e. use `cd file/path/server`).
 6) Run `npm install mongodb-memory-server`.
 7) Run the command `npm test`. This will return the two Jest tests on the server side.
-
+Note: If you get an error stating server in use, return to step 4 and make sure you have the server and database closed. If they are running, it will prevent the test from executing properly.
 
 
 In the sections below, list and describe each contribution briefly.
