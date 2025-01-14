@@ -1,4 +1,4 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/MVUO33FO)
+PHREDDIT PROJECT
 # Term Project
 
 See the three UML design docs in *images/*
@@ -73,21 +73,3 @@ See the three UML design docs in *images/*
 6) Run `npm install mongodb-memory-server`.
 7) Run the command `npm test`. This will return the two Jest tests on the server side.
 Note: If you get an error stating server in use, return to step 4 and make sure you have the server and database closed. If they are running, it will prevent the test from executing properly.
-
-
-In the sections below, list and describe each contribution briefly.
-
-## Team Member 1 (Sandy Wu) Contribution
-- Added join/leave community functionality
-- Implemented sorting separated by communities joined and communities not joined on main page
-- Implemented post sorting by membership in community for search results page
-- Fixed upvote and downvote for posts, and the login return session
-- Applied CSS styling to the Welcome page
-
-## Team Member 2 (Ashley Wu) Contribution
-- Created Welcome page with register/login/guest options
-- Added session cookie for maintaining login
-- Implemented user profile page with deletion options
-- Added upvotes for posts and use reputation changes
-- Ordered navbar from joined and then not joined communities
-
